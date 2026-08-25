@@ -1422,12 +1422,94 @@
 
         // Na abertura: o SDK relê a sessão guardada e renova o token sozinho.
         // Com sessão, abre a Central; sem, a tela de entrada continua à mostra.
+        /* ===================================================================
+           (25/08) VOLTA PELO LINK DO E-MAIL.
+           O Supabase tem DOIS formatos de link e eles chegam de jeitos
+           diferentes, além do caso de erro. Antes eu tratava só um, e nos
+           outros dois a pessoa caía na tela de login sem explicação nenhuma —
+           que é exatamente o pior desfecho: ela acha que o sistema ignorou o
+           pedido dela.
+
+             1. Formato antigo:  #access_token=...&type=recovery
+             2. Formato novo (PKCE):  ?code=...
+             3. Link expirado/usado:  ?error=... ou #error=...
+
+           Os três são lidos aqui.
+           =================================================================== */
+
+        function lerRetornoDoLink() {
+            const h = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+            const q = new URLSearchParams(window.location.search || '');
+            const pegar = (nome) => h.get(nome) || q.get(nome) || '';
+            return {
+                tipo: pegar('type'),
+                code: pegar('code'),
+                erro: pegar('error_description') || pegar('error_code') || pegar('error')
+            };
+        }
+
+        // Tira token e erro da barra de endereço: eles não podem ficar no
+        // histórico do navegador nem num print da tela.
+        function limparEndereco() {
+            history.replaceState(null, '', window.location.pathname);
+        }
+
+        function traduzirErroDoLink(bruto) {
+            const m = String(bruto || '').toLowerCase();
+            if (m.includes('expired')) return 'Este link expirou. Peça um novo abaixo.';
+            if (m.includes('already') || m.includes('used')) return 'Este link já foi usado. Peça um novo abaixo.';
+            if (m.includes('access_denied')) return 'Este link não vale mais. Peça um novo abaixo.';
+            return 'Não foi possível usar este link. Peça um novo abaixo.';
+        }
+
+        function entrarNoModoNovaSenha() {
+            emRecuperacao = true;
+            overlay.hidden = false;
+            mostrarTela('novaSenha');
+            limparEndereco();
+        }
+
+        function falharRecuperacao(mensagem) {
+            emRecuperacao = false;
+            overlay.hidden = false;
+            mostrarTela('esqueci');
+            mostrarRecado(mensagem, 'erro');
+            limparEndereco();
+        }
+
         window.addEventListener('load', async () => {
+            const retorno = lerRetornoDoLink();
+
+            // 3. Link expirado ou já usado — avisa e oferece pedir outro.
+            if (retorno.erro) {
+                falharRecuperacao(traduzirErroDoLink(retorno.erro));
+                return;
+            }
+
+            // 2. Formato novo (PKCE). A troca do código por sessão só funciona no
+            // MESMO navegador que pediu a redefinição: metade da chave ficou
+            // guardada ali. Quem pede no computador e abre no celular cai aqui —
+            // e precisa ler isso, não uma tela de login muda.
+            if (retorno.code) {
+                try {
+                    const { error } = await sb.auth.exchangeCodeForSession(retorno.code);
+                    if (error) throw error;
+                    entrarNoModoNovaSenha();
+                } catch (e) {
+                    falharRecuperacao('Abra o link no MESMO aparelho e navegador onde você pediu a redefinição. Se preferir, peça um novo link por aqui.');
+                }
+                return;
+            }
+
+            // 1. Formato antigo: o SDK já criou a sessão a partir do endereço.
+            if (retorno.tipo === 'recovery') {
+                entrarNoModoNovaSenha();
+                return;
+            }
+
+            // Abertura normal da Central.
             try {
                 const { data } = await sb.auth.getSession();
-                // A trava de recuperação vence a sessão: quem chegou pelo link do
-                // e-mail está autenticado, mas veio para trocar a senha, não para
-                // entrar direto.
                 if (data.session && !emRecuperacao) abrirCentral(data.session.user);
             } catch (e) {
                 mostrarRecado('Não foi possível verificar sua sessão. Entre novamente.', 'erro');
