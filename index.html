@@ -294,6 +294,30 @@
         .auth-enviar:hover:not(:disabled) { filter: brightness(1.25); }
         .auth-enviar:disabled { opacity: .6; cursor: default; }
 
+        /* Acao secundaria (esqueci a senha, voltar). Botao de verdade, nao <a>:
+           nao navega para lugar nenhum, so troca de tela. */
+        .auth-link {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            border: 0;
+            background: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .auth-link:hover { color: var(--primary); }
+
+        .auth-explica {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-light);
+            margin-bottom: 18px;
+        }
+
         /* Uma area de recado so, para erro e sucesso — duas caixas empilhadas
            deixariam a altura do cartao pulando a cada tentativa. */
         .auth-recado {
@@ -832,6 +856,32 @@
             <input type="password" id="entrarSenha" name="password" autocomplete="current-password" required>
           </div>
           <button class="auth-enviar" type="submit" id="btEntrar">Entrar</button>
+          <button class="auth-link" type="button" id="linkEsqueci">Esqueci minha senha</button>
+        </form>
+
+        <!-- PEDIR O LINK DE REDEFINICAO -->
+        <form id="formEsqueci" hidden>
+          <p class="auth-explica">Informe o e-mail da sua conta. Enviaremos um link para você criar uma senha nova.</p>
+          <div class="auth-campo">
+            <label for="esqEmail">E-mail</label>
+            <input type="email" id="esqEmail" name="email" autocomplete="email" required>
+          </div>
+          <button class="auth-enviar" type="submit" id="btEsqueci">Enviar link</button>
+          <button class="auth-link" type="button" id="linkVoltar">Voltar para o login</button>
+        </form>
+
+        <!-- DEFINIR A SENHA NOVA (so aparece ao voltar pelo link do e-mail) -->
+        <form id="formNovaSenha" hidden>
+          <p class="auth-explica">Crie uma senha nova para a sua conta.</p>
+          <div class="auth-campo">
+            <label for="novaSenha">Nova senha</label>
+            <input type="password" id="novaSenha" name="new-password" autocomplete="new-password" minlength="6" required>
+          </div>
+          <div class="auth-campo">
+            <label for="novaSenha2">Repita a senha</label>
+            <input type="password" id="novaSenha2" name="new-password" autocomplete="new-password" minlength="6" required>
+          </div>
+          <button class="auth-enviar" type="submit" id="btNovaSenha">Salvar senha</button>
         </form>
 
         <!-- CRIAR CONTA -->
@@ -1204,16 +1254,97 @@
             return 'Não foi possível concluir. Tente novamente.';
         }
 
-        function trocarAba(qual) {
+        // Uma tela por vez. As abas ficam escondidas nas telas de recuperação:
+        // ali não faz sentido a pessoa poder pular para "Criar conta".
+        function mostrarTela(qual) {
             limparRecado();
-            const entrar = qual === 'entrar';
-            $$('abaEntrar').setAttribute('aria-selected', String(entrar));
-            $$('abaCadastro').setAttribute('aria-selected', String(!entrar));
-            $$('formEntrar').hidden = !entrar;
-            $$('formCadastro').hidden = entrar;
+            const telas = {
+                entrar:    $$('formEntrar'),
+                cadastro:  $$('formCadastro'),
+                esqueci:   $$('formEsqueci'),
+                novaSenha: $$('formNovaSenha')
+            };
+            Object.keys(telas).forEach((k) => { telas[k].hidden = (k !== qual); });
+
+            const ehAba = (qual === 'entrar' || qual === 'cadastro');
+            document.querySelector('.auth-abas').hidden = !ehAba;
+            $$('abaEntrar').setAttribute('aria-selected', String(qual === 'entrar'));
+            $$('abaCadastro').setAttribute('aria-selected', String(qual === 'cadastro'));
         }
-        $$('abaEntrar').addEventListener('click', () => trocarAba('entrar'));
-        $$('abaCadastro').addEventListener('click', () => trocarAba('cadastro'));
+        $$('abaEntrar').addEventListener('click', () => mostrarTela('entrar'));
+        $$('abaCadastro').addEventListener('click', () => mostrarTela('cadastro'));
+        $$('linkEsqueci').addEventListener('click', () => mostrarTela('esqueci'));
+        $$('linkVoltar').addEventListener('click', () => mostrarTela('entrar'));
+
+        // ⚠️ Enquanto a pessoa está definindo senha nova, ela JÁ TEM sessão (o link
+        // do e-mail autentica). Sem esta trava, a verificação de sessão abriria a
+        // Central por baixo e o formulário de senha nova sumiria da tela.
+        let emRecuperacao = false;
+
+        // PEDIR O LINK
+        $$('formEsqueci').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            limparRecado();
+            const bt = $$('btEsqueci');
+            bt.disabled = true; bt.textContent = 'Enviando...';
+            try {
+                // redirectTo aponta para a PRÓPRIA página, seja preview ou produção.
+                // ⚠️ Esta URL precisa estar cadastrada no Supabase em
+                // Authentication -> URL Configuration -> Redirect URLs. Sem isso o
+                // link do e-mail não volta para cá — é o tropeço mais comum aqui.
+                const voltarPara = window.location.origin + window.location.pathname;
+                const { error } = await sb.auth.resetPasswordForEmail(
+                    $$('esqEmail').value.trim().toLowerCase(),
+                    { redirectTo: voltarPara }
+                );
+                if (error) throw error;
+                // ⚠️ A mensagem é a MESMA exista ou não o e-mail. Dizer "e-mail não
+                // encontrado" deixaria qualquer pessoa descobrir quem é cliente da
+                // construtora, um endereço por vez.
+                mostrarRecado('Se este e-mail tiver cadastro, o link chega em instantes. Verifique também o spam.', 'certo');
+            } catch (e) {
+                mostrarRecado(traduzirErro(e.message), 'erro');
+            } finally {
+                bt.disabled = false; bt.textContent = 'Enviar link';
+            }
+        });
+
+        // SALVAR A SENHA NOVA
+        $$('formNovaSenha').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            limparRecado();
+            const s1 = $$('novaSenha').value;
+            const s2 = $$('novaSenha2').value;
+            if (s1 !== s2) { mostrarRecado('As duas senhas não são iguais.', 'erro'); return; }
+
+            const bt = $$('btNovaSenha');
+            bt.disabled = true; bt.textContent = 'Salvando...';
+            try {
+                const { data, error } = await sb.auth.updateUser({ password: s1 });
+                if (error) throw error;
+                emRecuperacao = false;
+                // Limpa o token de recuperação da barra de endereço — senão ele fica
+                // no histórico do navegador e num eventual print da tela.
+                history.replaceState(null, '', window.location.pathname);
+                abrirCentral(data.user);
+            } catch (e) {
+                mostrarRecado(traduzirErro(e.message), 'erro');
+            } finally {
+                bt.disabled = false; bt.textContent = 'Salvar senha';
+            }
+        });
+
+        // ⚠️ REGISTRADO ANTES da verificação de sessão, de propósito: ao chegar pelo
+        // link do e-mail, o SDK lê o token da URL e dispara PASSWORD_RECOVERY. Se a
+        // verificação de sessão rodasse primeiro, a Central abriria e a pessoa nunca
+        // veria o formulário de senha nova.
+        sb.auth.onAuthStateChange((evento) => {
+            if (evento === 'PASSWORD_RECOVERY') {
+                emRecuperacao = true;
+                overlay.hidden = false;
+                mostrarTela('novaSenha');
+            }
+        });
 
         // Abre a Central. O localStorage continua alimentado porque
         // loadDashboardData() já lia dali — assim nada do painel precisou mudar.
@@ -1294,7 +1425,10 @@
         window.addEventListener('load', async () => {
             try {
                 const { data } = await sb.auth.getSession();
-                if (data.session) abrirCentral(data.session.user);
+                // A trava de recuperação vence a sessão: quem chegou pelo link do
+                // e-mail está autenticado, mas veio para trocar a senha, não para
+                // entrar direto.
+                if (data.session && !emRecuperacao) abrirCentral(data.session.user);
             } catch (e) {
                 mostrarRecado('Não foi possível verificar sua sessão. Entre novamente.', 'erro');
             }
