@@ -62,6 +62,10 @@ function sincronizarTudo() {
     var casa = lerAba(aba);
     if (!casa) { puladas++; continue; }
 
+    if (casa._ignoradas) {
+      avisos.push(aba.getName() + ' -> ' + casa._ignoradas + ' linha(s) sem data ignorada(s) (cabecalho repetido, subtotal ou anotacao no meio da tabela)');
+    }
+
     var r = enviar(url, segredo, casa);
     if (r.ok) {
       enviadas++;
@@ -167,6 +171,22 @@ function dataTexto(v) {
   return s || null;
 }
 
+// A célula TEM CARA de data? Não valida se a data existe (30/02 passa aqui e é
+// barrado depois, com aviso) — só separa "linha de parcela" de "linha que não é
+// parcela".
+//
+// ⚠️ POR QUE ISTO EXISTE (execução real de 26/08): várias abas repetem o
+// CABEÇALHO no meio da planilha. Sem esta checagem, a linha do cabeçalho virava
+// uma parcela: a coluna DATA continha o texto "DEVEDOR ATUALIZADO" (sobra de
+// "SALDO DEVEDOR ATUALIZADO"), e ela entrava no banco como parcela sem data,
+// carregando valores que não são de ninguém — no extrato do cliente, uma linha
+// fantasma no meio do carnê.
+function pareceData(v) {
+  if (v instanceof Date) return true;
+  var s = String(v || '').trim();
+  return /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s) || /^\d{4}-\d{2}-\d{2}/.test(s);
+}
+
 // Pega o que vem depois dos dois-pontos: "COMPRADOR: FULANO" -> "FULANO".
 function depoisDoRotulo(texto) {
   var s = String(texto || '');
@@ -246,6 +266,7 @@ function lerAba(aba) {
   var parcelas = [];
   var vazias = 0;
   var valorVenda = null;
+  var ignoradas = 0;
   for (var r3 = linhaCab + 1; r3 < valores.length; r3++) {
     var linha = valores[r3];
     var venc = linha[colData];
@@ -255,6 +276,11 @@ function lerAba(aba) {
       continue;
     }
     vazias = 0;
+
+    // Tem conteúdo mas não é data: cabeçalho repetido, subtotal, anotação.
+    // Não vira parcela. NÃO conta como linha vazia — senão um cabeçalho no meio
+    // do caminho poderia fazer o leitor achar que a tabela acabou.
+    if (!pareceData(venc)) { ignoradas++; continue; }
 
     // VALOR VENDA aparece uma vez só, na primeira linha. Guarda a primeira que
     // vier preenchida e segue.
@@ -284,6 +310,8 @@ function lerAba(aba) {
     financiamento_proposto: financiamento,
     fgts_proposto: fgts,
     aba_origem: aba.getName(),
-    parcelas: parcelas
+    parcelas: parcelas,
+    // Só para o relatório. A Central ignora campo que não conhece.
+    _ignoradas: ignoradas
   };
 }
