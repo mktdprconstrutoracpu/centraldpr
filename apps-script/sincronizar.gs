@@ -51,7 +51,7 @@ function sincronizarTudo() {
     if (Date.now() - inicio > LIMITE_MS) {
       props.setProperty('PROGRESSO', String(i));
       Logger.log('PAUSADO na aba ' + (i + 1) + ' de ' + abas.length + '. Execute de novo para continuar.');
-      relatorio(enviadas, puladas, falhas, 'PAUSADO — execute de novo');
+      relatorio(enviadas, puladas, falhas, semComprador, 'PAUSADO — execute de novo');
       return;
     }
 
