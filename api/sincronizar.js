@@ -98,7 +98,18 @@ function data(valor) {
   const [, d, m, a] = br;
   // Ano de 2 dígitos: a planilha usa 24, 25, 26 — sempre 20xx.
   const ano = a.length === 2 ? `20${a}` : a;
-  return `${ano}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const iso = `${ano}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+  // ⚠️ A data precisa EXISTIR, não só ter o formato certo. Caso real (CASA 66):
+  // a planilha tinha "30/02/2027" digitado. O formato passa, o Postgres recusa
+  // com "date/time field value out of range" — e a recusa derrubava a gravação
+  // da casa INTEIRA: 60 e poucas parcelas perdidas por causa de uma célula.
+  // O truque do ida-e-volta: o JavaScript "conserta" 30/02 virando 02/03, então
+  // se o que volta é diferente do que entrou, a data não existia.
+  const teste = new Date(iso + 'T00:00:00Z');
+  if (Number.isNaN(teste.getTime())) return null;
+  if (teste.toISOString().slice(0, 10) !== iso) return null;
+  return iso;
 }
 
 function texto(valor) {
@@ -185,11 +196,22 @@ export default async function handler(req, res) {
     // Upsert por (unidade_id, ordem): a linha 7 da planilha é sempre a linha 7
     // do banco, atualizada no lugar.
     // ------------------------------------------------------------------
+    // ⚠️ Data que não existe vira null E VIRA AVISO. Engolir em silêncio deixaria
+    // a parcela sem vencimento no extrato do cliente sem ninguém saber; derrubar
+    // a casa toda (o que acontecia antes) é pior ainda. O meio-termo é gravar o
+    // que dá e devolver a lista do que precisa ser corrigido NA PLANILHA.
+    const avisos = [];
     const linhas = Array.isArray(corpo.parcelas) ? corpo.parcelas : [];
     const parcelas = linhas.map((p, i) => ({
       unidade_id: casa.id,
       ordem: Number(p.ordem) || (i + 1),
-      data_vencimento: data(p.data_vencimento),
+      data_vencimento: (() => {
+        const convertida = data(p.data_vencimento);
+        if (convertida === null && p.data_vencimento) {
+          avisos.push('linha ' + (Number(p.ordem) || (i + 1)) + ': data inválida "' + String(p.data_vencimento).slice(0, 20) + '"');
+        }
+        return convertida;
+      })(),
       tipo_parcela: texto(p.tipo_parcela),
       comissao: numero(p.comissao),
       saldo_construtora: numero(p.saldo_construtora),
@@ -231,12 +253,16 @@ export default async function handler(req, res) {
       removidas = Array.isArray(sobras) ? sobras.length : 0;
     }
 
+    if (avisos.length) {
+      console.warn('[sincronizar] gravou com avisos', unidade, avisos);
+    }
     return res.status(200).json({
       ok: true,
       unidade_id: casa.id,
       unidade,
       parcelas: parcelas.length,
-      removidas
+      removidas,
+      avisos
     });
   } catch (e) {
     console.error('[sincronizar] falhou', unidade, e && e.message, e && e.detalhe);
