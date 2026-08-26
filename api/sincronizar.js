@@ -107,8 +107,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, erro: 'metodo_nao_permitido' });
   }
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SYNC_SECRET) {
-    console.error('[sincronizar] faltam variáveis de ambiente na Vercel');
-    return res.status(500).json({ ok: false, erro: 'nao_configurado' });
+    // ⚠️ Diz QUAIS faltam e em QUAL ambiente. A primeira versão só respondia
+    // "nao_configurado", e com isso não dava para distinguir "esqueci de criar
+    // a variável" de "criei em Production e estou chamando o Preview" — que é
+    // o engano mais comum, já que cada ambiente da Vercel tem o seu conjunto.
+    // Só os NOMES vão na resposta. Valor de variável não sai daqui nunca.
+    const faltando = [
+      !SUPABASE_URL && 'SUPABASE_URL',
+      !SUPABASE_SERVICE_KEY && 'SUPABASE_SERVICE_KEY',
+      !SYNC_SECRET && 'SYNC_SECRET'
+    ].filter(Boolean);
+    const ambiente = process.env.VERCEL_ENV || 'desconhecido';
+    console.error('[sincronizar] faltam variáveis na Vercel', { ambiente, faltando });
+    return res.status(500).json({ ok: false, erro: 'nao_configurado', ambiente, faltando });
   }
   if (!segredoConfere(req.headers['x-sync-secret'], SYNC_SECRET)) {
     return res.status(401).json({ ok: false, erro: 'nao_autorizado' });
