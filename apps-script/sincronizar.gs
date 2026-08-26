@@ -187,6 +187,21 @@ function pareceData(v) {
   return /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s) || /^\d{4}-\d{2}-\d{2}/.test(s);
 }
 
+// A célula carrega um VALOR em dinheiro? Serve para achar o saldo do rodapé sem
+// depender da posição da coluna.
+// Zero NÃO conta: a linha de rodapé costuma ter células zeradas antes do valor,
+// e a primeira delas seria pega no lugar do saldo.
+function pareceNumero(v) {
+  if (typeof v === 'number') return isFinite(v) && v !== 0;
+  var s = String(v === null || v === undefined ? '' : v)
+    .replace(/[R$\s%]/gi, '')
+    .replace(/\.(?=\d{3}(\D|$))/g, '')
+    .replace(',', '.');
+  if (!s || s === '-') return false;
+  var n = Number(s);
+  return isFinite(n) && n !== 0;
+}
+
 // Pega o que vem depois dos dois-pontos: "COMPRADOR: FULANO" -> "FULANO".
 function depoisDoRotulo(texto) {
   var s = String(texto || '');
@@ -267,6 +282,7 @@ function lerAba(aba) {
   var vazias = 0;
   var valorVenda = null;
   var ignoradas = 0;
+  var saldoAtual = null;
   for (var r3 = linhaCab + 1; r3 < valores.length; r3++) {
     var linha = valores[r3];
     var venc = linha[colData];
@@ -280,7 +296,22 @@ function lerAba(aba) {
     // Tem conteúdo mas não é data: cabeçalho repetido, subtotal, anotação.
     // Não vira parcela. NÃO conta como linha vazia — senão um cabeçalho no meio
     // do caminho poderia fazer o leitor achar que a tabela acabou.
-    if (!pareceData(venc)) { ignoradas++; continue; }
+    if (!pareceData(venc)) {
+      // ⚠️ Antes de descartar: a linha de RODAPÉ ("DEVEDOR ATUALIZADO") carrega
+      // quanto a pessoa ainda deve HOJE — o número que o cliente mais quer ver
+      // ao abrir o extrato. Descartar a linha inteira jogava esse número fora
+      // junto com o lixo.
+      // O valor fica na primeira célula numérica DEPOIS do rótulo (que é
+      // mesclado em várias colunas). Pegar pela posição seria frágil: o rótulo
+      // ocupa um número de colunas diferente de aba para aba.
+      if (saldoAtual === null && norm(linha.join(' ')).indexOf('DEVEDOR ATUALIZADO') >= 0) {
+        for (var z = 0; z < linha.length; z++) {
+          if (pareceNumero(linha[z])) { saldoAtual = linha[z]; break; }
+        }
+      }
+      ignoradas++;
+      continue;
+    }
 
     // VALOR VENDA aparece uma vez só, na primeira linha. Guarda a primeira que
     // vier preenchida e segue.
@@ -310,6 +341,7 @@ function lerAba(aba) {
     financiamento_proposto: financiamento,
     fgts_proposto: fgts,
     aba_origem: aba.getName(),
+    saldo_devedor_atual: saldoAtual,
     parcelas: parcelas,
     // Só para o relatório. A Central ignora campo que não conhece.
     _ignoradas: ignoradas

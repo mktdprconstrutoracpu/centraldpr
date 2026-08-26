@@ -177,6 +177,9 @@ export default async function handler(req, res) {
         valor_venda: numero(corpo.valor_venda),
         financiamento_proposto: numero(corpo.financiamento_proposto),
         fgts_proposto: numero(corpo.fgts_proposto),
+        // Quanto a pessoa ainda deve hoje, vindo da linha de rodapé da aba.
+        // Calculado pela planilha; o banco não recalcula (ver sql/002).
+        saldo_devedor_atual: numero(corpo.saldo_devedor_atual),
         aba_origem: texto(corpo.aba_origem) || unidade,
         atualizado_em: new Date().toISOString()
       }])
