@@ -37,6 +37,12 @@ function sincronizarTudo() {
   var abas = SpreadsheetApp.getActiveSpreadsheet().getSheets();
   var comecarEm = Number(props.getProperty('PROGRESSO') || 0);
 
+  // Lido UMA vez, antes do laço: é a fonte do saldo devedor para todas as casas.
+  var saldos = lerResumo(abas);
+  var quantosSaldos = 0;
+  for (var chave in saldos) { if (saldos.hasOwnProperty(chave)) quantosSaldos++; }
+  Logger.log('RESUMO: ' + quantosSaldos + ' casas com saldo devedor.');
+
   var enviadas = 0;
   var puladas = 0;
   var falhas = [];
@@ -59,8 +65,14 @@ function sincronizarTudo() {
     }
 
     var aba = abas[i];
-    var casa = lerAba(aba);
+    var casa = lerAba(aba, saldos);
     if (!casa) { puladas++; continue; }
+
+    // Casa sem saldo precisa aparecer: é o número que o cliente mais procura, e
+    // um extrato sem ele fica pela metade sem ninguém perceber.
+    if (casa.comprador && (casa.saldo_devedor_atual === null || casa.saldo_devedor_atual === undefined)) {
+      avisos.push(aba.getName() + ' -> SEM saldo devedor (nao achei no RESUMO nem no rodape da aba)');
+    }
 
     if (casa._ignoradas) {
       avisos.push(aba.getName() + ' -> ' + casa._ignoradas + ' linha(s) sem data ignorada(s) (cabecalho repetido, subtotal ou anotacao no meio da tabela)');
@@ -220,7 +232,71 @@ function statusDaAba(nome) {
   return 'ativo';
 }
 
-function lerAba(aba) {
+// ---------------------------------------------------------------------------
+// A ABA RESUMO como fonte do SALDO DEVEDOR.
+//
+// ⚠️ POR QUE ISTO EXISTE (26/08): a primeira versão pegava o saldo da linha de
+// RODAPÉ de cada aba. Funcionou — mas só 24 das 73 abas TÊM esse rodapé. As
+// outras 49 ficaram sem o número, que é justamente o que o cliente mais quer
+// ver. Meia cobertura num campo assim não serve.
+//
+// A aba RESUMO traz SALDO DEVEDOR ATUALIZADO para TODAS as casas, e onde dá
+// para comparar os dois valores batem (CASA 03: R$ 240.544,78 nos dois).
+// Então o RESUMO manda, e o rodapé fica de reserva para o que ele não cobrir.
+//
+// Achada pelo CONTEÚDO (uma linha com a coluna das casas e a do saldo), não
+// pelo nome: aba renomeada não pode derrubar o extrato inteiro.
+// ---------------------------------------------------------------------------
+// Acha o saldo da casa no mapa do RESUMO. Tenta o nome da unidade e o nome da
+// aba sem o parêntese — "CASA 72(Permutante)" tem que casar com "CASA 72" do
+// RESUMO, e a falta de espaço antes do parêntese é real na planilha.
+function saldoDoResumo(mapa, unidade, nomeAba, reserva) {
+  if (!mapa) return reserva;
+  var chaves = [
+    norm(unidade),
+    norm(String(nomeAba).replace(/\(.*$/, '')),
+    norm(String(unidade).replace(/\(.*$/, ''))
+  ];
+  for (var i = 0; i < chaves.length; i++) {
+    if (chaves[i] && mapa[chaves[i]] !== undefined) return mapa[chaves[i]];
+  }
+  return reserva;
+}
+
+function lerResumo(abas) {
+  for (var i = 0; i < abas.length; i++) {
+    var valores = abas[i].getDataRange().getValues();
+    var linhaCab = -1;
+    var colUnidade = -1;
+    var colSaldo = -1;
+    for (var r = 0; r < Math.min(valores.length, 15); r++) {
+      var u = -1;
+      var s = -1;
+      for (var c = 0; c < valores[r].length; c++) {
+        var t = norm(valores[r][c]);
+        if (u === -1 && (t === 'CASAS' || t === 'CASA' || t === 'UNIDADE' || t === 'UNIDADES')) u = c;
+        if (s === -1 && t.indexOf('SALDO DEVEDOR') === 0) s = c;
+      }
+      if (u !== -1 && s !== -1) { linhaCab = r; colUnidade = u; colSaldo = s; break; }
+    }
+    if (linhaCab === -1) continue;
+
+    var mapa = {};
+    var qtd = 0;
+    for (var r2 = linhaCab + 1; r2 < valores.length; r2++) {
+      var nome = norm(valores[r2][colUnidade]);
+      if (!nome) continue;
+      var valor = valores[r2][colSaldo];
+      if (!pareceNumero(valor)) continue;
+      mapa[nome] = valor;
+      qtd++;
+    }
+    if (qtd) return mapa;
+  }
+  return {};
+}
+
+function lerAba(aba, saldosDoResumo) {
   var valores = aba.getDataRange().getValues();
   if (!valores.length) return null;
 
@@ -341,7 +417,9 @@ function lerAba(aba) {
     financiamento_proposto: financiamento,
     fgts_proposto: fgts,
     aba_origem: aba.getName(),
-    saldo_devedor_atual: saldoAtual,
+    // RESUMO manda; o rodapé da própria aba é a reserva. Onde os dois existem
+    // eles concordam — o RESUMO só cobre mais casas.
+    saldo_devedor_atual: saldoDoResumo(saldosDoResumo, unidade, aba.getName(), saldoAtual),
     parcelas: parcelas,
     // Só para o relatório. A Central ignora campo que não conhece.
     _ignoradas: ignoradas
