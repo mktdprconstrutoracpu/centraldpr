@@ -40,6 +40,12 @@ function sincronizarTudo() {
   var enviadas = 0;
   var puladas = 0;
   var falhas = [];
+  // ⚠️ Casa sem comprador NÃO é falha: é casa que ainda não foi vendida (na
+  // Caucaia II são as 6 marcadas como DISPONÍVEL/Permutante no RESUMO).
+  // Misturar as duas coisas no mesmo número faz o relatório gritar "7 falhas"
+  // quando o problema de verdade é UM — e um relatório que grita demais é um
+  // relatório que ninguém lê.
+  var semComprador = [];
 
   for (var i = comecarEm; i < abas.length; i++) {
     if (Date.now() - inicio > LIMITE_MS) {
@@ -55,11 +61,12 @@ function sincronizarTudo() {
 
     var r = enviar(url, segredo, casa);
     if (r.ok) enviadas++;
+    else if (r.erro.indexOf('comprador_vazio') >= 0) semComprador.push(aba.getName());
     else falhas.push(aba.getName() + ': ' + r.erro);
   }
 
   props.deleteProperty('PROGRESSO');
-  relatorio(enviadas, puladas, falhas, 'CONCLUIDO');
+  relatorio(enviadas, puladas, falhas, semComprador, 'CONCLUIDO');
 }
 
 function recomecarDoZero() {
@@ -67,12 +74,14 @@ function recomecarDoZero() {
   Logger.log('Progresso zerado. Execute sincronizarTudo.');
 }
 
-function relatorio(enviadas, puladas, falhas, situacao) {
+function relatorio(enviadas, puladas, falhas, semComprador, situacao) {
   Logger.log('--- ' + situacao + ' ---');
-  Logger.log('casas enviadas: ' + enviadas);
+  Logger.log('casas gravadas: ' + enviadas);
   Logger.log('abas ignoradas (sem tabela de parcelas): ' + puladas);
-  Logger.log('falhas: ' + falhas.length);
-  for (var i = 0; i < falhas.length; i++) Logger.log('  ' + falhas[i]);
+  Logger.log('casas SEM COMPRADOR (nao vendidas, nao entram): ' + semComprador.length);
+  for (var s = 0; s < semComprador.length; s++) Logger.log('    ' + semComprador[s]);
+  Logger.log('FALHAS DE VERDADE: ' + falhas.length);
+  for (var i = 0; i < falhas.length; i++) Logger.log('    ' + falhas[i]);
 }
 
 function enviar(url, segredo, casa) {

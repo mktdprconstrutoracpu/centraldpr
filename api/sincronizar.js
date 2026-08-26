@@ -59,12 +59,16 @@ async function supabase(caminho, opcoes = {}) {
   });
   const texto = await resposta.text();
   if (!resposta.ok) {
-    // A mensagem do Supabase vai para o log da Vercel, não para quem chamou:
-    // ela costuma citar nome de coluna e constraint, que não é assunto de
-    // quem está do outro lado da chamada.
+    // ⚠️ A mensagem do Supabase VOLTA para quem chamou, e isso é uma decisão.
+    // Ela cita nome de coluna e de constraint — informação que eu não daria a
+    // um desconhecido. Mas aqui só se chega DEPOIS da conferência da senha:
+    // quem está do outro lado é o script da planilha, não o público.
+    // A primeira versão escondia isso e mandava só "falha_ao_gravar" — e o
+    // resultado foi uma casa falhando sem ninguém saber por quê.
     console.error('[sincronizar] Supabase recusou', resposta.status, texto.slice(0, 400));
     const erro = new Error(`supabase_${resposta.status}`);
     erro.status = resposta.status;
+    erro.detalhe = texto.slice(0, 300);
     throw erro;
   }
   return texto ? JSON.parse(texto) : null;
@@ -235,7 +239,12 @@ export default async function handler(req, res) {
       removidas
     });
   } catch (e) {
-    console.error('[sincronizar] falhou', unidade, e && e.message);
-    return res.status(502).json({ ok: false, erro: 'falha_ao_gravar', unidade });
+    console.error('[sincronizar] falhou', unidade, e && e.message, e && e.detalhe);
+    return res.status(502).json({
+      ok: false,
+      erro: 'falha_ao_gravar',
+      unidade,
+      detalhe: (e && (e.detalhe || e.message)) || 'sem detalhe'
+    });
   }
 }
