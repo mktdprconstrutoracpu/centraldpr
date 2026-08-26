@@ -46,12 +46,15 @@ function sincronizarTudo() {
   // quando o problema de verdade é UM — e um relatório que grita demais é um
   // relatório que ninguém lê.
   var semComprador = [];
+  // Casa gravada, mas com célula que o banco não aceitou (data que não existe,
+  // por exemplo). Precisa aparecer: "gravou" não é sinônimo de "está certo".
+  var avisos = [];
 
   for (var i = comecarEm; i < abas.length; i++) {
     if (Date.now() - inicio > LIMITE_MS) {
       props.setProperty('PROGRESSO', String(i));
       Logger.log('PAUSADO na aba ' + (i + 1) + ' de ' + abas.length + '. Execute de novo para continuar.');
-      relatorio(enviadas, puladas, falhas, semComprador, 'PAUSADO — execute de novo');
+      relatorio(enviadas, puladas, falhas, semComprador, avisos, 'PAUSADO — execute de novo');
       return;
     }
 
@@ -60,13 +63,17 @@ function sincronizarTudo() {
     if (!casa) { puladas++; continue; }
 
     var r = enviar(url, segredo, casa);
-    if (r.ok) enviadas++;
-    else if (r.erro.indexOf('comprador_vazio') >= 0) semComprador.push(aba.getName());
+    if (r.ok) {
+      enviadas++;
+      for (var a = 0; a < (r.avisos || []).length; a++) {
+        avisos.push(aba.getName() + ' -> ' + r.avisos[a]);
+      }
+    } else if (r.erro.indexOf('comprador_vazio') >= 0) semComprador.push(aba.getName());
     else falhas.push(aba.getName() + ': ' + r.erro);
   }
 
   props.deleteProperty('PROGRESSO');
-  relatorio(enviadas, puladas, falhas, semComprador, 'CONCLUIDO');
+  relatorio(enviadas, puladas, falhas, semComprador, avisos, 'CONCLUIDO');
 }
 
 function recomecarDoZero() {
@@ -74,12 +81,14 @@ function recomecarDoZero() {
   Logger.log('Progresso zerado. Execute sincronizarTudo.');
 }
 
-function relatorio(enviadas, puladas, falhas, semComprador, situacao) {
+function relatorio(enviadas, puladas, falhas, semComprador, avisos, situacao) {
   Logger.log('--- ' + situacao + ' ---');
   Logger.log('casas gravadas: ' + enviadas);
   Logger.log('abas ignoradas (sem tabela de parcelas): ' + puladas);
   Logger.log('casas SEM COMPRADOR (nao vendidas, nao entram): ' + semComprador.length);
   for (var s = 0; s < semComprador.length; s++) Logger.log('    ' + semComprador[s]);
+  Logger.log('AVISOS (gravou, mas tem celula para corrigir na planilha): ' + avisos.length);
+  for (var v = 0; v < avisos.length; v++) Logger.log('    ' + avisos[v]);
   Logger.log('FALHAS DE VERDADE: ' + falhas.length);
   for (var i = 0; i < falhas.length; i++) Logger.log('    ' + falhas[i]);
 }
@@ -94,7 +103,13 @@ function enviar(url, segredo, casa) {
       muteHttpExceptions: true
     });
     var codigo = resp.getResponseCode();
-    if (codigo >= 200 && codigo < 300) return { ok: true };
+    if (codigo >= 200 && codigo < 300) {
+      // A casa foi gravada, mas pode ter vindo com aviso — célula que o banco
+      // não aceitou e entrou vazia. Gravou não é sinônimo de "está tudo certo".
+      var avisos = [];
+      try { avisos = (JSON.parse(resp.getContentText()) || {}).avisos || []; } catch (e) { /* sem corpo: segue */ }
+      return { ok: true, avisos: avisos };
+    }
     return { ok: false, erro: 'HTTP ' + codigo + ' ' + resp.getContentText().slice(0, 200) };
   } catch (e) {
     return { ok: false, erro: String(e).slice(0, 200) };
