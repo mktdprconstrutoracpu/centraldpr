@@ -264,6 +264,12 @@ function saldoDoResumo(mapa, unidade, nomeAba, reserva) {
 }
 
 function lerResumo(abas) {
+  // ⚠️ JUNTA TODAS as abas de resumo, não para na primeira (26/08). A primeira
+  // versão parava — e as LOJAS ficaram sem saldo porque um resumo separado
+  // delas, se existir, nunca seria lido. Parar na primeira também significaria
+  // que criar uma aba de resumo nova, antes da atual, apagaria a antiga do mapa
+  // sem ninguém entender por quê.
+  var mapa = {};
   for (var i = 0; i < abas.length; i++) {
     var valores = abas[i].getDataRange().getValues();
     var linhaCab = -1;
@@ -274,26 +280,26 @@ function lerResumo(abas) {
       var s = -1;
       for (var c = 0; c < valores[r].length; c++) {
         var t = norm(valores[r][c]);
-        if (u === -1 && (t === 'CASAS' || t === 'CASA' || t === 'UNIDADE' || t === 'UNIDADES')) u = c;
+        if (u === -1 && (t === 'CASAS' || t === 'CASA' || t === 'LOJAS' || t === 'LOJA'
+          || t === 'UNIDADE' || t === 'UNIDADES' || t === 'IMOVEL' || t === 'IMOVEIS')) u = c;
         if (s === -1 && t.indexOf('SALDO DEVEDOR') === 0) s = c;
       }
       if (u !== -1 && s !== -1) { linhaCab = r; colUnidade = u; colSaldo = s; break; }
     }
     if (linhaCab === -1) continue;
 
-    var mapa = {};
-    var qtd = 0;
     for (var r2 = linhaCab + 1; r2 < valores.length; r2++) {
       var nome = norm(valores[r2][colUnidade]);
       if (!nome) continue;
       var valor = valores[r2][colSaldo];
       if (!pareceNumero(valor)) continue;
-      mapa[nome] = valor;
-      qtd++;
+      // Primeiro que achar manda: se duas abas trouxerem a mesma unidade, a que
+      // vem antes na planilha vence. Sobrescrever calado seria pior — ninguém
+      // saberia qual dos dois números o cliente está vendo.
+      if (mapa[nome] === undefined) mapa[nome] = valor;
     }
-    if (qtd) return mapa;
   }
-  return {};
+  return mapa;
 }
 
 function lerAba(aba, saldosDoResumo) {
