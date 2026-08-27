@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central DPR - Portal do Cliente</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <!-- (25/08) SDK do Supabase — autenticação de e-mail e senha, direto do navegador.
          Expõe o global `supabase` (a fábrica). O cliente configurado vira `sb`, mais abaixo. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -43,21 +42,31 @@
         }
 
         /* ===== SIDEBAR ===== */
+        /* Coluna flex: o "Sair" desce sozinho para o rodapé com margin-top:auto.
+           Antes ele ficava grudado embaixo do último bloco, então subia e descia
+           conforme o resumo aparecia ou não. */
         .sidebar {
             width: 280px;
             background: var(--white);
             border-right: 1px solid var(--border);
-            padding: 32px 24px;
+            padding: 28px 20px;
             overflow-y: auto;
             position: fixed;
             height: 100vh;
             left: 0;
             top: 0;
             z-index: 100;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* Item de coluna flex encolhe por padrão. Numa janela baixa isso
+           espremeria o menu em vez de deixar a lateral rolar — e o overflow-y
+           acima nunca entraria em ação. */
+        .sidebar > * { flex-shrink: 0; }
+
         .logo-container {
-            margin-bottom: 40px;
+            margin-bottom: 28px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -69,42 +78,55 @@
            elemento que não existe mais é o que faz a próxima pessoa procurar um
            bug onde não há nada. */
 
+        /* Avatar de 80px centralizado + 40px de margem comiam quase um terço da
+           altura da lateral para dizer o nome de quem já está logado. Deitado,
+           diz a mesma coisa e sobra espaço para o que a pessoa veio ver. */
         .user-card {
+            display: flex;
+            align-items: center;
+            gap: 13px;
             background: var(--gray-50);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 40px;
-            text-align: center;
+            border-radius: 14px;
+            padding: 13px 15px;
+            margin-bottom: 30px;
             border: 1px solid var(--border);
         }
 
         .user-avatar {
-            width: 80px;
-            height: 80px;
+            flex: 0 0 auto;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--accent) 0%, #e53935 100%);
-            margin: 0 auto 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 17px;
             color: white;
             font-weight: 700;
             box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
         }
 
+        /* min-width:0 é obrigatório: sem isso um item flex não encolhe abaixo do
+           conteúdo e um nome comprido empurra o cartão para fora da lateral. */
+        .user-texto { min-width: 0; }
+
         .user-name {
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13.5px;
+            line-height: 1.3;
             color: var(--primary);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            overflow-wrap: anywhere;
         }
 
         .user-role {
-            font-size: 11px;
+            font-size: 10.5px;
+            line-height: 1.35;
             color: var(--text-light);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.06em;
+            overflow-wrap: anywhere;
         }
 
         .nav-section {
@@ -122,41 +144,60 @@
         }
 
         .nav-item {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            position: relative;
+            padding: 11px 14px;
+            border-radius: 10px;
+            margin-bottom: 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 14px;
+            gap: 11px;
+            font-size: 13.5px;
+            font-weight: 600;
             color: var(--text-light);
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
+            transition: background .2s ease, color .2s ease;
         }
 
         .nav-item:hover {
             background: var(--light);
             color: var(--primary);
-            border-left-color: var(--accent);
         }
 
         .nav-item.active {
-            background: rgba(211, 47, 47, 0.08);
+            background: rgba(211, 47, 47, 0.07);
             color: var(--accent);
-            font-weight: 600;
-            border-left-color: var(--accent);
+        }
+
+        /* A marca da página atual era border-left no próprio item, o que cortava
+           quadrado o canto arredondado do fundo. Como ::before ela flutua por
+           cima e o fundo continua com o canto redondo. */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 18px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent);
         }
 
         .nav-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
+            flex: 0 0 auto;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            background: var(--gray-50);
+            color: var(--text-light);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
+            transition: background .2s ease, color .2s ease;
         }
+
+        .nav-item:hover .nav-icon { color: var(--primary); }
 
         .nav-item.active .nav-icon {
             background: var(--accent);
@@ -318,26 +359,30 @@
         .auth-recado.erro  { display: block; background: #fdecec; color: #b3261e; }
         .auth-recado.certo { display: block; background: #eef7ef; color: #1e6b2f; }
 
+        /* Vermelho cheio, sombra e elevação no hover é tratamento de botão
+           principal. "Sair" é a última coisa que a pessoa quer fazer aqui, e
+           era o elemento mais chamativo da lateral. margin-top:auto empurra ele
+           para o rodapé da coluna. */
         .logout-btn {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, var(--accent) 0%, #e53935 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
+            padding: 11px;
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.08em;
             cursor: pointer;
-            margin-top: 24px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
+            margin-top: auto;
+            transition: all .2s ease;
         }
 
         .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(211, 47, 47, 0.2);
+            background: rgba(211, 47, 47, 0.05);
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         /* ===== MAIN CONTENT ===== */
@@ -663,47 +708,6 @@
             font-weight: 700;
         }
 
-        /* ===== CHARTS GRID ===== */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .chart-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px;
-            transition: all 0.3s ease;
-        }
-
-        .chart-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-        }
-
-        .chart-title {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--primary);
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chart-subtitle {
-            font-size: 12px;
-            color: var(--text-light);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 200px;
-        }
-
         /* ===== TABLE ===== */
         .table-card {
             background: var(--white);
@@ -800,10 +804,6 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -824,24 +824,46 @@
            =================================================================== */
 
         /* --- resumo na lateral --- */
+        .lateral-caixa {
+            background: var(--gray-50);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 15px;
+        }
+
+        /* ⚠️ Rótulo e valor ficavam lado a lado com space-between. A lateral tem
+           280px; com "R$ 240.544,78" os dois enchiam a linha, encostavam e liam
+           como uma palavra só: "Saldo devedorR$ 240.544,78". Empilhado não tem
+           como colidir, por maior que seja o número. */
         .lateral-linha {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 8px 12px;
-            font-size: 13px;
+            display: block;
+        }
+        .lateral-linha + .lateral-linha {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .lateral-linha > span {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
             color: var(--text-light);
         }
         .lateral-linha strong {
+            display: block;
             font-family: 'Montserrat', sans-serif;
             color: var(--primary);
-            font-size: 14px;
+            font-size: 17px;
+            letter-spacing: -.01em;
+            margin-top: 4px;
         }
         .lateral-barra {
             height: 6px;
             border-radius: 999px;
             background: var(--border);
-            margin: 8px 12px 0;
+            margin: 10px 0 0;
             overflow: hidden;
         }
         .lateral-barra span {
@@ -919,11 +941,29 @@
            Substituiu um retângulo escuro com o nome e a situação, e mais nada.
            Os números que estão aqui já vinham do banco e não apareciam.
            =================================================================== */
+        /* auto-FIT, nao auto-fill: com auto-fill o navegador mantem as colunas
+           vazias reservadas, entao quem tem um imovel so via um cartao estreito
+           encostado na esquerda e um vazio enorme do lado. Com auto-fit as
+           colunas vazias somem e o cartao ocupa a linha inteira. */
         #projectsGrid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
         }
+
+        /* Cada cartao vira seu proprio contexto de medida (container query): ele
+           se reorganiza pela largura QUE ELE TEM, nao pela largura da janela.
+           Um imovel so -> o cartao fica largo e vira faixa de uma linha. Dois
+           imoveis lado a lado -> cada um fica estreito e continua empilhado, na
+           MESMA janela. Contar imoveis no JS nao resolveria: dois cartoes numa
+           tela grande sao largos, e dois numa tela media nao sao.
+           Navegador antigo sem suporte ignora o @container e fica com o layout
+           empilhado de sempre, que e o que ja funciona hoje. */
+        .imovel-caixa {
+            container-type: inline-size;
+            display: flex;
+        }
+        .imovel-caixa > .imovel { flex: 1 1 auto; min-width: 0; }
 
         .imovel {
             position: relative;
@@ -1042,8 +1082,35 @@
             font-weight: 700;
         }
 
+        /* --- cartão largo: as três zonas cabem numa linha só --- */
+        /* A régua é a largura DO CARTÃO. O traço que separava os números virou
+           uma linha vertical, senão a borda de cima ficaria atravessando o
+           cartão inteiro sem separar nada. */
+        @container (min-width: 620px) {
+            .imovel {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) auto;
+                grid-template-areas: "cabeca numeros anel";
+                align-items: center;
+                gap: 34px;
+                padding: 32px 36px;
+            }
+            .imovel-nome { font-size: 31px; margin-bottom: 14px; }
+            .imovel-numeros {
+                padding-top: 0;
+                padding-left: 34px;
+                border-top: 0;
+                border-left: 1px solid rgba(255,255,255,.1);
+            }
+            .imovel-anel { width: 112px; height: 112px; }
+            .imovel-anel-texto strong { font-size: 23px; }
+            .imovel-anel-texto span { font-size: 10px; }
+            /* A marca d'água sai de trás do anel: 3,5% de opacidade é pouco,
+               mas o suficiente para sujar a leitura do número. */
+            .imovel-marca { width: 250px; right: -46px; bottom: -52px; }
+        }
+
         /* Em cartão estreito três colunas viram três palavras cortadas. */
-        @media (max-width: 420px) {
+        @container (max-width: 380px) {
             .imovel { padding: 22px 20px 18px; }
             .imovel-numeros { grid-template-columns: 1fr 1fr; }
             .imovel-numeros div:last-child { grid-column: 1 / -1; }
@@ -1390,8 +1457,10 @@
 
             <div class="user-card">
                 <div class="user-avatar" id="userInitial">&nbsp;</div>
-                <div class="user-name" id="userName">&nbsp;</div>
-                <div class="user-role" id="userUnidade">Cliente</div>
+                <div class="user-texto">
+                    <div class="user-name" id="userName">&nbsp;</div>
+                    <div class="user-role" id="userUnidade">Cliente</div>
+                </div>
             </div>
 
             <!-- ⚠️ (27/08) O menu tinha Projetos, Documentos, Relatórios, Mensagens,
@@ -1415,15 +1484,17 @@
 
             <div class="nav-section" id="resumoLateral" hidden>
                 <div class="nav-label">Resumo</div>
-                <div class="lateral-linha">
-                    <span>Saldo devedor</span>
-                    <strong id="lateralSaldo">—</strong>
+                <div class="lateral-caixa">
+                    <div class="lateral-linha">
+                        <span>Saldo devedor</span>
+                        <strong id="lateralSaldo">—</strong>
+                    </div>
+                    <div class="lateral-linha">
+                        <span>Pagas</span>
+                        <strong id="lateralPagas">—</strong>
+                        <div class="lateral-barra"><span id="lateralBarra" style="width:0%"></span></div>
+                    </div>
                 </div>
-                <div class="lateral-linha">
-                    <span>Pagas</span>
-                    <strong id="lateralPagas">—</strong>
-                </div>
-                <div class="lateral-barra"><span id="lateralBarra" style="width:0%"></span></div>
             </div>
 
             <button class="logout-btn" id="btSair">Sair</button>
@@ -1503,30 +1574,6 @@
                 </div>
 
 
-                <!-- GRÁFICOS -->
-                <div class="section">
-                    <div class="section-title">Acompanhamento</div>
-                    <div class="charts-grid">
-                        <div class="chart-card">
-                            <div class="chart-title">
-                                <span>Saldo devedor ao longo do tempo</span>
-                                <span class="chart-subtitle" id="subSaldo">&nbsp;</span>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="progressChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="chart-card">
-                            <div class="chart-title">
-                                <span>Parcelas</span>
-                                <span class="chart-subtitle" id="subParcelas">&nbsp;</span>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="distributionChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- PARCELAS -->
                 <div class="section">
@@ -1758,8 +1805,6 @@
         // deixaria a tela com dois gráficos de exemplo por um instante — e num
         // extrato financeiro número de mentira na tela, mesmo por um segundo,
         // é pior que espaço em branco.
-        let graficoSaldo = null;
-        let graficoParcelas = null;
 
         const dinheiro = (v) => (Number(v) || 0)
             .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -1873,6 +1918,11 @@
                     : (u.status_contrato === 'ativo' ? 'ativo' : 'neutro');
 
                 return ''
+                // A caixa existe só para medir: é ela que carrega o
+                // container-type. Sem um elemento por fora, o cartão não pode
+                // consultar a própria largura — um elemento não é seu próprio
+                // container.
+                + '<div class="imovel-caixa">'
                 + '<article class="imovel">'
                 +   // Silhueta de casa como marca d'água. É decoração: fica marcada
                     // como escondida para leitor de tela, senão ela seria anunciada
@@ -1900,7 +1950,8 @@
                 +     '<div><dt>Parcelas pagas</dt><dd>' + pagasAqui + ' de ' + doImovel.length + '</dd></div>'
                 +     '<div><dt>Contrato desde</dt><dd>' + dataBR(u.data_assinatura) + '</dd></div>'
                 +   '</dl>'
-                + '</article>';
+                + '</article>'
+                + '</div>';
             }).join('');
 
             // --- números do topo ---
@@ -1970,7 +2021,6 @@
 
             contarFiltros();
             aplicarFiltro();
-            desenharGraficos(parcelas, pagas, atrasadas);
         }
 
         // A parcela corrigida é o que a pessoa paga de fato; a da construtora é o
@@ -2066,65 +2116,6 @@
                 .replace(/"/g, '&quot;');
         }
 
-        function desenharGraficos(parcelas, pagas, atrasadas) {
-            if (graficoSaldo) { graficoSaldo.destroy(); graficoSaldo = null; }
-            if (graficoParcelas) { graficoParcelas.destroy(); graficoParcelas = null; }
-
-            // --- saldo devedor ao longo do tempo ---
-            const comSaldo = parcelas.filter((p) => p.data_vencimento && Number(p.saldo_devedor) > 0);
-            if (comSaldo.length > 1) {
-                $$('subSaldo').textContent = comSaldo.length + ' meses';
-                graficoSaldo = new Chart($$('progressChart').getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: comSaldo.map((p) => dataBR(p.data_vencimento).slice(3)),
-                        datasets: [{
-                            data: comSaldo.map((p) => Number(p.saldo_devedor)),
-                            borderColor: '#d32f2f',
-                            backgroundColor: 'rgba(211,47,47,.08)',
-                            fill: true,
-                            tension: .3,
-                            pointRadius: 0,
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { ticks: { callback: (v) => 'R$ ' + (v / 1000).toFixed(0) + 'k' } },
-                            // Só alguns rótulos no eixo do tempo: com 60 parcelas eles
-                            // ficariam ilegíveis um em cima do outro.
-                            x: { ticks: { maxTicksLimit: 6 } }
-                        }
-                    }
-                });
-            } else {
-                $$('subSaldo').textContent = 'sem dados suficientes';
-            }
-
-            // --- pagas x em aberto ---
-            const emAberto = parcelas.length - pagas - atrasadas;
-            $$('subParcelas').textContent = parcelas.length + ' no total';
-            graficoParcelas = new Chart($$('distributionChart').getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Pagas', 'Em aberto', 'Em atraso'],
-                    datasets: [{
-                        data: [pagas, Math.max(emAberto, 0), atrasadas],
-                        backgroundColor: ['#2e7d32', '#9e9e9e', '#d32f2f'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-                }
-            });
-        }
 
         // Load data
 
