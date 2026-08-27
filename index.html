@@ -63,34 +63,11 @@
             gap: 12px;
         }
 
-        .logo-graphic {
-            width: 70px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo-svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .logo-text {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: 0.5px;
-        }
-
-        .logo-text .sub {
-            font-size: 10px;
-            display: block;
-            font-weight: 700;
-            color: var(--text-light);
-            letter-spacing: 0.8px;
-        }
+        /* (27/08) As regras .logo-graphic, .logo-svg, .logo-text e .logo-text .sub
+           saíram junto com o logo desenhado à mão que elas estilizavam. O logo
+           agora é a imagem da marca (.logo-img, mais abaixo). CSS apontando para
+           elemento que não existe mais é o que faz a próxima pessoa procurar um
+           bug onde não há nada. */
 
         .user-card {
             background: var(--gray-50);
@@ -230,6 +207,16 @@
             text-align: center;
         }
         .auth-marca span { color: var(--accent); }
+        /* O logo tem fundo branco. No cartão branco do login isso não aparece;
+           foi por isso que ele foi para dentro do cartão e não sobre o fundo
+           escuro do overlay. */
+        .auth-logo {
+            display: block;
+            width: 100%;
+            max-width: 210px;
+            height: auto;
+            margin: 0 auto 4px;
+        }
         .auth-sub {
             text-align: center;
             color: var(--text-light);
@@ -942,6 +929,18 @@
 
         .pagina[hidden] { display: none; }
 
+        /* ⚠️ SEM ISTO O FILTRO NÃO FILTRA. A linha da tabela é `display: grid`, e
+           uma regra do autor vence o `display: none` que o navegador aplica ao
+           atributo `hidden`. O JS marcava a linha como escondida e ela continuava
+           na tela — os botões pareciam não fazer nada.
+           Vale para qualquer elemento com display declarado: esconder por atributo
+           só funciona se o CSS deixar. */
+        .table-row[hidden] { display: none; }
+
+        /* --- logo da marca --- */
+        .logo-container { display: block; margin-bottom: 32px; }
+        .logo-img { width: 100%; max-width: 200px; height: auto; display: block; }
+
         /* --- aviso de conteúdo de exemplo ---
            ⚠️ Some sozinho quando as fotos forem reais: é só apagar o bloco no
            HTML. Enquanto estiver lá, precisa CHAMAR ATENÇÃO — cliente vendo
@@ -1002,6 +1001,74 @@
            permanentemente vermelho vira ruído e a pessoa para de enxergar. */
         .filtro[data-filtro="atrasada"].tem-atraso .filtro-num { background: var(--accent); color: var(--white); }
         .filtro[data-filtro="atrasada"].ativo { background: var(--accent); border-color: var(--accent); }
+
+        /* --- barra de andamento da obra --- */
+        .barra-obra-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 26px 30px 58px;
+        }
+        .barra-obra-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 14px;
+        }
+        .barra-obra-pct {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -.02em;
+        }
+        .barra-obra {
+            position: relative;
+            height: 12px;
+            border-radius: 999px;
+            background: var(--gray-50);
+            border: 1px solid var(--border);
+        }
+        .barra-obra-cheia {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #e53935, var(--accent));
+            transition: width .8s ease;
+        }
+        .barra-marca {
+            position: absolute;
+            top: 22px;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--text-light);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .barra-marca i {
+            display: block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 2px solid var(--border);
+            margin: -28px auto 8px;
+        }
+        .barra-marca.feita i { background: var(--accent); border-color: var(--accent); }
+        .barra-marca.agora i {
+            background: var(--white);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(211,47,47,.18);
+        }
+        .barra-marca.agora { color: var(--accent); font-weight: 600; }
+
+        /* Em tela estreita os rótulos das marcas se sobrepõem e viram borrão.
+           Some com eles e fica só a barra, que continua dizendo o essencial. */
+        @media (max-width: 700px) {
+            .barra-obra-card { padding-bottom: 26px; }
+            .barra-marca { display: none; }
+        }
 
         /* --- linha do tempo da obra --- */
         .obra-linha { display: flex; flex-direction: column; gap: 20px; }
@@ -1106,7 +1173,7 @@
          instante antes do JS rodar — e quem tirasse print pegaria o painel. -->
     <div class="auth-overlay" id="authOverlay">
       <div class="auth-card">
-        <div class="auth-marca">CENTRAL <span>DPR</span></div>
+        <img class="auth-logo" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
         <p class="auth-sub">Portal do Cliente</p>
 
         <div class="auth-abas" role="tablist">
@@ -1179,21 +1246,14 @@
     <div class="container">
         <!-- SIDEBAR -->
         <aside class="sidebar">
+            <!-- ⚠️ O logo de verdade já traz "construtora & incorporadora" dentro
+                 dele. Por isso substitui o desenho E o texto que existiam aqui
+                 separados: marca é uma peça só, não se remonta com um pedaço de
+                 imagem e outro de texto — o espaçamento e o peso da fonte nunca
+                 batem com o original. -->
             <div class="logo-container">
-                <div class="logo-graphic">
-                    <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Left red vertical bar -->
-                        <rect x="10" y="20" width="20" height="60" fill="#d32f2f" rx="2"/>
-                        <!-- Center red vertical bar (taller) -->
-                        <rect x="40" y="10" width="20" height="80" fill="#d32f2f" rx="2"/>
-                        <!-- Right red vertical bar -->
-                        <rect x="70" y="20" width="20" height="60" fill="#d32f2f" rx="2"/>
-                    </svg>
-                </div>
-                <div class="logo-text">
-                    DPR
-                    <span class="sub">Construtora &amp; Incorporadora</span>
-                </div>
+                <img class="logo-img" src="logo-dpr.png"
+                     alt="DPR Construtora &amp; Incorporadora">
             </div>
 
             <div class="user-card">
@@ -1399,6 +1459,27 @@
                             <div class="stat-label">Previsão de entrega</div>
                             <div class="stat-value" style="font-size:22px">Dez / 2026</div>
                             <div class="stat-change">exemplo</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Andamento</div>
+                        <div class="barra-obra-card">
+                            <div class="barra-obra-topo">
+                                <span>Início da obra</span>
+                                <strong class="barra-obra-pct">68%</strong>
+                                <span>Entrega</span>
+                            </div>
+                            <div class="barra-obra">
+                                <div class="barra-obra-cheia" style="width:68%"></div>
+                                <!-- Marcas das etapas. Ficam POR CIMA da barra para a
+                                     pessoa ver onde a obra está em relação a elas, e não
+                                     só um número solto. -->
+                                <span class="barra-marca feita" style="left:15%"><i></i>Fundação</span>
+                                <span class="barra-marca feita" style="left:42%"><i></i>Estrutura</span>
+                                <span class="barra-marca agora" style="left:68%"><i></i>Acabamento</span>
+                                <span class="barra-marca" style="left:96%"><i></i>Entrega</span>
+                            </div>
                         </div>
                     </div>
 
