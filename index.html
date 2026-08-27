@@ -999,83 +999,62 @@
                 <!-- WELCOME BANNER -->
                 <div class="welcome-banner">
                     <div class="welcome-content">
-                        <div class="welcome-title">Bem-vindo, <span id="firstName">Luana</span></div>
-                        <div class="welcome-subtitle">Acompanhe seus projetos em tempo real</div>
+                        <div class="welcome-title">Bem-vindo, <span id="firstName">&nbsp;</span></div>
+                        <div class="welcome-subtitle" id="welcomeSub">Carregando seu extrato...</div>
                     </div>
                 </div>
+
+                <!-- AVISO DE ACESSO — aparece quando NÃO há extrato para mostrar.
+                     ⚠️ Fica FORA do #conteudoExtrato de propósito: os dois nunca aparecem
+                     juntos, e a pessoa sempre vê alguma explicação em vez de tela vazia. -->
+                <div class="section" id="avisoAcesso" hidden>
+                    <div class="table-card" style="padding: 32px; text-align: center;">
+                        <div class="section-title" id="avisoTitulo" style="margin-bottom: 8px;"></div>
+                        <div id="avisoTexto" style="opacity: .75; line-height: 1.6;"></div>
+                    </div>
+                </div>
+
+                <!-- ⚠️ Todo o extrato nasce ESCONDIDO. Se nascesse visível, o cliente veria
+                     por um instante os cartões vazios (ou pior, o conteúdo de outra sessão
+                     em cache) antes do JS decidir o que mostrar. -->
+                <div id="conteudoExtrato" hidden>
 
                 <!-- STATS -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Projetos Ativos</div>
-                        <div class="stat-value" id="activeProjects">3</div>
-                        <div class="stat-change">Em progresso</div>
+                        <div class="stat-label">Saldo devedor</div>
+                        <div class="stat-value" id="statSaldo">—</div>
+                        <div class="stat-change" id="statSaldoNota">quanto ainda falta pagar</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Taxa de Conclusão</div>
-                        <div class="stat-value" id="avgProgress">67%</div>
-                        <div class="stat-change">Aumentando</div>
+                        <div class="stat-label">Parcelas pagas</div>
+                        <div class="stat-value" id="statPagas">—</div>
+                        <div class="stat-change" id="statPagasNota">&nbsp;</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Documentos</div>
-                        <div class="stat-value" id="docCount">12</div>
-                        <div class="stat-change">Disponíveis</div>
+                        <div class="stat-label">Próximo vencimento</div>
+                        <div class="stat-value" id="statProximo">—</div>
+                        <div class="stat-change" id="statProximoNota">&nbsp;</div>
                     </div>
                 </div>
 
-                <!-- PROJECTS SECTION -->
+                <!-- IMÓVEIS — uma pessoa pode ter mais de uma unidade (caso real na
+                     planilha: o mesmo comprador aparece em duas casas). -->
                 <div class="section">
-                    <div class="section-title">Meus Projetos</div>
+                    <div class="section-title" id="tituloImoveis">Meu imóvel</div>
                     <div class="cards-grid" id="projectsGrid">
-                        <div class="project-card-item">
-                            <div class="card-content">
-                                <div class="card-name">Condomínio Horizonte</div>
-                                <div class="card-tag">Residencial</div>
-                            </div>
-                            <div class="card-users">
-                                <div class="card-users-avatars">
-                                    <div class="card-user-avatar">L</div>
-                                    <div class="card-user-avatar">M</div>
-                                    <div class="card-user-avatar">+3</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-card-item">
-                            <div class="card-content">
-                                <div class="card-name">Office Premium</div>
-                                <div class="card-tag">Comercial</div>
-                            </div>
-                            <div class="card-users">
-                                <div class="card-users-avatars">
-                                    <div class="card-user-avatar">C</div>
-                                    <div class="card-user-avatar">R</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-card-item">
-                            <div class="card-content">
-                                <div class="card-name">Moderna West</div>
-                                <div class="card-tag">Misto</div>
-                            </div>
-                            <div class="card-users">
-                                <div class="card-users-avatars">
-                                    <div class="card-user-avatar">M</div>
-                                    <div class="card-user-avatar">W</div>
-                                    <div class="card-user-avatar">+2</div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <!-- CHARTS SECTION -->
+
+                <!-- GRÁFICOS -->
                 <div class="section">
-                    <div class="section-title">Análise de Progresso</div>
+                    <div class="section-title">Acompanhamento</div>
                     <div class="charts-grid">
                         <div class="chart-card">
                             <div class="chart-title">
-                                <span>Progresso Mensal</span>
-                                <span class="chart-subtitle">67% concluído</span>
+                                <span>Saldo devedor ao longo do tempo</span>
+                                <span class="chart-subtitle" id="subSaldo">&nbsp;</span>
                             </div>
                             <div class="chart-container">
                                 <canvas id="progressChart"></canvas>
@@ -1083,8 +1062,8 @@
                         </div>
                         <div class="chart-card">
                             <div class="chart-title">
-                                <span>Distribuição de Projetos</span>
-                                <span class="chart-subtitle">Status atual</span>
+                                <span>Parcelas</span>
+                                <span class="chart-subtitle" id="subParcelas">&nbsp;</span>
                             </div>
                             <div class="chart-container">
                                 <canvas id="distributionChart"></canvas>
@@ -1093,125 +1072,280 @@
                     </div>
                 </div>
 
-                <!-- DOCUMENTS SECTION -->
+                <!-- PARCELAS -->
                 <div class="section">
-                    <div class="section-title">Documentos Recentes</div>
+                    <div class="section-title">Minhas parcelas</div>
                     <div class="table-card">
                         <div class="table-header-row">
-                            <div>Nome do Documento</div>
-                            <div>Tipo</div>
-                            <div>Data</div>
-                            <div>Status</div>
+                            <div>Vencimento</div>
+                            <div>Parcela</div>
+                            <div>Valor</div>
+                            <div>Situação</div>
                         </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Contrato de Obra - Horizonte</strong></div>
-                            <div class="table-cell">PDF</div>
-                            <div class="table-cell">15 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-active">Ativo</span></div>
-                        </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Relatório Mensal - Dezembro</strong></div>
-                            <div class="table-cell">DOC</div>
-                            <div class="table-cell">10 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-active">Ativo</span></div>
-                        </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Orçamento Revisado - Office Premium</strong></div>
-                            <div class="table-cell">XLS</div>
-                            <div class="table-cell">05 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-pending">Pendente</span></div>
-                        </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Cronograma Atualizado</strong></div>
-                            <div class="table-cell">PDF</div>
-                            <div class="table-cell">02 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-completed">Completo</span></div>
-                        </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Laudo Estrutural - Moderna West</strong></div>
-                            <div class="table-cell">PDF</div>
-                            <div class="table-cell">28 de Dez 2025</div>
-                            <div class="table-cell"><span class="status-badge status-active">Ativo</span></div>
-                        </div>
+                        <div id="listaParcelas"></div>
                     </div>
                 </div>
+
+                </div><!-- fim do #conteudoExtrato -->
             </div>
         </main>
     </div>
 
     <script>
-        // Charts
-        const progressCtx = document.getElementById('progressChart').getContext('2d');
-        new Chart(progressCtx, {
-            type: 'line',
-            data: {
-                labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
-                datasets: [{
-                    label: 'Progresso',
-                    data: [15, 30, 42, 55, 60, 67],
-                    borderColor: '#d32f2f',
-                    backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#d32f2f',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        max: 100, 
-                        grid: { color: 'rgba(0,0,0,0.03)' },
-                        ticks: { font: { size: 12 }, color: '#757575' }
-                    },
-                    x: { 
-                        grid: { display: false },
-                        ticks: { font: { size: 12 }, color: '#757575' }
-                    }
-                }
-            }
-        });
+        /* ===================================================================
+           (27/08) EXTRATO DO CLIENTE.
 
-        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
-        new Chart(distributionCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Ativo', 'Pendente', 'Concluído'],
-                datasets: [{
-                    data: [67, 20, 13],
-                    backgroundColor: ['#d32f2f', '#ff9800', '#4caf50'],
-                    borderColor: ['#fff', '#fff', '#fff'],
-                    borderWidth: 2,
-                    offset: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { 
-                        position: 'bottom',
-                        labels: { font: { size: 12 }, color: '#757575', padding: 16 }
-                    } 
+           Substitui os gráficos e números de exemplo que vinham no modelo.
+           Tudo aqui sai das tabelas `unidades` e `parcelas` do Supabase.
+
+           ⚠️ O que protege os dados é o RLS, não esta tela. A consulta abaixo
+           não filtra por pessoa: quem filtra é o banco, que só devolve a casa
+           de quem tem vínculo APROVADO. Se alguém chamar a API por fora da
+           Central, recebe vazio do mesmo jeito.
+           =================================================================== */
+
+        // Os gráficos nascem vazios e são criados só quando há dado. Criar antes
+        // deixaria a tela com dois gráficos de exemplo por um instante — e num
+        // extrato financeiro número de mentira na tela, mesmo por um segundo,
+        // é pior que espaço em branco.
+        let graficoSaldo = null;
+        let graficoParcelas = null;
+
+        const dinheiro = (v) => (Number(v) || 0)
+            .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // ⚠️ Formata a data SEM criar um objeto Date. `new Date('2026-08-25')` é
+        // lido como UTC e, no fuso do Brasil, volta um dia — a parcela do dia 25
+        // apareceria como 24 para o cliente.
+        const dataBR = (iso) => {
+            const s = String(iso || '').slice(0, 10);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return '—';
+            const [a, m, d] = s.split('-');
+            return d + '/' + m + '/' + a;
+        };
+
+        function mostrarAviso(titulo, texto) {
+            $$('conteudoExtrato').hidden = true;
+            $$('avisoTitulo').textContent = titulo;
+            $$('avisoTexto').textContent = texto;
+            $$('avisoAcesso').hidden = false;
+        }
+
+        async function carregarExtrato(nome) {
+            $$('welcomeSub').textContent = 'Carregando seu extrato...';
+            try {
+                // 1. Pede o vínculo. A função procura a casa PELO NOME por dentro do
+                //    banco e cria o pedido como pendente. Chamada SEMPRE: é idempotente
+                //    (não cria pedido repetido) e cobre o caso de a casa ter entrado no
+                //    sistema depois de a pessoa já ter se cadastrado.
+                await sb.rpc('solicitar_acesso', { p_nome: nome });
+
+                // 2. Lê as casas. O RLS devolve só as de vínculo APROVADO.
+                const { data: unidades, error: e1 } = await sb
+                    .from('unidades')
+                    .select('id, empreendimento, unidade, comprador, status_contrato, valor_venda, saldo_devedor_atual')
+                    .order('unidade');
+                if (e1) throw e1;
+
+                if (!unidades || !unidades.length) {
+                    // Vazio tem DOIS motivos, e a pessoa precisa saber qual: se é para
+                    // esperar ou se é para falar com a DPR. A tabela de vínculos ela
+                    // pode ler (só os dela), então dá para distinguir.
+                    const { data: pedidos } = await sb.from('vinculos').select('situacao');
+                    const temPedido = Array.isArray(pedidos) && pedidos.length > 0;
+                    $$('welcomeSub').textContent = temPedido
+                        ? 'Seu acesso está em análise'
+                        : 'Nenhum imóvel encontrado';
+                    if (temPedido) {
+                        mostrarAviso(
+                            'Seu acesso está em análise',
+                            'Encontramos um imóvel no seu nome e a DPR está confirmando. '
+                            + 'Assim que for liberado, seu extrato aparece aqui.'
+                        );
+                    } else {
+                        // ⚠️ NÃO dizemos se existe imóvel com nome parecido. Confirmar
+                        // isso deixaria descobrir compradores por tentativa e erro.
+                        mostrarAviso(
+                            'Não encontramos um imóvel no seu nome',
+                            'Confira se o nome do seu cadastro está igual ao do contrato. '
+                            + 'Se estiver certo, fale com a DPR para liberarem seu acesso.'
+                        );
+                    }
+                    return;
                 }
+
+                // 3. As parcelas das casas liberadas.
+                const ids = unidades.map((u) => u.id);
+                const { data: parcelas, error: e2 } = await sb
+                    .from('parcelas')
+                    .select('unidade_id, ordem, data_vencimento, tipo_parcela, parcela_corrigida, parcela_construtora, pago, saldo_devedor')
+                    .in('unidade_id', ids)
+                    .order('ordem');
+                if (e2) throw e2;
+
+                renderizarExtrato(unidades, parcelas || []);
+            } catch (e) {
+                console.error('[extrato]', e);
+                mostrarAviso(
+                    'Não conseguimos carregar seu extrato agora',
+                    'Tente novamente em alguns instantes. Se continuar, fale com a DPR.'
+                );
             }
-        });
+        }
+
+        function renderizarExtrato(unidades, parcelas) {
+            $$('avisoAcesso').hidden = true;
+            $$('conteudoExtrato').hidden = false;
+
+            const casa = unidades[0];
+            $$('welcomeSub').textContent = unidades.length > 1
+                ? unidades.length + ' imóveis · ' + casa.empreendimento
+                : casa.unidade + ' · ' + casa.empreendimento;
+            $$('tituloImoveis').textContent = unidades.length > 1 ? 'Meus imóveis' : 'Meu imóvel';
+
+            // --- cartões dos imóveis ---
+            $$('projectsGrid').innerHTML = unidades.map((u) => {
+                const situacao = String(u.status_contrato || '').replace(/_/g, ' ');
+                return '<div class="project-card-item">'
+                    + '<div class="card-content">'
+                    + '<div class="card-name">' + escapar(u.unidade) + '</div>'
+                    + '<div class="card-tag">' + escapar(situacao) + '</div>'
+                    + '</div></div>';
+            }).join('');
+
+            // --- números do topo ---
+            // ⚠️ O saldo é SOMADO quando há mais de um imóvel. Mostrar só o do
+            // primeiro faria a pessoa achar que deve menos do que deve.
+            const saldo = unidades.reduce((s, u) => s + (Number(u.saldo_devedor_atual) || 0), 0);
+            $$('statSaldo').textContent = saldo > 0 ? dinheiro(saldo) : '—';
+            $$('statSaldoNota').textContent = saldo > 0
+                ? (unidades.length > 1 ? 'somando seus imóveis' : 'quanto ainda falta pagar')
+                : 'valor não informado';
+
+            const pagas = parcelas.filter((p) => p.pago).length;
+            $$('statPagas').textContent = pagas + ' de ' + parcelas.length;
+            $$('statPagasNota').textContent = parcelas.length
+                ? Math.round((pagas / parcelas.length) * 100) + '% do carnê'
+                : ' ';
+
+            // Próxima em aberto: a primeira não paga com vencimento de hoje em diante.
+            // Comparação por TEXTO (AAAA-MM-DD ordena sozinho) para não cair na
+            // armadilha de fuso do Date.
+            const hoje = new Date().toISOString().slice(0, 10);
+            const proxima = parcelas
+                .filter((p) => !p.pago && p.data_vencimento && p.data_vencimento >= hoje)
+                .sort((a, b) => (a.data_vencimento < b.data_vencimento ? -1 : 1))[0];
+            const atrasadas = parcelas.filter((p) => !p.pago && p.data_vencimento && p.data_vencimento < hoje).length;
+            $$('statProximo').textContent = proxima ? dataBR(proxima.data_vencimento) : '—';
+            $$('statProximoNota').textContent = proxima
+                ? dinheiro(valorDaParcela(proxima))
+                : (parcelas.length && !atrasadas ? 'nenhuma em aberto' : ' ');
+
+            // --- lista de parcelas ---
+            $$('listaParcelas').innerHTML = parcelas.map((p) => {
+                const emAtraso = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
+                const selo = p.pago
+                    ? '<span class="status-badge status-completed">Paga</span>'
+                    : (emAtraso
+                        ? '<span class="status-badge status-pending">Em atraso</span>'
+                        : '<span class="status-badge status-active">Em aberto</span>');
+                return '<div class="table-row">'
+                    + '<div class="table-cell"><strong>' + dataBR(p.data_vencimento) + '</strong></div>'
+                    + '<div class="table-cell">' + escapar(p.tipo_parcela || '—') + '</div>'
+                    + '<div class="table-cell">' + dinheiro(valorDaParcela(p)) + '</div>'
+                    + '<div class="table-cell">' + selo + '</div>'
+                    + '</div>';
+            }).join('') || '<div class="table-row"><div class="table-cell">Nenhuma parcela cadastrada.</div></div>';
+
+            desenharGraficos(parcelas, pagas, atrasadas);
+        }
+
+        // A parcela corrigida é o que a pessoa paga de fato; a da construtora é o
+        // valor antes da correção. Prefere a corrigida e cai na outra quando falta.
+        function valorDaParcela(p) {
+            const corrigida = Number(p.parcela_corrigida) || 0;
+            return corrigida > 0 ? corrigida : (Number(p.parcela_construtora) || 0);
+        }
+
+        // Texto que veio do banco vai para dentro de HTML: escapar é obrigatório.
+        // Nome de comprador e nome de unidade vêm da planilha, e planilha aceita
+        // qualquer coisa digitada.
+        function escapar(s) {
+            return String(s === null || s === undefined ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function desenharGraficos(parcelas, pagas, atrasadas) {
+            if (graficoSaldo) { graficoSaldo.destroy(); graficoSaldo = null; }
+            if (graficoParcelas) { graficoParcelas.destroy(); graficoParcelas = null; }
+
+            // --- saldo devedor ao longo do tempo ---
+            const comSaldo = parcelas.filter((p) => p.data_vencimento && Number(p.saldo_devedor) > 0);
+            if (comSaldo.length > 1) {
+                $$('subSaldo').textContent = comSaldo.length + ' meses';
+                graficoSaldo = new Chart($$('progressChart').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: comSaldo.map((p) => dataBR(p.data_vencimento).slice(3)),
+                        datasets: [{
+                            data: comSaldo.map((p) => Number(p.saldo_devedor)),
+                            borderColor: '#d32f2f',
+                            backgroundColor: 'rgba(211,47,47,.08)',
+                            fill: true,
+                            tension: .3,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { callback: (v) => 'R$ ' + (v / 1000).toFixed(0) + 'k' } },
+                            // Só alguns rótulos no eixo do tempo: com 60 parcelas eles
+                            // ficariam ilegíveis um em cima do outro.
+                            x: { ticks: { maxTicksLimit: 6 } }
+                        }
+                    }
+                });
+            } else {
+                $$('subSaldo').textContent = 'sem dados suficientes';
+            }
+
+            // --- pagas x em aberto ---
+            const emAberto = parcelas.length - pagas - atrasadas;
+            $$('subParcelas').textContent = parcelas.length + ' no total';
+            graficoParcelas = new Chart($$('distributionChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pagas', 'Em aberto', 'Em atraso'],
+                    datasets: [{
+                        data: [pagas, Math.max(emAberto, 0), atrasadas],
+                        backgroundColor: ['#2e7d32', '#9e9e9e', '#d32f2f'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+                }
+            });
+        }
 
         // Load data
+        // Preenche o cabeçalho e dispara a carga do extrato.
         async function loadDashboardData() {
             const userName = localStorage.getItem('userName') || 'Usuário';
-            
             document.getElementById('userName').textContent = userName;
             document.getElementById('firstName').textContent = userName.split(' ')[0];
             document.getElementById('userInitial').textContent = userName.charAt(0).toUpperCase();
+            // ⚠️ O nome usado para achar a casa é o do CADASTRO, não o do e-mail.
+            // É ele que o banco compara com o comprador da planilha.
+            await carregarExtrato(userName);
         }
 
         /* ===================================================================
