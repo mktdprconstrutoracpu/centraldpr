@@ -808,9 +808,11 @@
                 grid-template-columns: 1fr;
             }
 
-            .table-header-row, .table-row {
-                grid-template-columns: 1fr;
-            }
+            /* ⚠️ A regra que empilhava a linha da parcela em 1 coluna saiu daqui.
+               Ela virava 4 linhas soltas sem rótulo, e o cabeçalho da tabela
+               virava outras 4. O tratamento novo está no bloco CELULAR, no fim
+               da folha — precisa vir depois de todas as regras de mesa para
+               não ser desfeito por elas. */
 
             header {
                 padding: 16px 20px;
@@ -1364,6 +1366,140 @@
             .obra-foto { height: 190px; }
             .obra-texto { padding: 20px; }
         }
+
+        /* ===================================================================
+           (27/08) CELULAR
+           ⚠️ ESTE BLOCO É O ÚLTIMO DA FOLHA DE PROPÓSITO. As regras de tela
+           grande vêm todas antes; com a mesma força, quem vem depois vence.
+           Se alguém mover este bloco para cima, as regras de mesa voltam a
+           desfazer o que está aqui e o celular quebra de novo, em silêncio.
+           =================================================================== */
+
+        /* O botão de menu não existe em tela grande: lá a lateral já está
+           sempre visível, e um botão para abrir o que já está aberto confunde. */
+        .bt-menu { display: none; }
+        .lateral-fundo { display: none; }
+
+        @media (max-width: 768px) {
+
+            /* --- 1. o menu --- */
+
+            .bt-menu {
+                display: inline-flex;
+                flex: 0 0 auto;
+                flex-direction: column;
+                justify-content: center;
+                gap: 4px;
+                width: 46px;
+                height: 46px;
+                padding: 0 11px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: var(--white);
+                cursor: pointer;
+            }
+            .bt-menu span {
+                display: block;
+                height: 2px;
+                border-radius: 2px;
+                background: var(--primary);
+                transition: transform .25s ease, opacity .2s ease;
+            }
+            /* Aberto, o traço vira X. A pessoa precisa ver que o mesmo botão
+               fecha — senão procura um "fechar" que não existe. */
+            .bt-menu[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+            .bt-menu[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+            .bt-menu[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+            .sidebar {
+                width: min(300px, 84vw);
+                box-shadow: none;
+            }
+            .sidebar.aberta {
+                transform: translateX(0);
+                box-shadow: 0 0 44px rgba(0, 0, 0, .3);
+            }
+
+            .lateral-fundo {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 998;
+                background: rgba(0, 0, 0, .45);
+            }
+            /* Precisa ser explícito: a regra acima declara display, e regra do
+               autor vence o display:none que o navegador dá ao atributo hidden.
+               É a mesma armadilha que fez o filtro das parcelas não filtrar. */
+            .lateral-fundo[hidden] { display: none; }
+
+            /* Com o menu aberto, o fundo não rola atrás dele. */
+            body.menu-aberto { overflow: hidden; }
+
+            /* --- 2. cabeçalho: menu + busca --- */
+
+            header { padding: 12px 16px; gap: 12px; }
+            .search-bar { max-width: none; }
+
+            /* ⚠️ 16px não é escolha de estilo. Abaixo disso o Safari do iPhone
+               dá zoom sozinho quando a pessoa toca no campo, e a tela fica
+               torta até ela reduzir na mão. */
+            .search-bar input,
+            .auth-campo input {
+                font-size: 16px;
+                min-height: 46px;
+            }
+            .search-bar input { padding: 10px 16px 10px 42px; }
+
+            /* --- 3. parcelas: cartão de duas linhas --- */
+
+            /* Cabeçalho de coluna sem coluna não informa nada: empilhado, virava
+               "VENCIMENTO / PARCELA / VALOR / SITUAÇÃO" solto no topo da lista. */
+            .table-header-row { display: none; }
+
+            .table-row {
+                grid-template-columns: 1fr auto;
+                gap: 5px 12px;
+                padding: 14px 16px;
+                align-items: center;
+            }
+            /* data | selo
+               tipo | valor           — 2 linhas em vez das 4 empilhadas */
+            .table-row .table-cell:nth-child(1) { grid-area: 1 / 1; }
+            .table-row .table-cell:nth-child(4) { grid-area: 1 / 2; justify-self: end; }
+            .table-row .table-cell:nth-child(2) { grid-area: 2 / 1; }
+            .table-row .table-cell:nth-child(3) { grid-area: 2 / 2; justify-self: end; }
+
+            .table-row .table-cell:nth-child(1) strong { font-size: 15px; }
+            .table-row .table-cell:nth-child(2) {
+                font-size: 11.5px;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                color: var(--text-light);
+            }
+            .table-row .table-cell:nth-child(3) {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+            }
+
+            /* No celular não existe passar o mouse. O que existe é o dedo, e o
+               navegador às vezes deixa o :hover grudado depois do toque — a
+               linha ficava deslocada 25px para a direita sem motivo. */
+            .table-row:hover {
+                background: transparent;
+                border-left: 0;
+                padding-left: 16px;
+            }
+            .table-row.atrasada:hover { background: rgba(211, 47, 47, .045); }
+
+            /* --- 4. alvos de toque --- */
+
+            .filtro { min-height: 44px; padding: 10px 16px; font-size: 13.5px; }
+            .nav-item { min-height: 46px; }
+            .logout-btn { min-height: 46px; }
+            .auth-enviar, .auth-aba { min-height: 46px; }
+            .filtros { gap: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -1444,7 +1580,7 @@
 
     <div class="container">
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="lateral">
             <!-- ⚠️ O logo de verdade já traz "construtora & incorporadora" dentro
                  dele. Por isso substitui o desenho E o texto que existiam aqui
                  separados: marca é uma peça só, não se remonta com um pedaço de
@@ -1500,10 +1636,24 @@
             <button class="logout-btn" id="btSair">Sair</button>
         </aside>
 
+        <!-- Fundo escurecido atrás da lateral aberta no celular. Serve para duas
+             coisas: separar o menu do conteúdo e dar uma área grande de "tocar
+             fora para fechar", que é como as pessoas esperam fechar um menu. -->
+        <div class="lateral-fundo" id="lateralFundo" hidden></div>
+
         <!-- MAIN CONTENT -->
         <main class="main">
             <!-- HEADER -->
             <header>
+                <!-- ⚠️ Só aparece no celular. Sem ele a lateral ficava inalcançável:
+                     em tela estreita ela sai para fora da tela e não havia nada que
+                     a trouxesse de volta — "Evolução da obra", "Futuros projetos", o
+                     resumo e o "Sair" simplesmente não existiam no telefone. -->
+                <button type="button" class="bt-menu" id="btMenu"
+                        aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral">
+                    <span></span><span></span><span></span>
+                </button>
+
                 <!-- ⚠️ (27/08) A busca não buscava nada. Agora ela FILTRA as parcelas
                      de verdade — por mês, ano, tipo ou situação. Campo que não faz nada
                      ensina o cliente a não confiar no resto da tela. -->
@@ -2478,11 +2628,49 @@
             // A busca só faz sentido no extrato.
             const barra = document.querySelector('.search-bar');
             if (barra) barra.style.visibility = qual === 'extrato' ? 'visible' : 'hidden';
+            // No celular a página escolhida está atrás do menu: ele precisa sair
+            // da frente sozinho, senão a pessoa toca e parece que nada aconteceu.
+            menuLateral(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- menu lateral no celular ---
+        // Declarada como `function` (e não const) de propósito: assim ela sobe
+        // para o topo do script e `abrirPagina` pode chamá-la sem depender da
+        // ordem. Busca os elementos na hora em vez de guardá-los em constantes
+        // no topo — foi exatamente isso que quebrou o login inteiro em 27/08.
+        function menuLateral(abrir) {
+            const lateral = $$('lateral');
+            const fundo = $$('lateralFundo');
+            const bt = $$('btMenu');
+            if (!lateral || !fundo || !bt) return;
+            lateral.classList.toggle('aberta', abrir);
+            fundo.hidden = !abrir;
+            bt.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+            bt.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+            document.body.classList.toggle('menu-aberto', abrir);
         }
 
         document.querySelectorAll('.nav-item[data-pagina]').forEach((item) => {
             item.addEventListener('click', () => abrirPagina(item.getAttribute('data-pagina')));
+        });
+
+        $$('btMenu').addEventListener('click', () => {
+            menuLateral(!$$('lateral').classList.contains('aberta'));
+        });
+
+        // Tocar fora fecha. É como as pessoas esperam sair de um menu assim.
+        $$('lateralFundo').addEventListener('click', () => menuLateral(false));
+
+        // Esc fecha para quem estiver num teclado.
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape') menuLateral(false);
+        });
+
+        // Girar o celular ou voltar para a tela grande com o menu aberto deixaria
+        // o fundo escuro por cima de tudo, sem nada para clicar.
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) menuLateral(false);
         });
     </script>
 </body>
