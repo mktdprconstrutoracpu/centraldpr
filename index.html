@@ -829,6 +829,111 @@
                 padding: 16px 20px;
             }
         }
+
+        /* ===================================================================
+           (27/08) EXTRATO — acabamento.
+           Tudo aqui usa as variáveis que a página já define, então acompanha
+           qualquer mudança futura de paleta sem retoque.
+           =================================================================== */
+
+        /* --- resumo na lateral --- */
+        .lateral-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        .lateral-linha strong {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        .lateral-barra {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--border);
+            margin: 8px 12px 0;
+            overflow: hidden;
+        }
+        .lateral-barra span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #2e7d32, #43a047);
+            transition: width .6s ease;
+        }
+
+        /* --- etiqueta da unidade no topo --- */
+        .header-tag {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--accent);
+            background: rgba(211, 47, 47, .08);
+            border: 1px solid rgba(211, 47, 47, .18);
+            padding: 8px 14px;
+            border-radius: 999px;
+        }
+        .header-tag[hidden] { display: none; }
+
+        /* --- o saldo devedor é o número que a pessoa abre a página para ver:
+               ganha destaque, os outros dois ficam de apoio --- */
+        .stats-grid .stat-card:first-child {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .stats-grid .stat-card:first-child .stat-label,
+        .stats-grid .stat-card:first-child .stat-change {
+            color: rgba(255, 255, 255, .62);
+        }
+        .stats-grid .stat-card:first-child .stat-value {
+            color: var(--white);
+            font-size: 34px;
+            letter-spacing: -.02em;
+        }
+
+        /* --- linhas da tabela de parcelas --- */
+        .table-row { transition: background .2s ease; }
+        .table-row:hover { background: var(--gray-50); }
+
+        /* ⚠️ Atraso marcado por COR E TEXTO. Só a cor deixaria de fora quem não
+           distingue vermelho — e aqui a informação é "você está devendo". */
+        .table-row.atrasada {
+            background: rgba(211, 47, 47, .045);
+            box-shadow: inset 3px 0 0 var(--accent);
+        }
+        .table-row.atrasada:hover { background: rgba(211, 47, 47, .075); }
+        .table-row.paga .table-cell:first-child strong { color: var(--text-light); font-weight: 500; }
+
+        /* --- cartão de aviso (em análise / sem imóvel) --- */
+        #avisoAcesso .table-card {
+            border: 1px solid var(--border);
+            background:
+                radial-gradient(600px 200px at 50% -40%, rgba(211,47,47,.06), transparent 70%),
+                var(--white);
+        }
+        #avisoAcesso .section-title {
+            font-size: 18px;
+        }
+
+        /* --- linha "nenhuma parcela encontrada" do filtro --- */
+        .sem-resultado {
+            padding: 22px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* --- cartão do imóvel --- */
+        .project-card-item .card-tag { text-transform: capitalize; }
+
+        @media (max-width: 900px) {
+            .stats-grid .stat-card:first-child .stat-value { font-size: 28px; }
+            .header-tag { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -923,74 +1028,64 @@
                 </div>
                 <div class="logo-text">
                     DPR
-                    <span class="sub">Construção</span>
+                    <span class="sub">Construtora &amp; Incorporadora</span>
                 </div>
             </div>
 
             <div class="user-card">
-                <div class="user-avatar" id="userInitial">L</div>
-                <div class="user-name" id="userName">Luana de Barros</div>
-                <div class="user-role">Cliente Premium</div>
+                <div class="user-avatar" id="userInitial">&nbsp;</div>
+                <div class="user-name" id="userName">&nbsp;</div>
+                <div class="user-role" id="userUnidade">Cliente</div>
             </div>
 
+            <!-- ⚠️ (27/08) O menu tinha Projetos, Documentos, Relatórios, Mensagens,
+                 Suporte e Preferências — nenhum levava a lugar nenhum. Item de menu que
+                 não faz nada é pior que menu curto: o cliente clica, nada acontece, e a
+                 impressão é de sistema quebrado. Ficou só o que existe de verdade. -->
             <nav class="nav-section">
-                <div class="nav-item active">
+                <div class="nav-item active" data-ir="topo">
                     <div class="nav-icon">▨</div>
-                    <span>Dashboard</span>
+                    <span>Meu extrato</span>
                 </div>
-                <div class="nav-item">
-                    <div class="nav-icon">◻</div>
-                    <span>Projetos</span>
-                </div>
-                <div class="nav-item">
-                    <div class="nav-icon">▬</div>
-                    <span>Documentos</span>
-                </div>
-                <div class="nav-item">
+                <div class="nav-item" data-ir="parcelas">
                     <div class="nav-icon">≡</div>
-                    <span>Relatórios</span>
+                    <span>Minhas parcelas</span>
                 </div>
             </nav>
 
-            <div class="nav-section">
-                <div class="nav-label">Comunicação</div>
-                <div class="nav-item">
-                    <div class="nav-icon">◯</div>
-                    <span>Mensagens</span>
+            <div class="nav-section" id="resumoLateral" hidden>
+                <div class="nav-label">Resumo</div>
+                <div class="lateral-linha">
+                    <span>Saldo devedor</span>
+                    <strong id="lateralSaldo">—</strong>
                 </div>
-                <div class="nav-item">
-                    <div class="nav-icon">◎</div>
-                    <span>Suporte</span>
+                <div class="lateral-linha">
+                    <span>Pagas</span>
+                    <strong id="lateralPagas">—</strong>
                 </div>
+                <div class="lateral-barra"><span id="lateralBarra" style="width:0%"></span></div>
             </div>
 
-            <div class="nav-section">
-                <div class="nav-label">Configuração</div>
-                <div class="nav-item">
-                    <div class="nav-icon">⚙</div>
-                    <span>Preferências</span>
-                </div>
-            </div>
-
-            <button class="logout-btn" onclick="handleLogout()">Sair</button>
+            <button class="logout-btn" id="btSair">Sair</button>
         </aside>
 
         <!-- MAIN CONTENT -->
         <main class="main">
             <!-- HEADER -->
             <header>
+                <!-- ⚠️ (27/08) A busca não buscava nada. Agora ela FILTRA as parcelas
+                     de verdade — por mês, ano, tipo ou situação. Campo que não faz nada
+                     ensina o cliente a não confiar no resto da tela. -->
                 <div class="search-bar">
                     <div class="search-icon">🔍</div>
-                    <input type="text" placeholder="Buscar por nome...">
+                    <input type="text" id="buscaParcela" autocomplete="off"
+                           placeholder="Filtrar parcelas: 2026, ATO, em atraso...">
                 </div>
 
+                <!-- Os ícones de sino, engrenagem e perfil saíram: nenhum tinha função,
+                     e o sino ainda mostrava uma bolinha de notificação que nunca acenderia. -->
                 <div class="header-right">
-                    <div class="header-icon">
-                        🔔
-                        <div class="notification-dot"></div>
-                    </div>
-                    <div class="header-icon">⚙</div>
-                    <div class="header-icon">👤</div>
+                    <div class="header-tag" id="headerUnidade" hidden></div>
                 </div>
             </header>
 
@@ -1244,19 +1339,41 @@
             // --- lista de parcelas ---
             $$('listaParcelas').innerHTML = parcelas.map((p) => {
                 const emAtraso = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
+                const situacao = p.pago ? 'Paga' : (emAtraso ? 'Em atraso' : 'Em aberto');
+                const classe = p.pago ? 'paga' : (emAtraso ? 'atrasada' : '');
                 const selo = p.pago
                     ? '<span class="status-badge status-completed">Paga</span>'
                     : (emAtraso
                         ? '<span class="status-badge status-pending">Em atraso</span>'
                         : '<span class="status-badge status-active">Em aberto</span>');
-                return '<div class="table-row">'
+                // `data-busca` guarda o texto da linha já normalizado, para o filtro não
+                // ter que ler o HTML de volta nem se preocupar com acento e maiúscula.
+                const busca = normalizarBusca(
+                    dataBR(p.data_vencimento) + ' ' + (p.tipo_parcela || '') + ' ' + situacao
+                );
+                return '<div class="table-row ' + classe + '" data-busca="' + escapar(busca) + '">'
                     + '<div class="table-cell"><strong>' + dataBR(p.data_vencimento) + '</strong></div>'
                     + '<div class="table-cell">' + escapar(p.tipo_parcela || '—') + '</div>'
                     + '<div class="table-cell">' + dinheiro(valorDaParcela(p)) + '</div>'
                     + '<div class="table-cell">' + selo + '</div>'
                     + '</div>';
-            }).join('') || '<div class="table-row"><div class="table-cell">Nenhuma parcela cadastrada.</div></div>';
+            }).join('') || '<div class="sem-resultado">Nenhuma parcela cadastrada.</div>';
 
+            // --- resumo na lateral e etiqueta no topo ---
+            const rotulo = unidades.length > 1
+                ? unidades.length + ' imóveis'
+                : casa.unidade;
+            $$('userUnidade').textContent = rotulo;
+            $$('headerUnidade').textContent = rotulo + ' · ' + casa.empreendimento;
+            $$('headerUnidade').hidden = false;
+            $$('lateralSaldo').textContent = saldo > 0 ? dinheiro(saldo) : '—';
+            $$('lateralPagas').textContent = pagas + '/' + parcelas.length;
+            $$('lateralBarra').style.width = parcelas.length
+                ? Math.round((pagas / parcelas.length) * 100) + '%'
+                : '0%';
+            $$('resumoLateral').hidden = false;
+
+            aplicarFiltro();
             desenharGraficos(parcelas, pagas, atrasadas);
         }
 
@@ -1265,6 +1382,39 @@
         function valorDaParcela(p) {
             const corrigida = Number(p.parcela_corrigida) || 0;
             return corrigida > 0 ? corrigida : (Number(p.parcela_construtora) || 0);
+        }
+
+        // ⚠️ Sem acento e em minúscula, para o filtro achar "atraso" digitando
+        // "atraso" e "março" digitando "marco". A faixa dos acentos é montada por
+        // código de caractere: escrever os literais aqui vira lixo se o arquivo
+        // mudar de codificação, e o defeito seria silencioso.
+        const RE_ACENTOS_BUSCA = new RegExp('[' + String.fromCharCode(768) + '-' + String.fromCharCode(879) + ']', 'g');
+        function normalizarBusca(s) {
+            return String(s || '').normalize('NFD').replace(RE_ACENTOS_BUSCA, '').toLowerCase().trim();
+        }
+
+        // Filtra as linhas já renderizadas — nada de nova consulta ao banco por
+        // tecla digitada.
+        function aplicarFiltro() {
+            const termo = normalizarBusca($$('buscaParcela') ? $$('buscaParcela').value : '');
+            const linhas = $$('listaParcelas').querySelectorAll('.table-row');
+            let visiveis = 0;
+            linhas.forEach((l) => {
+                const bate = !termo || (l.getAttribute('data-busca') || '').indexOf(termo) !== -1;
+                l.hidden = !bate;
+                if (bate) visiveis++;
+            });
+
+            // Filtro que esconde tudo e não explica parece tela quebrada.
+            const antigo = document.getElementById('semResultado');
+            if (antigo) antigo.remove();
+            if (linhas.length && !visiveis) {
+                const aviso = document.createElement('div');
+                aviso.id = 'semResultado';
+                aviso.className = 'sem-resultado';
+                aviso.textContent = 'Nenhuma parcela encontrada para "' + $$('buscaParcela').value.trim() + '".';
+                $$('listaParcelas').appendChild(aviso);
+            }
         }
 
         // Texto que veio do banco vai para dentro de HTML: escapar é obrigatório.
@@ -1337,6 +1487,30 @@
         }
 
         // Load data
+        // --- ligações da tela ---
+        // ⚠️ addEventListener, não onclick no HTML: handler inline no atributo é o
+        // que impede fechar a política de segurança da página mais tarde.
+        if ($$('buscaParcela')) {
+            $$('buscaParcela').addEventListener('input', aplicarFiltro);
+        }
+        // O botão Sair usava onclick no atributo — trocado pelo mesmo padrão do
+        // resto da página. Handler inline no HTML é o que impede fechar a política
+        // de segurança mais tarde, e não faz sentido eu escrever isso num comentário
+        // logo acima e deixar um.
+        if ($$('btSair')) {
+            $$('btSair').addEventListener('click', handleLogout);
+        }
+        document.querySelectorAll('.nav-item[data-ir]').forEach((item) => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item[data-ir]').forEach((i) => i.classList.remove('active'));
+                item.classList.add('active');
+                const alvo = item.getAttribute('data-ir') === 'parcelas'
+                    ? document.getElementById('listaParcelas')
+                    : document.querySelector('.welcome-banner');
+                if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
         // Preenche o cabeçalho e dispara a carga do extrato.
         async function loadDashboardData() {
             const userName = localStorage.getItem('userName') || 'Usuário';
