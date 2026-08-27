@@ -914,8 +914,140 @@
             font-size: 14px;
         }
 
-        /* --- cartão do imóvel --- */
-        .project-card-item .card-tag { text-transform: capitalize; }
+        /* ===================================================================
+           CARTÃO DO IMÓVEL.
+           Substituiu um retângulo escuro com o nome e a situação, e mais nada.
+           Os números que estão aqui já vinham do banco e não apareciam.
+           =================================================================== */
+        #projectsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .imovel {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(150deg, #333333 0%, var(--primary) 55%, #232323 100%);
+            border-radius: 16px;
+            padding: 26px 28px 22px;
+            color: var(--white);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: "cabeca anel" "numeros numeros";
+            gap: 20px 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.14);
+            transition: transform .3s ease, box-shadow .3s ease;
+        }
+        .imovel:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,.2); }
+
+        /* Silhueta de casa em marca d'água. Fica bem apagada de propósito: é
+           textura para o cartão não ser um bloco chapado, não é ilustração. */
+        .imovel-marca {
+            position: absolute;
+            right: -18px;
+            bottom: -26px;
+            width: 190px;
+            height: auto;
+            fill: rgba(255,255,255,.035);
+            pointer-events: none;
+        }
+
+        .imovel-cabeca { grid-area: cabeca; min-width: 0; }
+        .imovel-emp {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.5);
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .imovel-nome {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .imovel-status {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 5px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.1);
+            color: rgba(255,255,255,.8);
+        }
+        .imovel-status.ativo { background: rgba(76,175,80,.2); color: #a5d6a7; }
+        .imovel-status.distrato { background: rgba(211,47,47,.24); color: #ef9a9a; }
+
+        /* --- anel de progresso --- */
+        .imovel-anel { grid-area: anel; position: relative; width: 92px; height: 92px; }
+        .imovel-anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .imovel-anel circle { fill: none; stroke-width: 7; }
+        .imovel-anel .trilho { stroke: rgba(255,255,255,.12); }
+        .imovel-anel .progresso {
+            stroke: var(--accent);
+            stroke-linecap: round;
+            transition: stroke-dasharray .9s ease;
+        }
+        .imovel-anel-texto {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .imovel-anel-texto strong {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 800;
+        }
+        .imovel-anel-texto span {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: rgba(255,255,255,.5);
+            margin-top: 3px;
+        }
+
+        /* --- números do rodapé do cartão --- */
+        .imovel-numeros {
+            grid-area: numeros;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255,255,255,.1);
+        }
+        .imovel-numeros dt {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: rgba(255,255,255,.45);
+            margin-bottom: 4px;
+        }
+        .imovel-numeros dd {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* Em cartão estreito três colunas viram três palavras cortadas. */
+        @media (max-width: 420px) {
+            .imovel { padding: 22px 20px 18px; }
+            .imovel-numeros { grid-template-columns: 1fr 1fr; }
+            .imovel-numeros div:last-child { grid-column: 1 / -1; }
+        }
 
         @media (max-width: 900px) {
             .stats-grid .stat-card:first-child .stat-value { font-size: 28px; }
@@ -1661,7 +1793,7 @@
                 // 2. Lê as casas. O RLS devolve só as de vínculo APROVADO.
                 const { data: unidades, error: e1 } = await sb
                     .from('unidades')
-                    .select('id, empreendimento, unidade, comprador, status_contrato, valor_venda, saldo_devedor_atual')
+                    .select('id, empreendimento, unidade, comprador, status_contrato, valor_venda, saldo_devedor_atual, data_assinatura')
                     .order('unidade');
                 if (e1) throw e1;
 
@@ -1722,13 +1854,53 @@
             $$('tituloImoveis').textContent = unidades.length > 1 ? 'Meus imóveis' : 'Meu imóvel';
 
             // --- cartões dos imóveis ---
+            // O cartão antigo mostrava só o nome e a situação num retângulo escuro
+            // quase todo vazio. Os números que a pessoa quer ver do imóvel dela já
+            // estavam no banco e não apareciam em lugar nenhum.
             $$('projectsGrid').innerHTML = unidades.map((u) => {
-                const situacao = String(u.status_contrato || '').replace(/_/g, ' ');
-                return '<div class="project-card-item">'
-                    + '<div class="card-content">'
-                    + '<div class="card-name">' + escapar(u.unidade) + '</div>'
-                    + '<div class="card-tag">' + escapar(situacao) + '</div>'
-                    + '</div></div>';
+                const doImovel = parcelas.filter((p) => p.unidade_id === u.id);
+                const pagasAqui = doImovel.filter((p) => p.pago).length;
+                const pct = doImovel.length ? Math.round((pagasAqui / doImovel.length) * 100) : 0;
+
+                // Anel de progresso. O traço é desenhado a partir do PERÍMETRO do
+                // círculo: 2·π·34 ≈ 213.6. O "vazio" é o que falta pagar.
+                const perimetro = 213.6;
+                const preenchido = (perimetro * pct) / 100;
+
+                const situacao = String(u.status_contrato || 'ativo').replace(/_/g, ' ');
+                const classeSituacao = String(u.status_contrato || '').indexOf('distrato') === 0
+                    ? 'distrato'
+                    : (u.status_contrato === 'ativo' ? 'ativo' : 'neutro');
+
+                return ''
+                + '<article class="imovel">'
+                +   // Silhueta de casa como marca d'água. É decoração: fica marcada
+                    // como escondida para leitor de tela, senão ela seria anunciada
+                    // como se fosse conteúdo.
+                    '<svg class="imovel-marca" viewBox="0 0 120 100" aria-hidden="true">'
+                +     '<path d="M60 8 L112 46 L100 46 L100 94 L20 94 L20 46 L8 46 Z"/>'
+                +   '</svg>'
+                +   '<div class="imovel-cabeca">'
+                +     '<span class="imovel-emp">' + escapar(u.empreendimento) + '</span>'
+                +     '<h3 class="imovel-nome">' + escapar(u.unidade) + '</h3>'
+                +     '<span class="imovel-status ' + classeSituacao + '">' + escapar(situacao) + '</span>'
+                +   '</div>'
+                +   '<div class="imovel-anel">'
+                +     '<svg viewBox="0 0 80 80" aria-hidden="true">'
+                +       '<circle class="trilho" cx="40" cy="40" r="34"/>'
+                +       '<circle class="progresso" cx="40" cy="40" r="34"'
+                +         ' stroke-dasharray="' + preenchido.toFixed(1) + ' ' + perimetro + '"/>'
+                +     '</svg>'
+                +     '<div class="imovel-anel-texto">'
+                +       '<strong>' + pct + '%</strong><span>quitado</span>'
+                +     '</div>'
+                +   '</div>'
+                +   '<dl class="imovel-numeros">'
+                +     '<div><dt>Valor do imóvel</dt><dd>' + (Number(u.valor_venda) > 0 ? dinheiro(u.valor_venda) : '—') + '</dd></div>'
+                +     '<div><dt>Parcelas pagas</dt><dd>' + pagasAqui + ' de ' + doImovel.length + '</dd></div>'
+                +     '<div><dt>Contrato desde</dt><dd>' + dataBR(u.data_assinatura) + '</dd></div>'
+                +   '</dl>'
+                + '</article>';
             }).join('');
 
             // --- números do topo ---
