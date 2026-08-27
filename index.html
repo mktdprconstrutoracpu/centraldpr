@@ -1487,29 +1487,6 @@
         }
 
         // Load data
-        // --- ligações da tela ---
-        // ⚠️ addEventListener, não onclick no HTML: handler inline no atributo é o
-        // que impede fechar a política de segurança da página mais tarde.
-        if ($$('buscaParcela')) {
-            $$('buscaParcela').addEventListener('input', aplicarFiltro);
-        }
-        // O botão Sair usava onclick no atributo — trocado pelo mesmo padrão do
-        // resto da página. Handler inline no HTML é o que impede fechar a política
-        // de segurança mais tarde, e não faz sentido eu escrever isso num comentário
-        // logo acima e deixar um.
-        if ($$('btSair')) {
-            $$('btSair').addEventListener('click', handleLogout);
-        }
-        document.querySelectorAll('.nav-item[data-ir]').forEach((item) => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.nav-item[data-ir]').forEach((i) => i.classList.remove('active'));
-                item.classList.add('active');
-                const alvo = item.getAttribute('data-ir') === 'parcelas'
-                    ? document.getElementById('listaParcelas')
-                    : document.querySelector('.welcome-banner');
-                if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-        });
 
         // Preenche o cabeçalho e dispara a carga do extrato.
         async function loadDashboardData() {
@@ -1822,6 +1799,39 @@
             } catch (e) {
                 mostrarRecado('Não foi possível verificar sua sessão. Entre novamente.', 'erro');
             }
+        });
+
+        /* ===================================================================
+           LIGAÇÕES DA TELA — ficam no FIM do script de propósito.
+
+           ⚠️ Estavam lá em cima e derrubaram a página inteira: elas usam `$$`,
+           que é declarado com `const` MAIS ABAIXO. Usar uma const antes da
+           linha que a declara lança ReferenceError, o script morre ali, e
+           NENHUM listener chega a ser ligado — inclusive os do login. O sintoma
+           foi "não entra e não cria conta", que não parece ter nada a ver com
+           uma barra de busca.
+
+           Regra para não repetir: código que RODA no carregamento vai para o
+           fim; no meio do arquivo só declaração de função (essa o JavaScript
+           sobe sozinho, const não).
+           =================================================================== */
+        if ($$('buscaParcela')) {
+            $$('buscaParcela').addEventListener('input', aplicarFiltro);
+        }
+        // O botão Sair usava onclick no atributo — trocado pelo mesmo padrão do
+        // resto da página.
+        if ($$('btSair')) {
+            $$('btSair').addEventListener('click', handleLogout);
+        }
+        document.querySelectorAll('.nav-item[data-ir]').forEach((item) => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item[data-ir]').forEach((i) => i.classList.remove('active'));
+                item.classList.add('active');
+                const alvo = item.getAttribute('data-ir') === 'parcelas'
+                    ? document.getElementById('listaParcelas')
+                    : document.querySelector('.welcome-banner');
+                if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
         });
     </script>
 </body>
