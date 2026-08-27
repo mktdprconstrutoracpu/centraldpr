@@ -934,6 +934,170 @@
             .stats-grid .stat-card:first-child .stat-value { font-size: 28px; }
             .header-tag { display: none; }
         }
+
+        /* ===================================================================
+           (27/08) PÁGINAS: evolução da obra e futuros projetos, e os filtros
+           rápidos das parcelas.
+           =================================================================== */
+
+        .pagina[hidden] { display: none; }
+
+        /* --- aviso de conteúdo de exemplo ---
+           ⚠️ Some sozinho quando as fotos forem reais: é só apagar o bloco no
+           HTML. Enquanto estiver lá, precisa CHAMAR ATENÇÃO — cliente vendo
+           foto de prédio aleatório legendada como "sua obra" é pior que página
+           vazia. Por isso amarelo e não cinza discreto. */
+        .aviso-exemplo {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-left: 4px solid #ffb300;
+            color: #6d4c00;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            line-height: 1.55;
+            margin-bottom: 28px;
+        }
+
+        /* --- filtros rápidos das parcelas --- */
+        .filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .filtro {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .2s ease;
+        }
+        .filtro:hover { border-color: var(--gray); color: var(--primary); }
+        .filtro.ativo {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+        .filtro-num {
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--gray-50);
+            color: var(--text-light);
+            border-radius: 999px;
+            padding: 2px 7px;
+            min-width: 22px;
+            text-align: center;
+        }
+        .filtro.ativo .filtro-num { background: rgba(255,255,255,.18); color: var(--white); }
+        /* O filtro de atraso fica vermelho SÓ quando existe atraso — botão
+           permanentemente vermelho vira ruído e a pessoa para de enxergar. */
+        .filtro[data-filtro="atrasada"].tem-atraso .filtro-num { background: var(--accent); color: var(--white); }
+        .filtro[data-filtro="atrasada"].ativo { background: var(--accent); border-color: var(--accent); }
+
+        /* --- linha do tempo da obra --- */
+        .obra-linha { display: flex; flex-direction: column; gap: 20px; }
+
+        .obra-etapa {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: box-shadow .25s ease;
+        }
+        .obra-etapa:hover { box-shadow: 0 8px 28px rgba(0,0,0,.07); }
+
+        .obra-foto { position: relative; min-height: 170px; background: var(--gray-50); }
+        .obra-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .obra-texto { padding: 22px 24px 22px 0; }
+        .obra-selo {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--gray-50);
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+        .obra-etapa.concluida .obra-selo { background: rgba(46,125,50,.12); color: #2e7d32; }
+        .obra-etapa.atual .obra-selo { background: rgba(211,47,47,.1); color: var(--accent); }
+        .obra-etapa.atual { border-color: rgba(211,47,47,.35); }
+
+        .obra-titulo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--primary);
+        }
+        .obra-data { font-size: 12.5px; color: var(--text-light); margin: 3px 0 10px; }
+        .obra-texto p { font-size: 14px; line-height: 1.6; color: var(--text); }
+
+        /* Etapa ainda não feita fica esmaecida — mas o texto continua legível,
+           porque "a fazer" também é informação que a pessoa quer ler. */
+        .obra-etapa:not(.concluida):not(.atual) .obra-foto img { filter: grayscale(1); opacity: .55; }
+
+        /* --- futuros projetos --- */
+        .projetos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 22px;
+        }
+        .projeto-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .projeto-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.09); }
+
+        .projeto-foto { position: relative; height: 180px; background: var(--gray-50); }
+        .projeto-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .projeto-selo {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            background: var(--white);
+            color: var(--primary);
+            padding: 5px 11px;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        }
+
+        .projeto-corpo { padding: 18px 20px 22px; }
+        .projeto-nome {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary);
+        }
+        .projeto-local { font-size: 12.5px; color: var(--text-light); margin: 3px 0 10px; }
+        .projeto-corpo p { font-size: 13.5px; line-height: 1.6; color: var(--text); }
+
+        @media (max-width: 760px) {
+            .obra-etapa { grid-template-columns: 1fr; }
+            .obra-foto { height: 190px; }
+            .obra-texto { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -1043,13 +1207,17 @@
                  não faz nada é pior que menu curto: o cliente clica, nada acontece, e a
                  impressão é de sistema quebrado. Ficou só o que existe de verdade. -->
             <nav class="nav-section">
-                <div class="nav-item active" data-ir="topo">
+                <div class="nav-item active" data-pagina="extrato">
                     <div class="nav-icon">▨</div>
                     <span>Meu extrato</span>
                 </div>
-                <div class="nav-item" data-ir="parcelas">
-                    <div class="nav-icon">≡</div>
-                    <span>Minhas parcelas</span>
+                <div class="nav-item" data-pagina="obra">
+                    <div class="nav-icon">▲</div>
+                    <span>Evolução da obra</span>
+                </div>
+                <div class="nav-item" data-pagina="projetos">
+                    <div class="nav-icon">◈</div>
+                    <span>Futuros projetos</span>
                 </div>
             </nav>
 
@@ -1091,6 +1259,7 @@
 
             <!-- CONTENT -->
             <div class="content">
+                <div id="paginaExtrato" class="pagina">
                 <!-- WELCOME BANNER -->
                 <div class="welcome-banner">
                     <div class="welcome-content">
@@ -1170,6 +1339,16 @@
                 <!-- PARCELAS -->
                 <div class="section">
                     <div class="section-title">Minhas parcelas</div>
+
+                    <!-- Filtros rápidos. Somam com a busca do topo: dá para pedir
+                         "em atraso" e ainda digitar 2026 para ver só as daquele ano. -->
+                    <div class="filtros">
+                        <button type="button" class="filtro ativo" data-filtro="todas">Todas <span class="filtro-num" id="numTodas">0</span></button>
+                        <button type="button" class="filtro" data-filtro="atrasada">Em atraso <span class="filtro-num" id="numAtrasadas">0</span></button>
+                        <button type="button" class="filtro" data-filtro="aberta">Em aberto <span class="filtro-num" id="numAbertas">0</span></button>
+                        <button type="button" class="filtro" data-filtro="paga">Pagas <span class="filtro-num" id="numPagas">0</span></button>
+                    </div>
+
                     <div class="table-card">
                         <div class="table-header-row">
                             <div>Vencimento</div>
@@ -1182,6 +1361,169 @@
                 </div>
 
                 </div><!-- fim do #conteudoExtrato -->
+                </div><!-- fim da #paginaExtrato -->
+
+                <!-- ===============================================================
+                     EVOLUÇÃO DA OBRA
+                     ⚠️ As fotos são de banco de imagens, NÃO são da obra. Enquanto
+                     for assim, o aviso no topo desta página precisa continuar lá:
+                     cliente vendo foto de prédio aleatório legendada como "sua obra"
+                     é pior que página vazia.
+                     =============================================================== -->
+                <div id="paginaObra" class="pagina" hidden>
+                    <div class="welcome-banner">
+                        <div class="welcome-content">
+                            <div class="welcome-title">Evolução da obra</div>
+                            <div class="welcome-subtitle">Villagio Caucaia II</div>
+                        </div>
+                    </div>
+
+                    <div class="aviso-exemplo">
+                        <strong>Conteúdo de demonstração.</strong>
+                        As fotos e as datas abaixo são de exemplo, para você ver como a
+                        página fica. Ainda não são da obra do Villagio Caucaia II.
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Andamento geral</div>
+                            <div class="stat-value">68%</div>
+                            <div class="stat-change">exemplo</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Etapa atual</div>
+                            <div class="stat-value" style="font-size:22px">Acabamento</div>
+                            <div class="stat-change">exemplo</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Previsão de entrega</div>
+                            <div class="stat-value" style="font-size:22px">Dez / 2026</div>
+                            <div class="stat-change">exemplo</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Linha do tempo</div>
+                        <div class="obra-linha">
+
+                            <div class="obra-etapa concluida">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Fundação (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">Concluída</div>
+                                    <div class="obra-titulo">Fundação e terraplenagem</div>
+                                    <div class="obra-data">Março de 2025</div>
+                                    <p>Preparo do terreno, sapatas e baldrames das 72 unidades.</p>
+                                </div>
+                            </div>
+
+                            <div class="obra-etapa concluida">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Estrutura (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">Concluída</div>
+                                    <div class="obra-titulo">Estrutura e alvenaria</div>
+                                    <div class="obra-data">Agosto de 2025</div>
+                                    <p>Levantamento das paredes e lajes, casa por casa.</p>
+                                </div>
+                            </div>
+
+                            <div class="obra-etapa atual">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Acabamento (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">Em andamento</div>
+                                    <div class="obra-titulo">Instalações e acabamento</div>
+                                    <div class="obra-data">desde Fevereiro de 2026</div>
+                                    <p>Elétrica, hidráulica, revestimentos e pintura.</p>
+                                </div>
+                            </div>
+
+                            <div class="obra-etapa">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Entrega (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">A fazer</div>
+                                    <div class="obra-titulo">Paisagismo e entrega</div>
+                                    <div class="obra-data">previsão: Dezembro de 2026</div>
+                                    <p>Áreas comuns, vistoria e entrega das chaves.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===============================================================
+                     FUTUROS PROJETOS — mesmo aviso: fotos de banco de imagens.
+                     =============================================================== -->
+                <div id="paginaProjetos" class="pagina" hidden>
+                    <div class="welcome-banner">
+                        <div class="welcome-content">
+                            <div class="welcome-title">Futuros projetos</div>
+                            <div class="welcome-subtitle">O que a DPR está preparando</div>
+                        </div>
+                    </div>
+
+                    <div class="aviso-exemplo">
+                        <strong>Conteúdo de demonstração.</strong>
+                        Os projetos abaixo são de exemplo, para você ver como a página
+                        fica. Não representam lançamentos reais da DPR.
+                    </div>
+
+                    <div class="section">
+                        <div class="projetos-grid">
+
+                            <div class="projeto-card">
+                                <div class="projeto-foto">
+                                    <img loading="lazy" alt="Projeto de exemplo"
+                                         src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&q=80">
+                                    <span class="projeto-selo">Lançamento</span>
+                                </div>
+                                <div class="projeto-corpo">
+                                    <div class="projeto-nome">Villagio Caucaia III</div>
+                                    <div class="projeto-local">Caucaia do Alto · SP</div>
+                                    <p>Nova fase do Villagio, com 48 casas e área de lazer ampliada.</p>
+                                </div>
+                            </div>
+
+                            <div class="projeto-card">
+                                <div class="projeto-foto">
+                                    <img loading="lazy" alt="Projeto de exemplo"
+                                         src="https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?w=900&q=80">
+                                    <span class="projeto-selo">Em estudo</span>
+                                </div>
+                                <div class="projeto-corpo">
+                                    <div class="projeto-nome">Residencial Parque Verde</div>
+                                    <div class="projeto-local">Cotia · SP</div>
+                                    <p>Condomínio fechado com foco em áreas verdes e mobilidade.</p>
+                                </div>
+                            </div>
+
+                            <div class="projeto-card">
+                                <div class="projeto-foto">
+                                    <img loading="lazy" alt="Projeto de exemplo"
+                                         src="https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?w=900&q=80">
+                                    <span class="projeto-selo">Em estudo</span>
+                                </div>
+                                <div class="projeto-corpo">
+                                    <div class="projeto-nome">DPR Corporate</div>
+                                    <div class="projeto-local">São Paulo · SP</div>
+                                    <p>Primeiro empreendimento comercial da construtora.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -1373,6 +1715,7 @@
                 : '0%';
             $$('resumoLateral').hidden = false;
 
+            contarFiltros();
             aplicarFiltro();
             desenharGraficos(parcelas, pagas, atrasadas);
         }
@@ -1393,14 +1736,28 @@
             return String(s || '').normalize('NFD').replace(RE_ACENTOS_BUSCA, '').toLowerCase().trim();
         }
 
+        // Qual botão de situação está ligado: todas | atrasada | aberta | paga.
+        let filtroSituacao = 'todas';
+
+        // A situação sai das CLASSES da linha, que já foram postas na renderização.
+        // Guardar de novo num atributo seria duas fontes para a mesma verdade.
+        function situacaoDaLinha(l) {
+            if (l.classList.contains('paga')) return 'paga';
+            if (l.classList.contains('atrasada')) return 'atrasada';
+            return 'aberta';
+        }
+
         // Filtra as linhas já renderizadas — nada de nova consulta ao banco por
-        // tecla digitada.
+        // tecla digitada. Os dois filtros SOMAM: dá para pedir "em atraso" e ainda
+        // digitar 2026 para ver só as daquele ano.
         function aplicarFiltro() {
             const termo = normalizarBusca($$('buscaParcela') ? $$('buscaParcela').value : '');
             const linhas = $$('listaParcelas').querySelectorAll('.table-row');
             let visiveis = 0;
             linhas.forEach((l) => {
-                const bate = !termo || (l.getAttribute('data-busca') || '').indexOf(termo) !== -1;
+                const bateSituacao = filtroSituacao === 'todas' || situacaoDaLinha(l) === filtroSituacao;
+                const bateTexto = !termo || (l.getAttribute('data-busca') || '').indexOf(termo) !== -1;
+                const bate = bateSituacao && bateTexto;
                 l.hidden = !bate;
                 if (bate) visiveis++;
             });
@@ -1412,9 +1769,39 @@
                 const aviso = document.createElement('div');
                 aviso.id = 'semResultado';
                 aviso.className = 'sem-resultado';
-                aviso.textContent = 'Nenhuma parcela encontrada para "' + $$('buscaParcela').value.trim() + '".';
+                // A mensagem diz qual dos dois filtros está cortando — senão a pessoa
+                // apaga a busca, continua vazio, e não entende que o botão é o motivo.
+                const rotulos = { atrasada: 'em atraso', aberta: 'em aberto', paga: 'pagas' };
+                const busca = $$('buscaParcela') ? $$('buscaParcela').value.trim() : '';
+                aviso.textContent = 'Nenhuma parcela'
+                    + (filtroSituacao !== 'todas' ? ' ' + rotulos[filtroSituacao] : '')
+                    + (busca ? ' com "' + busca + '"' : '')
+                    + '.';
                 $$('listaParcelas').appendChild(aviso);
             }
+        }
+
+        // Conta quantas há de cada situação e escreve nos botões.
+        function contarFiltros() {
+            const linhas = $$('listaParcelas').querySelectorAll('.table-row');
+            let pagas = 0;
+            let atrasadas = 0;
+            let abertas = 0;
+            linhas.forEach((l) => {
+                const s = situacaoDaLinha(l);
+                if (s === 'paga') pagas++;
+                else if (s === 'atrasada') atrasadas++;
+                else abertas++;
+            });
+            $$('numTodas').textContent = linhas.length;
+            $$('numPagas').textContent = pagas;
+            $$('numAtrasadas').textContent = atrasadas;
+            $$('numAbertas').textContent = abertas;
+
+            // O botão de atraso só fica vermelho quando HÁ atraso. Vermelho
+            // permanente vira ruído e a pessoa para de enxergar.
+            const bt = document.querySelector('.filtro[data-filtro="atrasada"]');
+            if (bt) bt.classList.toggle('tem-atraso', atrasadas > 0);
         }
 
         // Texto que veio do banco vai para dentro de HTML: escapar é obrigatório.
@@ -1823,15 +2210,35 @@
         if ($$('btSair')) {
             $$('btSair').addEventListener('click', handleLogout);
         }
-        document.querySelectorAll('.nav-item[data-ir]').forEach((item) => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.nav-item[data-ir]').forEach((i) => i.classList.remove('active'));
-                item.classList.add('active');
-                const alvo = item.getAttribute('data-ir') === 'parcelas'
-                    ? document.getElementById('listaParcelas')
-                    : document.querySelector('.welcome-banner');
-                if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // --- botões de situação das parcelas ---
+        document.querySelectorAll('.filtro[data-filtro]').forEach((bt) => {
+            bt.addEventListener('click', () => {
+                document.querySelectorAll('.filtro[data-filtro]').forEach((b) => b.classList.remove('ativo'));
+                bt.classList.add('ativo');
+                filtroSituacao = bt.getAttribute('data-filtro');
+                aplicarFiltro();
             });
+        });
+
+        // --- troca de página pelo menu lateral ---
+        // São seções da mesma página, não arquivos separados: assim a sessão, o
+        // login e o extrato continuam num lugar só. Duplicar a tela de login em
+        // três arquivos seria três lugares para consertar quando algo mudar.
+        function abrirPagina(qual) {
+            document.querySelectorAll('.pagina').forEach((p) => {
+                p.hidden = (p.id !== 'pagina' + qual.charAt(0).toUpperCase() + qual.slice(1));
+            });
+            document.querySelectorAll('.nav-item[data-pagina]').forEach((i) => {
+                i.classList.toggle('active', i.getAttribute('data-pagina') === qual);
+            });
+            // A busca só faz sentido no extrato.
+            const barra = document.querySelector('.search-bar');
+            if (barra) barra.style.visibility = qual === 'extrato' ? 'visible' : 'hidden';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('.nav-item[data-pagina]').forEach((item) => {
+            item.addEventListener('click', () => abrirPagina(item.getAttribute('data-pagina')));
         });
     </script>
 </body>
