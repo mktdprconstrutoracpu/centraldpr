@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central DPR - Portal do Cliente</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <!-- (25/08) SDK do Supabase — autenticação de e-mail e senha, direto do navegador.
          Expõe o global `supabase` (a fábrica). O cliente configurado vira `sb`, mais abaixo. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -43,91 +42,91 @@
         }
 
         /* ===== SIDEBAR ===== */
+        /* Coluna flex: o "Sair" desce sozinho para o rodapé com margin-top:auto.
+           Antes ele ficava grudado embaixo do último bloco, então subia e descia
+           conforme o resumo aparecia ou não. */
         .sidebar {
             width: 280px;
             background: var(--white);
             border-right: 1px solid var(--border);
-            padding: 32px 24px;
+            padding: 28px 20px;
             overflow-y: auto;
             position: fixed;
             height: 100vh;
             left: 0;
             top: 0;
             z-index: 100;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* Item de coluna flex encolhe por padrão. Numa janela baixa isso
+           espremeria o menu em vez de deixar a lateral rolar — e o overflow-y
+           acima nunca entraria em ação. */
+        .sidebar > * { flex-shrink: 0; }
+
         .logo-container {
-            margin-bottom: 40px;
+            margin-bottom: 28px;
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .logo-graphic {
-            width: 70px;
-            height: 70px;
+        /* (27/08) As regras .logo-graphic, .logo-svg, .logo-text e .logo-text .sub
+           saíram junto com o logo desenhado à mão que elas estilizavam. O logo
+           agora é a imagem da marca (.logo-img, mais abaixo). CSS apontando para
+           elemento que não existe mais é o que faz a próxima pessoa procurar um
+           bug onde não há nada. */
+
+        /* Avatar de 80px centralizado + 40px de margem comiam quase um terço da
+           altura da lateral para dizer o nome de quem já está logado. Deitado,
+           diz a mesma coisa e sobra espaço para o que a pessoa veio ver. */
+        .user-card {
             display: flex;
             align-items: center;
-            justify-content: center;
-        }
-
-        .logo-svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .logo-text {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: 0.5px;
-        }
-
-        .logo-text .sub {
-            font-size: 10px;
-            display: block;
-            font-weight: 700;
-            color: var(--text-light);
-            letter-spacing: 0.8px;
-        }
-
-        .user-card {
+            gap: 13px;
             background: var(--gray-50);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 40px;
-            text-align: center;
+            border-radius: 14px;
+            padding: 13px 15px;
+            margin-bottom: 30px;
             border: 1px solid var(--border);
         }
 
         .user-avatar {
-            width: 80px;
-            height: 80px;
+            flex: 0 0 auto;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--accent) 0%, #e53935 100%);
-            margin: 0 auto 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 17px;
             color: white;
             font-weight: 700;
             box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
         }
 
+        /* min-width:0 é obrigatório: sem isso um item flex não encolhe abaixo do
+           conteúdo e um nome comprido empurra o cartão para fora da lateral. */
+        .user-texto { min-width: 0; }
+
         .user-name {
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13.5px;
+            line-height: 1.3;
             color: var(--primary);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            overflow-wrap: anywhere;
         }
 
         .user-role {
-            font-size: 11px;
+            font-size: 10.5px;
+            line-height: 1.35;
             color: var(--text-light);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.06em;
+            overflow-wrap: anywhere;
         }
 
         .nav-section {
@@ -145,41 +144,60 @@
         }
 
         .nav-item {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            position: relative;
+            padding: 11px 14px;
+            border-radius: 10px;
+            margin-bottom: 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 14px;
+            gap: 11px;
+            font-size: 13.5px;
+            font-weight: 600;
             color: var(--text-light);
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
+            transition: background .2s ease, color .2s ease;
         }
 
         .nav-item:hover {
             background: var(--light);
             color: var(--primary);
-            border-left-color: var(--accent);
         }
 
         .nav-item.active {
-            background: rgba(211, 47, 47, 0.08);
+            background: rgba(211, 47, 47, 0.07);
             color: var(--accent);
-            font-weight: 600;
-            border-left-color: var(--accent);
+        }
+
+        /* A marca da página atual era border-left no próprio item, o que cortava
+           quadrado o canto arredondado do fundo. Como ::before ela flutua por
+           cima e o fundo continua com o canto redondo. */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 18px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent);
         }
 
         .nav-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
+            flex: 0 0 auto;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            background: var(--gray-50);
+            color: var(--text-light);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
+            transition: background .2s ease, color .2s ease;
         }
+
+        .nav-item:hover .nav-icon { color: var(--primary); }
 
         .nav-item.active .nav-icon {
             background: var(--accent);
@@ -230,6 +248,16 @@
             text-align: center;
         }
         .auth-marca span { color: var(--accent); }
+        /* O logo tem fundo branco. No cartão branco do login isso não aparece;
+           foi por isso que ele foi para dentro do cartão e não sobre o fundo
+           escuro do overlay. */
+        .auth-logo {
+            display: block;
+            width: 100%;
+            max-width: 210px;
+            height: auto;
+            margin: 0 auto 4px;
+        }
         .auth-sub {
             text-align: center;
             color: var(--text-light);
@@ -331,26 +359,30 @@
         .auth-recado.erro  { display: block; background: #fdecec; color: #b3261e; }
         .auth-recado.certo { display: block; background: #eef7ef; color: #1e6b2f; }
 
+        /* Vermelho cheio, sombra e elevação no hover é tratamento de botão
+           principal. "Sair" é a última coisa que a pessoa quer fazer aqui, e
+           era o elemento mais chamativo da lateral. margin-top:auto empurra ele
+           para o rodapé da coluna. */
         .logout-btn {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, var(--accent) 0%, #e53935 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
+            padding: 11px;
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.08em;
             cursor: pointer;
-            margin-top: 24px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
+            margin-top: auto;
+            transition: all .2s ease;
         }
 
         .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(211, 47, 47, 0.2);
+            background: rgba(211, 47, 47, 0.05);
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         /* ===== MAIN CONTENT ===== */
@@ -676,47 +708,6 @@
             font-weight: 700;
         }
 
-        /* ===== CHARTS GRID ===== */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .chart-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px;
-            transition: all 0.3s ease;
-        }
-
-        .chart-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-        }
-
-        .chart-title {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--primary);
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chart-subtitle {
-            font-size: 12px;
-            color: var(--text-light);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 200px;
-        }
-
         /* ===== TABLE ===== */
         .table-card {
             background: var(--white);
@@ -813,21 +804,701 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-
             .stats-grid {
                 grid-template-columns: 1fr;
             }
 
-            .table-header-row, .table-row {
-                grid-template-columns: 1fr;
-            }
+            /* ⚠️ A regra que empilhava a linha da parcela em 1 coluna saiu daqui.
+               Ela virava 4 linhas soltas sem rótulo, e o cabeçalho da tabela
+               virava outras 4. O tratamento novo está no bloco CELULAR, no fim
+               da folha — precisa vir depois de todas as regras de mesa para
+               não ser desfeito por elas. */
 
             header {
                 padding: 16px 20px;
             }
+        }
+
+        /* ===================================================================
+           (27/08) EXTRATO — acabamento.
+           Tudo aqui usa as variáveis que a página já define, então acompanha
+           qualquer mudança futura de paleta sem retoque.
+           =================================================================== */
+
+        /* --- resumo na lateral --- */
+        .lateral-caixa {
+            background: var(--gray-50);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 15px;
+        }
+
+        /* ⚠️ Rótulo e valor ficavam lado a lado com space-between. A lateral tem
+           280px; com "R$ 240.544,78" os dois enchiam a linha, encostavam e liam
+           como uma palavra só: "Saldo devedorR$ 240.544,78". Empilhado não tem
+           como colidir, por maior que seja o número. */
+        .lateral-linha {
+            display: block;
+        }
+        .lateral-linha + .lateral-linha {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .lateral-linha > span {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--text-light);
+        }
+        .lateral-linha strong {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            font-size: 17px;
+            letter-spacing: -.01em;
+            margin-top: 4px;
+        }
+        .lateral-barra {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--border);
+            margin: 10px 0 0;
+            overflow: hidden;
+        }
+        .lateral-barra span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #2e7d32, #43a047);
+            transition: width .6s ease;
+        }
+
+        /* --- etiqueta da unidade no topo --- */
+        .header-tag {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--accent);
+            background: rgba(211, 47, 47, .08);
+            border: 1px solid rgba(211, 47, 47, .18);
+            padding: 8px 14px;
+            border-radius: 999px;
+        }
+        .header-tag[hidden] { display: none; }
+
+        /* --- o saldo devedor é o número que a pessoa abre a página para ver:
+               ganha destaque, os outros dois ficam de apoio --- */
+        .stats-grid .stat-card:first-child {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .stats-grid .stat-card:first-child .stat-label,
+        .stats-grid .stat-card:first-child .stat-change {
+            color: rgba(255, 255, 255, .62);
+        }
+        .stats-grid .stat-card:first-child .stat-value {
+            color: var(--white);
+            font-size: 34px;
+            letter-spacing: -.02em;
+        }
+
+        /* --- linhas da tabela de parcelas --- */
+        .table-row { transition: background .2s ease; }
+        .table-row:hover { background: var(--gray-50); }
+
+        /* ⚠️ Atraso marcado por COR E TEXTO. Só a cor deixaria de fora quem não
+           distingue vermelho — e aqui a informação é "você está devendo". */
+        .table-row.atrasada {
+            background: rgba(211, 47, 47, .045);
+            box-shadow: inset 3px 0 0 var(--accent);
+        }
+        .table-row.atrasada:hover { background: rgba(211, 47, 47, .075); }
+        .table-row.paga .table-cell:first-child strong { color: var(--text-light); font-weight: 500; }
+
+        /* --- cartão de aviso (em análise / sem imóvel) --- */
+        #avisoAcesso .table-card {
+            border: 1px solid var(--border);
+            background:
+                radial-gradient(600px 200px at 50% -40%, rgba(211,47,47,.06), transparent 70%),
+                var(--white);
+        }
+        #avisoAcesso .section-title {
+            font-size: 18px;
+        }
+
+        /* --- linha "nenhuma parcela encontrada" do filtro --- */
+        .sem-resultado {
+            padding: 22px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* ===================================================================
+           CARTÃO DO IMÓVEL.
+           Substituiu um retângulo escuro com o nome e a situação, e mais nada.
+           Os números que estão aqui já vinham do banco e não apareciam.
+           =================================================================== */
+        /* auto-FIT, nao auto-fill: com auto-fill o navegador mantem as colunas
+           vazias reservadas, entao quem tem um imovel so via um cartao estreito
+           encostado na esquerda e um vazio enorme do lado. Com auto-fit as
+           colunas vazias somem e o cartao ocupa a linha inteira. */
+        #projectsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* Cada cartao vira seu proprio contexto de medida (container query): ele
+           se reorganiza pela largura QUE ELE TEM, nao pela largura da janela.
+           Um imovel so -> o cartao fica largo e vira faixa de uma linha. Dois
+           imoveis lado a lado -> cada um fica estreito e continua empilhado, na
+           MESMA janela. Contar imoveis no JS nao resolveria: dois cartoes numa
+           tela grande sao largos, e dois numa tela media nao sao.
+           Navegador antigo sem suporte ignora o @container e fica com o layout
+           empilhado de sempre, que e o que ja funciona hoje. */
+        .imovel-caixa {
+            container-type: inline-size;
+            display: flex;
+        }
+        .imovel-caixa > .imovel { flex: 1 1 auto; min-width: 0; }
+
+        .imovel {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(150deg, #333333 0%, var(--primary) 55%, #232323 100%);
+            border-radius: 16px;
+            padding: 26px 28px 22px;
+            color: var(--white);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: "cabeca anel" "numeros numeros";
+            gap: 20px 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.14);
+            transition: transform .3s ease, box-shadow .3s ease;
+        }
+        .imovel:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,.2); }
+
+        /* Silhueta de casa em marca d'água. Fica bem apagada de propósito: é
+           textura para o cartão não ser um bloco chapado, não é ilustração. */
+        .imovel-marca {
+            position: absolute;
+            right: -18px;
+            bottom: -26px;
+            width: 190px;
+            height: auto;
+            fill: rgba(255,255,255,.035);
+            pointer-events: none;
+        }
+
+        .imovel-cabeca { grid-area: cabeca; min-width: 0; }
+        .imovel-emp {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.5);
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .imovel-nome {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .imovel-status {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 5px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.1);
+            color: rgba(255,255,255,.8);
+        }
+        .imovel-status.ativo { background: rgba(76,175,80,.2); color: #a5d6a7; }
+        .imovel-status.distrato { background: rgba(211,47,47,.24); color: #ef9a9a; }
+
+        /* --- anel de progresso --- */
+        .imovel-anel { grid-area: anel; position: relative; width: 92px; height: 92px; }
+        .imovel-anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .imovel-anel circle { fill: none; stroke-width: 7; }
+        .imovel-anel .trilho { stroke: rgba(255,255,255,.12); }
+        .imovel-anel .progresso {
+            stroke: var(--accent);
+            stroke-linecap: round;
+            transition: stroke-dasharray .9s ease;
+        }
+        .imovel-anel-texto {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .imovel-anel-texto strong {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 19px;
+            font-weight: 800;
+        }
+        .imovel-anel-texto span {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: rgba(255,255,255,.5);
+            margin-top: 3px;
+        }
+
+        /* --- números do rodapé do cartão --- */
+        .imovel-numeros {
+            grid-area: numeros;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255,255,255,.1);
+        }
+        .imovel-numeros dt {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: rgba(255,255,255,.45);
+            margin-bottom: 4px;
+        }
+        .imovel-numeros dd {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* --- cartão largo: as três zonas cabem numa linha só --- */
+        /* A régua é a largura DO CARTÃO. O traço que separava os números virou
+           uma linha vertical, senão a borda de cima ficaria atravessando o
+           cartão inteiro sem separar nada. */
+        @container (min-width: 620px) {
+            .imovel {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) auto;
+                grid-template-areas: "cabeca numeros anel";
+                align-items: center;
+                gap: 34px;
+                padding: 32px 36px;
+            }
+            .imovel-nome { font-size: 31px; margin-bottom: 14px; }
+            .imovel-numeros {
+                padding-top: 0;
+                padding-left: 34px;
+                border-top: 0;
+                border-left: 1px solid rgba(255,255,255,.1);
+            }
+            .imovel-anel { width: 112px; height: 112px; }
+            .imovel-anel-texto strong { font-size: 23px; }
+            .imovel-anel-texto span { font-size: 10px; }
+            /* A marca d'água sai de trás do anel: 3,5% de opacidade é pouco,
+               mas o suficiente para sujar a leitura do número. */
+            .imovel-marca { width: 250px; right: -46px; bottom: -52px; }
+        }
+
+        /* Em cartão estreito três colunas viram três palavras cortadas. */
+        @container (max-width: 380px) {
+            .imovel { padding: 22px 20px 18px; }
+            .imovel-numeros { grid-template-columns: 1fr 1fr; }
+            .imovel-numeros div:last-child { grid-column: 1 / -1; }
+        }
+
+        @media (max-width: 900px) {
+            .stats-grid .stat-card:first-child .stat-value { font-size: 28px; }
+            .header-tag { display: none; }
+        }
+
+        /* ===================================================================
+           (27/08) PÁGINAS: evolução da obra e futuros projetos, e os filtros
+           rápidos das parcelas.
+           =================================================================== */
+
+        .pagina[hidden] { display: none; }
+
+        /* ⚠️ SEM ISTO O FILTRO NÃO FILTRA. A linha da tabela é `display: grid`, e
+           uma regra do autor vence o `display: none` que o navegador aplica ao
+           atributo `hidden`. O JS marcava a linha como escondida e ela continuava
+           na tela — os botões pareciam não fazer nada.
+           Vale para qualquer elemento com display declarado: esconder por atributo
+           só funciona se o CSS deixar. */
+        .table-row[hidden] { display: none; }
+
+        /* --- logo da marca --- */
+        .logo-container { display: block; margin-bottom: 32px; }
+        .logo-img { width: 100%; max-width: 200px; height: auto; display: block; }
+
+        /* --- aviso de conteúdo de exemplo ---
+           ⚠️ Some sozinho quando as fotos forem reais: é só apagar o bloco no
+           HTML. Enquanto estiver lá, precisa CHAMAR ATENÇÃO — cliente vendo
+           foto de prédio aleatório legendada como "sua obra" é pior que página
+           vazia. Por isso amarelo e não cinza discreto. */
+        .aviso-exemplo {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-left: 4px solid #ffb300;
+            color: #6d4c00;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            line-height: 1.55;
+            margin-bottom: 28px;
+        }
+
+        /* --- filtros rápidos das parcelas --- */
+        .filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .filtro {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .2s ease;
+        }
+        .filtro:hover { border-color: var(--gray); color: var(--primary); }
+        .filtro.ativo {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+        .filtro-num {
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--gray-50);
+            color: var(--text-light);
+            border-radius: 999px;
+            padding: 2px 7px;
+            min-width: 22px;
+            text-align: center;
+        }
+        .filtro.ativo .filtro-num { background: rgba(255,255,255,.18); color: var(--white); }
+        /* O filtro de atraso fica vermelho SÓ quando existe atraso — botão
+           permanentemente vermelho vira ruído e a pessoa para de enxergar. */
+        .filtro[data-filtro="atrasada"].tem-atraso .filtro-num { background: var(--accent); color: var(--white); }
+        .filtro[data-filtro="atrasada"].ativo { background: var(--accent); border-color: var(--accent); }
+
+        /* --- barra de andamento da obra --- */
+        .barra-obra-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 26px 30px 58px;
+        }
+        .barra-obra-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 14px;
+        }
+        .barra-obra-pct {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -.02em;
+        }
+        .barra-obra {
+            position: relative;
+            height: 12px;
+            border-radius: 999px;
+            background: var(--gray-50);
+            border: 1px solid var(--border);
+        }
+        .barra-obra-cheia {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #e53935, var(--accent));
+            transition: width .8s ease;
+        }
+        .barra-marca {
+            position: absolute;
+            top: 22px;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--text-light);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .barra-marca i {
+            display: block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 2px solid var(--border);
+            margin: -28px auto 8px;
+        }
+        .barra-marca.feita i { background: var(--accent); border-color: var(--accent); }
+        .barra-marca.agora i {
+            background: var(--white);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(211,47,47,.18);
+        }
+        .barra-marca.agora { color: var(--accent); font-weight: 600; }
+
+        /* Em tela estreita os rótulos das marcas se sobrepõem e viram borrão.
+           Some com eles e fica só a barra, que continua dizendo o essencial. */
+        @media (max-width: 700px) {
+            .barra-obra-card { padding-bottom: 26px; }
+            .barra-marca { display: none; }
+        }
+
+        /* --- linha do tempo da obra --- */
+        .obra-linha { display: flex; flex-direction: column; gap: 20px; }
+
+        .obra-etapa {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: box-shadow .25s ease;
+        }
+        .obra-etapa:hover { box-shadow: 0 8px 28px rgba(0,0,0,.07); }
+
+        .obra-foto { position: relative; min-height: 170px; background: var(--gray-50); }
+        .obra-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .obra-texto { padding: 22px 24px 22px 0; }
+        .obra-selo {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--gray-50);
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+        .obra-etapa.concluida .obra-selo { background: rgba(46,125,50,.12); color: #2e7d32; }
+        .obra-etapa.atual .obra-selo { background: rgba(211,47,47,.1); color: var(--accent); }
+        .obra-etapa.atual { border-color: rgba(211,47,47,.35); }
+
+        .obra-titulo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--primary);
+        }
+        .obra-data { font-size: 12.5px; color: var(--text-light); margin: 3px 0 10px; }
+        .obra-texto p { font-size: 14px; line-height: 1.6; color: var(--text); }
+
+        /* Etapa ainda não feita fica esmaecida — mas o texto continua legível,
+           porque "a fazer" também é informação que a pessoa quer ler. */
+        .obra-etapa:not(.concluida):not(.atual) .obra-foto img { filter: grayscale(1); opacity: .55; }
+
+        /* --- futuros projetos --- */
+        .projetos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 22px;
+        }
+        .projeto-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .projeto-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.09); }
+
+        .projeto-foto { position: relative; height: 180px; background: var(--gray-50); }
+        .projeto-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .projeto-selo {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            background: var(--white);
+            color: var(--primary);
+            padding: 5px 11px;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        }
+
+        .projeto-corpo { padding: 18px 20px 22px; }
+        .projeto-nome {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary);
+        }
+        .projeto-local { font-size: 12.5px; color: var(--text-light); margin: 3px 0 10px; }
+        .projeto-corpo p { font-size: 13.5px; line-height: 1.6; color: var(--text); }
+
+        @media (max-width: 760px) {
+            .obra-etapa { grid-template-columns: 1fr; }
+            .obra-foto { height: 190px; }
+            .obra-texto { padding: 20px; }
+        }
+
+        /* ===================================================================
+           (27/08) CELULAR
+           ⚠️ ESTE BLOCO É O ÚLTIMO DA FOLHA DE PROPÓSITO. As regras de tela
+           grande vêm todas antes; com a mesma força, quem vem depois vence.
+           Se alguém mover este bloco para cima, as regras de mesa voltam a
+           desfazer o que está aqui e o celular quebra de novo, em silêncio.
+           =================================================================== */
+
+        /* O botão de menu não existe em tela grande: lá a lateral já está
+           sempre visível, e um botão para abrir o que já está aberto confunde. */
+        .bt-menu { display: none; }
+        .lateral-fundo { display: none; }
+
+        @media (max-width: 768px) {
+
+            /* --- 1. o menu --- */
+
+            .bt-menu {
+                display: inline-flex;
+                flex: 0 0 auto;
+                flex-direction: column;
+                justify-content: center;
+                gap: 4px;
+                width: 46px;
+                height: 46px;
+                padding: 0 11px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: var(--white);
+                cursor: pointer;
+            }
+            .bt-menu span {
+                display: block;
+                height: 2px;
+                border-radius: 2px;
+                background: var(--primary);
+                transition: transform .25s ease, opacity .2s ease;
+            }
+            /* Aberto, o traço vira X. A pessoa precisa ver que o mesmo botão
+               fecha — senão procura um "fechar" que não existe. */
+            .bt-menu[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+            .bt-menu[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+            .bt-menu[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+            .sidebar {
+                width: min(300px, 84vw);
+                box-shadow: none;
+            }
+            .sidebar.aberta {
+                transform: translateX(0);
+                box-shadow: 0 0 44px rgba(0, 0, 0, .3);
+            }
+
+            .lateral-fundo {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 998;
+                background: rgba(0, 0, 0, .45);
+            }
+            /* Precisa ser explícito: a regra acima declara display, e regra do
+               autor vence o display:none que o navegador dá ao atributo hidden.
+               É a mesma armadilha que fez o filtro das parcelas não filtrar. */
+            .lateral-fundo[hidden] { display: none; }
+
+            /* Com o menu aberto, o fundo não rola atrás dele. */
+            body.menu-aberto { overflow: hidden; }
+
+            /* --- 2. cabeçalho: menu + busca --- */
+
+            header { padding: 12px 16px; gap: 12px; }
+            .search-bar { max-width: none; }
+
+            /* ⚠️ 16px não é escolha de estilo. Abaixo disso o Safari do iPhone
+               dá zoom sozinho quando a pessoa toca no campo, e a tela fica
+               torta até ela reduzir na mão. */
+            .search-bar input,
+            .auth-campo input {
+                font-size: 16px;
+                min-height: 46px;
+            }
+            .search-bar input { padding: 10px 16px 10px 42px; }
+
+            /* --- 3. parcelas: cartão de duas linhas --- */
+
+            /* Cabeçalho de coluna sem coluna não informa nada: empilhado, virava
+               "VENCIMENTO / PARCELA / VALOR / SITUAÇÃO" solto no topo da lista. */
+            .table-header-row { display: none; }
+
+            .table-row {
+                grid-template-columns: 1fr auto;
+                gap: 5px 12px;
+                padding: 14px 16px;
+                align-items: center;
+            }
+            /* data | selo
+               tipo | valor           — 2 linhas em vez das 4 empilhadas */
+            .table-row .table-cell:nth-child(1) { grid-area: 1 / 1; }
+            .table-row .table-cell:nth-child(4) { grid-area: 1 / 2; justify-self: end; }
+            .table-row .table-cell:nth-child(2) { grid-area: 2 / 1; }
+            .table-row .table-cell:nth-child(3) { grid-area: 2 / 2; justify-self: end; }
+
+            .table-row .table-cell:nth-child(1) strong { font-size: 15px; }
+            .table-row .table-cell:nth-child(2) {
+                font-size: 11.5px;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                color: var(--text-light);
+            }
+            .table-row .table-cell:nth-child(3) {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+            }
+
+            /* No celular não existe passar o mouse. O que existe é o dedo, e o
+               navegador às vezes deixa o :hover grudado depois do toque — a
+               linha ficava deslocada 25px para a direita sem motivo. */
+            .table-row:hover {
+                background: transparent;
+                border-left: 0;
+                padding-left: 16px;
+            }
+            .table-row.atrasada:hover { background: rgba(211, 47, 47, .045); }
+
+            /* --- 4. alvos de toque --- */
+
+            .filtro { min-height: 44px; padding: 10px 16px; font-size: 13.5px; }
+            .nav-item { min-height: 46px; }
+            .logout-btn { min-height: 46px; }
+            .auth-enviar, .auth-aba { min-height: 46px; }
+            .filtros { gap: 8px; }
         }
     </style>
 </head>
@@ -837,7 +1508,7 @@
          instante antes do JS rodar — e quem tirasse print pegaria o painel. -->
     <div class="auth-overlay" id="authOverlay">
       <div class="auth-card">
-        <div class="auth-marca">CENTRAL <span>DPR</span></div>
+        <img class="auth-logo" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
         <p class="auth-sub">Portal do Cliente</p>
 
         <div class="auth-abas" role="tablist">
@@ -909,229 +1580,357 @@
 
     <div class="container">
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="lateral">
+            <!-- ⚠️ O logo de verdade já traz "construtora & incorporadora" dentro
+                 dele. Por isso substitui o desenho E o texto que existiam aqui
+                 separados: marca é uma peça só, não se remonta com um pedaço de
+                 imagem e outro de texto — o espaçamento e o peso da fonte nunca
+                 batem com o original. -->
             <div class="logo-container">
-                <div class="logo-graphic">
-                    <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Left red vertical bar -->
-                        <rect x="10" y="20" width="20" height="60" fill="#d32f2f" rx="2"/>
-                        <!-- Center red vertical bar (taller) -->
-                        <rect x="40" y="10" width="20" height="80" fill="#d32f2f" rx="2"/>
-                        <!-- Right red vertical bar -->
-                        <rect x="70" y="20" width="20" height="60" fill="#d32f2f" rx="2"/>
-                    </svg>
-                </div>
-                <div class="logo-text">
-                    DPR
-                    <span class="sub">Construção</span>
-                </div>
+                <img class="logo-img" src="logo-dpr.png"
+                     alt="DPR Construtora &amp; Incorporadora">
             </div>
 
             <div class="user-card">
-                <div class="user-avatar" id="userInitial">L</div>
-                <div class="user-name" id="userName">Luana de Barros</div>
-                <div class="user-role">Cliente Premium</div>
+                <div class="user-avatar" id="userInitial">&nbsp;</div>
+                <div class="user-texto">
+                    <div class="user-name" id="userName">&nbsp;</div>
+                    <div class="user-role" id="userUnidade">Cliente</div>
+                </div>
             </div>
 
+            <!-- ⚠️ (27/08) O menu tinha Projetos, Documentos, Relatórios, Mensagens,
+                 Suporte e Preferências — nenhum levava a lugar nenhum. Item de menu que
+                 não faz nada é pior que menu curto: o cliente clica, nada acontece, e a
+                 impressão é de sistema quebrado. Ficou só o que existe de verdade. -->
             <nav class="nav-section">
-                <div class="nav-item active">
+                <div class="nav-item active" data-pagina="extrato">
                     <div class="nav-icon">▨</div>
-                    <span>Dashboard</span>
+                    <span>Meu extrato</span>
                 </div>
-                <div class="nav-item">
-                    <div class="nav-icon">◻</div>
-                    <span>Projetos</span>
+                <div class="nav-item" data-pagina="obra">
+                    <div class="nav-icon">▲</div>
+                    <span>Evolução da obra</span>
                 </div>
-                <div class="nav-item">
-                    <div class="nav-icon">▬</div>
-                    <span>Documentos</span>
-                </div>
-                <div class="nav-item">
-                    <div class="nav-icon">≡</div>
-                    <span>Relatórios</span>
+                <div class="nav-item" data-pagina="projetos">
+                    <div class="nav-icon">◈</div>
+                    <span>Futuros projetos</span>
                 </div>
             </nav>
 
-            <div class="nav-section">
-                <div class="nav-label">Comunicação</div>
-                <div class="nav-item">
-                    <div class="nav-icon">◯</div>
-                    <span>Mensagens</span>
-                </div>
-                <div class="nav-item">
-                    <div class="nav-icon">◎</div>
-                    <span>Suporte</span>
-                </div>
-            </div>
-
-            <div class="nav-section">
-                <div class="nav-label">Configuração</div>
-                <div class="nav-item">
-                    <div class="nav-icon">⚙</div>
-                    <span>Preferências</span>
+            <div class="nav-section" id="resumoLateral" hidden>
+                <div class="nav-label">Resumo</div>
+                <div class="lateral-caixa">
+                    <div class="lateral-linha">
+                        <span>Saldo devedor</span>
+                        <strong id="lateralSaldo">—</strong>
+                    </div>
+                    <div class="lateral-linha">
+                        <span>Pagas</span>
+                        <strong id="lateralPagas">—</strong>
+                        <div class="lateral-barra"><span id="lateralBarra" style="width:0%"></span></div>
+                    </div>
                 </div>
             </div>
 
-            <button class="logout-btn" onclick="handleLogout()">Sair</button>
+            <button class="logout-btn" id="btSair">Sair</button>
         </aside>
+
+        <!-- Fundo escurecido atrás da lateral aberta no celular. Serve para duas
+             coisas: separar o menu do conteúdo e dar uma área grande de "tocar
+             fora para fechar", que é como as pessoas esperam fechar um menu. -->
+        <div class="lateral-fundo" id="lateralFundo" hidden></div>
 
         <!-- MAIN CONTENT -->
         <main class="main">
             <!-- HEADER -->
             <header>
+                <!-- ⚠️ Só aparece no celular. Sem ele a lateral ficava inalcançável:
+                     em tela estreita ela sai para fora da tela e não havia nada que
+                     a trouxesse de volta — "Evolução da obra", "Futuros projetos", o
+                     resumo e o "Sair" simplesmente não existiam no telefone. -->
+                <button type="button" class="bt-menu" id="btMenu"
+                        aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral">
+                    <span></span><span></span><span></span>
+                </button>
+
+                <!-- ⚠️ (27/08) A busca não buscava nada. Agora ela FILTRA as parcelas
+                     de verdade — por mês, ano, tipo ou situação. Campo que não faz nada
+                     ensina o cliente a não confiar no resto da tela. -->
                 <div class="search-bar">
                     <div class="search-icon">🔍</div>
-                    <input type="text" placeholder="Buscar por nome...">
+                    <input type="text" id="buscaParcela" autocomplete="off"
+                           placeholder="Filtrar parcelas: 2026, ATO, em atraso...">
                 </div>
 
+                <!-- Os ícones de sino, engrenagem e perfil saíram: nenhum tinha função,
+                     e o sino ainda mostrava uma bolinha de notificação que nunca acenderia. -->
                 <div class="header-right">
-                    <div class="header-icon">
-                        🔔
-                        <div class="notification-dot"></div>
-                    </div>
-                    <div class="header-icon">⚙</div>
-                    <div class="header-icon">👤</div>
+                    <div class="header-tag" id="headerUnidade" hidden></div>
                 </div>
             </header>
 
             <!-- CONTENT -->
             <div class="content">
+                <div id="paginaExtrato" class="pagina">
                 <!-- WELCOME BANNER -->
                 <div class="welcome-banner">
                     <div class="welcome-content">
-                        <div class="welcome-title">Bem-vindo, <span id="firstName">Luana</span></div>
-                        <div class="welcome-subtitle">Acompanhe seus projetos em tempo real</div>
+                        <div class="welcome-title">Bem-vindo, <span id="firstName">&nbsp;</span></div>
+                        <div class="welcome-subtitle" id="welcomeSub">Carregando seu extrato...</div>
                     </div>
                 </div>
+
+                <!-- AVISO DE ACESSO — aparece quando NÃO há extrato para mostrar.
+                     ⚠️ Fica FORA do #conteudoExtrato de propósito: os dois nunca aparecem
+                     juntos, e a pessoa sempre vê alguma explicação em vez de tela vazia. -->
+                <div class="section" id="avisoAcesso" hidden>
+                    <div class="table-card" style="padding: 32px; text-align: center;">
+                        <div class="section-title" id="avisoTitulo" style="margin-bottom: 8px;"></div>
+                        <div id="avisoTexto" style="opacity: .75; line-height: 1.6;"></div>
+                    </div>
+                </div>
+
+                <!-- ⚠️ Todo o extrato nasce ESCONDIDO. Se nascesse visível, o cliente veria
+                     por um instante os cartões vazios (ou pior, o conteúdo de outra sessão
+                     em cache) antes do JS decidir o que mostrar. -->
+                <div id="conteudoExtrato" hidden>
 
                 <!-- STATS -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Projetos Ativos</div>
-                        <div class="stat-value" id="activeProjects">3</div>
-                        <div class="stat-change">Em progresso</div>
+                        <div class="stat-label">Saldo devedor</div>
+                        <div class="stat-value" id="statSaldo">—</div>
+                        <div class="stat-change" id="statSaldoNota">quanto ainda falta pagar</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Taxa de Conclusão</div>
-                        <div class="stat-value" id="avgProgress">67%</div>
-                        <div class="stat-change">Aumentando</div>
+                        <div class="stat-label">Parcelas pagas</div>
+                        <div class="stat-value" id="statPagas">—</div>
+                        <div class="stat-change" id="statPagasNota">&nbsp;</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Documentos</div>
-                        <div class="stat-value" id="docCount">12</div>
-                        <div class="stat-change">Disponíveis</div>
+                        <div class="stat-label">Próximo vencimento</div>
+                        <div class="stat-value" id="statProximo">—</div>
+                        <div class="stat-change" id="statProximoNota">&nbsp;</div>
                     </div>
                 </div>
 
-                <!-- PROJECTS SECTION -->
+                <!-- IMÓVEIS — uma pessoa pode ter mais de uma unidade (caso real na
+                     planilha: o mesmo comprador aparece em duas casas). -->
                 <div class="section">
-                    <div class="section-title">Meus Projetos</div>
+                    <div class="section-title" id="tituloImoveis">Meu imóvel</div>
                     <div class="cards-grid" id="projectsGrid">
-                        <div class="project-card-item">
-                            <div class="card-content">
-                                <div class="card-name">Condomínio Horizonte</div>
-                                <div class="card-tag">Residencial</div>
-                            </div>
-                            <div class="card-users">
-                                <div class="card-users-avatars">
-                                    <div class="card-user-avatar">L</div>
-                                    <div class="card-user-avatar">M</div>
-                                    <div class="card-user-avatar">+3</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-card-item">
-                            <div class="card-content">
-                                <div class="card-name">Office Premium</div>
-                                <div class="card-tag">Comercial</div>
-                            </div>
-                            <div class="card-users">
-                                <div class="card-users-avatars">
-                                    <div class="card-user-avatar">C</div>
-                                    <div class="card-user-avatar">R</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-card-item">
-                            <div class="card-content">
-                                <div class="card-name">Moderna West</div>
-                                <div class="card-tag">Misto</div>
-                            </div>
-                            <div class="card-users">
-                                <div class="card-users-avatars">
-                                    <div class="card-user-avatar">M</div>
-                                    <div class="card-user-avatar">W</div>
-                                    <div class="card-user-avatar">+2</div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <!-- CHARTS SECTION -->
-                <div class="section">
-                    <div class="section-title">Análise de Progresso</div>
-                    <div class="charts-grid">
-                        <div class="chart-card">
-                            <div class="chart-title">
-                                <span>Progresso Mensal</span>
-                                <span class="chart-subtitle">67% concluído</span>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="progressChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="chart-card">
-                            <div class="chart-title">
-                                <span>Distribuição de Projetos</span>
-                                <span class="chart-subtitle">Status atual</span>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="distributionChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- DOCUMENTS SECTION -->
+
+                <!-- PARCELAS -->
                 <div class="section">
-                    <div class="section-title">Documentos Recentes</div>
+                    <div class="section-title">Minhas parcelas</div>
+
+                    <!-- Filtros rápidos. Somam com a busca do topo: dá para pedir
+                         "em atraso" e ainda digitar 2026 para ver só as daquele ano. -->
+                    <div class="filtros">
+                        <button type="button" class="filtro ativo" data-filtro="todas">Todas <span class="filtro-num" id="numTodas">0</span></button>
+                        <button type="button" class="filtro" data-filtro="atrasada">Em atraso <span class="filtro-num" id="numAtrasadas">0</span></button>
+                        <button type="button" class="filtro" data-filtro="aberta">Em aberto <span class="filtro-num" id="numAbertas">0</span></button>
+                        <button type="button" class="filtro" data-filtro="paga">Pagas <span class="filtro-num" id="numPagas">0</span></button>
+                    </div>
+
                     <div class="table-card">
                         <div class="table-header-row">
-                            <div>Nome do Documento</div>
-                            <div>Tipo</div>
-                            <div>Data</div>
-                            <div>Status</div>
+                            <div>Vencimento</div>
+                            <div>Parcela</div>
+                            <div>Valor</div>
+                            <div>Situação</div>
                         </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Contrato de Obra - Horizonte</strong></div>
-                            <div class="table-cell">PDF</div>
-                            <div class="table-cell">15 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-active">Ativo</span></div>
+                        <div id="listaParcelas"></div>
+                    </div>
+                </div>
+
+                </div><!-- fim do #conteudoExtrato -->
+                </div><!-- fim da #paginaExtrato -->
+
+                <!-- ===============================================================
+                     EVOLUÇÃO DA OBRA
+                     ⚠️ As fotos são de banco de imagens, NÃO são da obra. Enquanto
+                     for assim, o aviso no topo desta página precisa continuar lá:
+                     cliente vendo foto de prédio aleatório legendada como "sua obra"
+                     é pior que página vazia.
+                     =============================================================== -->
+                <div id="paginaObra" class="pagina" hidden>
+                    <div class="welcome-banner">
+                        <div class="welcome-content">
+                            <div class="welcome-title">Evolução da obra</div>
+                            <div class="welcome-subtitle">Villagio Caucaia II</div>
                         </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Relatório Mensal - Dezembro</strong></div>
-                            <div class="table-cell">DOC</div>
-                            <div class="table-cell">10 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-active">Ativo</span></div>
+                    </div>
+
+                    <div class="aviso-exemplo">
+                        <strong>Conteúdo de demonstração.</strong>
+                        As fotos e as datas abaixo são de exemplo, para você ver como a
+                        página fica. Ainda não são da obra do Villagio Caucaia II.
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Andamento geral</div>
+                            <div class="stat-value">68%</div>
+                            <div class="stat-change">exemplo</div>
                         </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Orçamento Revisado - Office Premium</strong></div>
-                            <div class="table-cell">XLS</div>
-                            <div class="table-cell">05 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-pending">Pendente</span></div>
+                        <div class="stat-card">
+                            <div class="stat-label">Etapa atual</div>
+                            <div class="stat-value" style="font-size:22px">Acabamento</div>
+                            <div class="stat-change">exemplo</div>
                         </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Cronograma Atualizado</strong></div>
-                            <div class="table-cell">PDF</div>
-                            <div class="table-cell">02 de Jan 2026</div>
-                            <div class="table-cell"><span class="status-badge status-completed">Completo</span></div>
+                        <div class="stat-card">
+                            <div class="stat-label">Previsão de entrega</div>
+                            <div class="stat-value" style="font-size:22px">Dez / 2026</div>
+                            <div class="stat-change">exemplo</div>
                         </div>
-                        <div class="table-row">
-                            <div class="table-cell"><strong>Laudo Estrutural - Moderna West</strong></div>
-                            <div class="table-cell">PDF</div>
-                            <div class="table-cell">28 de Dez 2025</div>
-                            <div class="table-cell"><span class="status-badge status-active">Ativo</span></div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Andamento</div>
+                        <div class="barra-obra-card">
+                            <div class="barra-obra-topo">
+                                <span>Início da obra</span>
+                                <strong class="barra-obra-pct">68%</strong>
+                                <span>Entrega</span>
+                            </div>
+                            <div class="barra-obra">
+                                <div class="barra-obra-cheia" style="width:68%"></div>
+                                <!-- Marcas das etapas. Ficam POR CIMA da barra para a
+                                     pessoa ver onde a obra está em relação a elas, e não
+                                     só um número solto. -->
+                                <span class="barra-marca feita" style="left:15%"><i></i>Fundação</span>
+                                <span class="barra-marca feita" style="left:42%"><i></i>Estrutura</span>
+                                <span class="barra-marca agora" style="left:68%"><i></i>Acabamento</span>
+                                <span class="barra-marca" style="left:96%"><i></i>Entrega</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Linha do tempo</div>
+                        <div class="obra-linha">
+
+                            <div class="obra-etapa concluida">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Fundação (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">Concluída</div>
+                                    <div class="obra-titulo">Fundação e terraplenagem</div>
+                                    <div class="obra-data">Março de 2025</div>
+                                    <p>Preparo do terreno, sapatas e baldrames das 72 unidades.</p>
+                                </div>
+                            </div>
+
+                            <div class="obra-etapa concluida">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Estrutura (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">Concluída</div>
+                                    <div class="obra-titulo">Estrutura e alvenaria</div>
+                                    <div class="obra-data">Agosto de 2025</div>
+                                    <p>Levantamento das paredes e lajes, casa por casa.</p>
+                                </div>
+                            </div>
+
+                            <div class="obra-etapa atual">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Acabamento (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">Em andamento</div>
+                                    <div class="obra-titulo">Instalações e acabamento</div>
+                                    <div class="obra-data">desde Fevereiro de 2026</div>
+                                    <p>Elétrica, hidráulica, revestimentos e pintura.</p>
+                                </div>
+                            </div>
+
+                            <div class="obra-etapa">
+                                <div class="obra-foto">
+                                    <img loading="lazy" alt="Entrega (foto de exemplo)"
+                                         src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=900&q=80">
+                                </div>
+                                <div class="obra-texto">
+                                    <div class="obra-selo">A fazer</div>
+                                    <div class="obra-titulo">Paisagismo e entrega</div>
+                                    <div class="obra-data">previsão: Dezembro de 2026</div>
+                                    <p>Áreas comuns, vistoria e entrega das chaves.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===============================================================
+                     FUTUROS PROJETOS — mesmo aviso: fotos de banco de imagens.
+                     =============================================================== -->
+                <div id="paginaProjetos" class="pagina" hidden>
+                    <div class="welcome-banner">
+                        <div class="welcome-content">
+                            <div class="welcome-title">Futuros projetos</div>
+                            <div class="welcome-subtitle">O que a DPR está preparando</div>
+                        </div>
+                    </div>
+
+                    <div class="aviso-exemplo">
+                        <strong>Conteúdo de demonstração.</strong>
+                        Os projetos abaixo são de exemplo, para você ver como a página
+                        fica. Não representam lançamentos reais da DPR.
+                    </div>
+
+                    <div class="section">
+                        <div class="projetos-grid">
+
+                            <div class="projeto-card">
+                                <div class="projeto-foto">
+                                    <img loading="lazy" alt="Projeto de exemplo"
+                                         src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&q=80">
+                                    <span class="projeto-selo">Lançamento</span>
+                                </div>
+                                <div class="projeto-corpo">
+                                    <div class="projeto-nome">Villagio Caucaia III</div>
+                                    <div class="projeto-local">Caucaia do Alto · SP</div>
+                                    <p>Nova fase do Villagio, com 48 casas e área de lazer ampliada.</p>
+                                </div>
+                            </div>
+
+                            <div class="projeto-card">
+                                <div class="projeto-foto">
+                                    <img loading="lazy" alt="Projeto de exemplo"
+                                         src="https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?w=900&q=80">
+                                    <span class="projeto-selo">Em estudo</span>
+                                </div>
+                                <div class="projeto-corpo">
+                                    <div class="projeto-nome">Residencial Parque Verde</div>
+                                    <div class="projeto-local">Cotia · SP</div>
+                                    <p>Condomínio fechado com foco em áreas verdes e mobilidade.</p>
+                                </div>
+                            </div>
+
+                            <div class="projeto-card">
+                                <div class="projeto-foto">
+                                    <img loading="lazy" alt="Projeto de exemplo"
+                                         src="https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?w=900&q=80">
+                                    <span class="projeto-selo">Em estudo</span>
+                                </div>
+                                <div class="projeto-corpo">
+                                    <div class="projeto-nome">DPR Corporate</div>
+                                    <div class="projeto-local">São Paulo · SP</div>
+                                    <p>Primeiro empreendimento comercial da construtora.</p>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -1140,78 +1939,345 @@
     </div>
 
     <script>
-        // Charts
-        const progressCtx = document.getElementById('progressChart').getContext('2d');
-        new Chart(progressCtx, {
-            type: 'line',
-            data: {
-                labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
-                datasets: [{
-                    label: 'Progresso',
-                    data: [15, 30, 42, 55, 60, 67],
-                    borderColor: '#d32f2f',
-                    backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#d32f2f',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        max: 100, 
-                        grid: { color: 'rgba(0,0,0,0.03)' },
-                        ticks: { font: { size: 12 }, color: '#757575' }
-                    },
-                    x: { 
-                        grid: { display: false },
-                        ticks: { font: { size: 12 }, color: '#757575' }
-                    }
-                }
-            }
-        });
+        /* ===================================================================
+           (27/08) EXTRATO DO CLIENTE.
 
-        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
-        new Chart(distributionCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Ativo', 'Pendente', 'Concluído'],
-                datasets: [{
-                    data: [67, 20, 13],
-                    backgroundColor: ['#d32f2f', '#ff9800', '#4caf50'],
-                    borderColor: ['#fff', '#fff', '#fff'],
-                    borderWidth: 2,
-                    offset: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { 
-                        position: 'bottom',
-                        labels: { font: { size: 12 }, color: '#757575', padding: 16 }
-                    } 
+           Substitui os gráficos e números de exemplo que vinham no modelo.
+           Tudo aqui sai das tabelas `unidades` e `parcelas` do Supabase.
+
+           ⚠️ O que protege os dados é o RLS, não esta tela. A consulta abaixo
+           não filtra por pessoa: quem filtra é o banco, que só devolve a casa
+           de quem tem vínculo APROVADO. Se alguém chamar a API por fora da
+           Central, recebe vazio do mesmo jeito.
+           =================================================================== */
+
+        // Os gráficos nascem vazios e são criados só quando há dado. Criar antes
+        // deixaria a tela com dois gráficos de exemplo por um instante — e num
+        // extrato financeiro número de mentira na tela, mesmo por um segundo,
+        // é pior que espaço em branco.
+
+        const dinheiro = (v) => (Number(v) || 0)
+            .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // ⚠️ Formata a data SEM criar um objeto Date. `new Date('2026-08-25')` é
+        // lido como UTC e, no fuso do Brasil, volta um dia — a parcela do dia 25
+        // apareceria como 24 para o cliente.
+        const dataBR = (iso) => {
+            const s = String(iso || '').slice(0, 10);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return '—';
+            const [a, m, d] = s.split('-');
+            return d + '/' + m + '/' + a;
+        };
+
+        function mostrarAviso(titulo, texto) {
+            $$('conteudoExtrato').hidden = true;
+            $$('avisoTitulo').textContent = titulo;
+            $$('avisoTexto').textContent = texto;
+            $$('avisoAcesso').hidden = false;
+        }
+
+        async function carregarExtrato(nome) {
+            $$('welcomeSub').textContent = 'Carregando seu extrato...';
+            try {
+                // 1. Pede o vínculo. A função procura a casa PELO NOME por dentro do
+                //    banco e cria o pedido como pendente. Chamada SEMPRE: é idempotente
+                //    (não cria pedido repetido) e cobre o caso de a casa ter entrado no
+                //    sistema depois de a pessoa já ter se cadastrado.
+                await sb.rpc('solicitar_acesso', { p_nome: nome });
+
+                // 2. Lê as casas. O RLS devolve só as de vínculo APROVADO.
+                const { data: unidades, error: e1 } = await sb
+                    .from('unidades')
+                    .select('id, empreendimento, unidade, comprador, status_contrato, valor_venda, saldo_devedor_atual, data_assinatura')
+                    .order('unidade');
+                if (e1) throw e1;
+
+                if (!unidades || !unidades.length) {
+                    // Vazio tem DOIS motivos, e a pessoa precisa saber qual: se é para
+                    // esperar ou se é para falar com a DPR. A tabela de vínculos ela
+                    // pode ler (só os dela), então dá para distinguir.
+                    const { data: pedidos } = await sb.from('vinculos').select('situacao');
+                    const temPedido = Array.isArray(pedidos) && pedidos.length > 0;
+                    $$('welcomeSub').textContent = temPedido
+                        ? 'Seu acesso está em análise'
+                        : 'Nenhum imóvel encontrado';
+                    if (temPedido) {
+                        mostrarAviso(
+                            'Seu acesso está em análise',
+                            'Encontramos um imóvel no seu nome e a DPR está confirmando. '
+                            + 'Assim que for liberado, seu extrato aparece aqui.'
+                        );
+                    } else {
+                        // ⚠️ NÃO dizemos se existe imóvel com nome parecido. Confirmar
+                        // isso deixaria descobrir compradores por tentativa e erro.
+                        mostrarAviso(
+                            'Não encontramos um imóvel no seu nome',
+                            'Confira se o nome do seu cadastro está igual ao do contrato. '
+                            + 'Se estiver certo, fale com a DPR para liberarem seu acesso.'
+                        );
+                    }
+                    return;
                 }
+
+                // 3. As parcelas das casas liberadas.
+                const ids = unidades.map((u) => u.id);
+                const { data: parcelas, error: e2 } = await sb
+                    .from('parcelas')
+                    .select('unidade_id, ordem, data_vencimento, tipo_parcela, parcela_corrigida, parcela_construtora, pago, saldo_devedor')
+                    .in('unidade_id', ids)
+                    .order('ordem');
+                if (e2) throw e2;
+
+                renderizarExtrato(unidades, parcelas || []);
+            } catch (e) {
+                console.error('[extrato]', e);
+                mostrarAviso(
+                    'Não conseguimos carregar seu extrato agora',
+                    'Tente novamente em alguns instantes. Se continuar, fale com a DPR.'
+                );
             }
-        });
+        }
+
+        function renderizarExtrato(unidades, parcelas) {
+            $$('avisoAcesso').hidden = true;
+            $$('conteudoExtrato').hidden = false;
+
+            const casa = unidades[0];
+            $$('welcomeSub').textContent = unidades.length > 1
+                ? unidades.length + ' imóveis · ' + casa.empreendimento
+                : casa.unidade + ' · ' + casa.empreendimento;
+            $$('tituloImoveis').textContent = unidades.length > 1 ? 'Meus imóveis' : 'Meu imóvel';
+
+            // --- cartões dos imóveis ---
+            // O cartão antigo mostrava só o nome e a situação num retângulo escuro
+            // quase todo vazio. Os números que a pessoa quer ver do imóvel dela já
+            // estavam no banco e não apareciam em lugar nenhum.
+            $$('projectsGrid').innerHTML = unidades.map((u) => {
+                const doImovel = parcelas.filter((p) => p.unidade_id === u.id);
+                const pagasAqui = doImovel.filter((p) => p.pago).length;
+                const pct = doImovel.length ? Math.round((pagasAqui / doImovel.length) * 100) : 0;
+
+                // Anel de progresso. O traço é desenhado a partir do PERÍMETRO do
+                // círculo: 2·π·34 ≈ 213.6. O "vazio" é o que falta pagar.
+                const perimetro = 213.6;
+                const preenchido = (perimetro * pct) / 100;
+
+                const situacao = String(u.status_contrato || 'ativo').replace(/_/g, ' ');
+                const classeSituacao = String(u.status_contrato || '').indexOf('distrato') === 0
+                    ? 'distrato'
+                    : (u.status_contrato === 'ativo' ? 'ativo' : 'neutro');
+
+                return ''
+                // A caixa existe só para medir: é ela que carrega o
+                // container-type. Sem um elemento por fora, o cartão não pode
+                // consultar a própria largura — um elemento não é seu próprio
+                // container.
+                + '<div class="imovel-caixa">'
+                + '<article class="imovel">'
+                +   // Silhueta de casa como marca d'água. É decoração: fica marcada
+                    // como escondida para leitor de tela, senão ela seria anunciada
+                    // como se fosse conteúdo.
+                    '<svg class="imovel-marca" viewBox="0 0 120 100" aria-hidden="true">'
+                +     '<path d="M60 8 L112 46 L100 46 L100 94 L20 94 L20 46 L8 46 Z"/>'
+                +   '</svg>'
+                +   '<div class="imovel-cabeca">'
+                +     '<span class="imovel-emp">' + escapar(u.empreendimento) + '</span>'
+                +     '<h3 class="imovel-nome">' + escapar(u.unidade) + '</h3>'
+                +     '<span class="imovel-status ' + classeSituacao + '">' + escapar(situacao) + '</span>'
+                +   '</div>'
+                +   '<div class="imovel-anel">'
+                +     '<svg viewBox="0 0 80 80" aria-hidden="true">'
+                +       '<circle class="trilho" cx="40" cy="40" r="34"/>'
+                +       '<circle class="progresso" cx="40" cy="40" r="34"'
+                +         ' stroke-dasharray="' + preenchido.toFixed(1) + ' ' + perimetro + '"/>'
+                +     '</svg>'
+                +     '<div class="imovel-anel-texto">'
+                +       '<strong>' + pct + '%</strong><span>quitado</span>'
+                +     '</div>'
+                +   '</div>'
+                +   '<dl class="imovel-numeros">'
+                +     '<div><dt>Valor do imóvel</dt><dd>' + (Number(u.valor_venda) > 0 ? dinheiro(u.valor_venda) : '—') + '</dd></div>'
+                +     '<div><dt>Parcelas pagas</dt><dd>' + pagasAqui + ' de ' + doImovel.length + '</dd></div>'
+                +     '<div><dt>Contrato desde</dt><dd>' + dataBR(u.data_assinatura) + '</dd></div>'
+                +   '</dl>'
+                + '</article>'
+                + '</div>';
+            }).join('');
+
+            // --- números do topo ---
+            // ⚠️ O saldo é SOMADO quando há mais de um imóvel. Mostrar só o do
+            // primeiro faria a pessoa achar que deve menos do que deve.
+            const saldo = unidades.reduce((s, u) => s + (Number(u.saldo_devedor_atual) || 0), 0);
+            $$('statSaldo').textContent = saldo > 0 ? dinheiro(saldo) : '—';
+            $$('statSaldoNota').textContent = saldo > 0
+                ? (unidades.length > 1 ? 'somando seus imóveis' : 'quanto ainda falta pagar')
+                : 'valor não informado';
+
+            const pagas = parcelas.filter((p) => p.pago).length;
+            $$('statPagas').textContent = pagas + ' de ' + parcelas.length;
+            $$('statPagasNota').textContent = parcelas.length
+                ? Math.round((pagas / parcelas.length) * 100) + '% do carnê'
+                : ' ';
+
+            // Próxima em aberto: a primeira não paga com vencimento de hoje em diante.
+            // Comparação por TEXTO (AAAA-MM-DD ordena sozinho) para não cair na
+            // armadilha de fuso do Date.
+            const hoje = new Date().toISOString().slice(0, 10);
+            const proxima = parcelas
+                .filter((p) => !p.pago && p.data_vencimento && p.data_vencimento >= hoje)
+                .sort((a, b) => (a.data_vencimento < b.data_vencimento ? -1 : 1))[0];
+            const atrasadas = parcelas.filter((p) => !p.pago && p.data_vencimento && p.data_vencimento < hoje).length;
+            $$('statProximo').textContent = proxima ? dataBR(proxima.data_vencimento) : '—';
+            $$('statProximoNota').textContent = proxima
+                ? dinheiro(valorDaParcela(proxima))
+                : (parcelas.length && !atrasadas ? 'nenhuma em aberto' : ' ');
+
+            // --- lista de parcelas ---
+            $$('listaParcelas').innerHTML = parcelas.map((p) => {
+                const emAtraso = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
+                const situacao = p.pago ? 'Paga' : (emAtraso ? 'Em atraso' : 'Em aberto');
+                const classe = p.pago ? 'paga' : (emAtraso ? 'atrasada' : '');
+                const selo = p.pago
+                    ? '<span class="status-badge status-completed">Paga</span>'
+                    : (emAtraso
+                        ? '<span class="status-badge status-pending">Em atraso</span>'
+                        : '<span class="status-badge status-active">Em aberto</span>');
+                // `data-busca` guarda o texto da linha já normalizado, para o filtro não
+                // ter que ler o HTML de volta nem se preocupar com acento e maiúscula.
+                const busca = normalizarBusca(
+                    dataBR(p.data_vencimento) + ' ' + (p.tipo_parcela || '') + ' ' + situacao
+                );
+                return '<div class="table-row ' + classe + '" data-busca="' + escapar(busca) + '">'
+                    + '<div class="table-cell"><strong>' + dataBR(p.data_vencimento) + '</strong></div>'
+                    + '<div class="table-cell">' + escapar(p.tipo_parcela || '—') + '</div>'
+                    + '<div class="table-cell">' + dinheiro(valorDaParcela(p)) + '</div>'
+                    + '<div class="table-cell">' + selo + '</div>'
+                    + '</div>';
+            }).join('') || '<div class="sem-resultado">Nenhuma parcela cadastrada.</div>';
+
+            // --- resumo na lateral e etiqueta no topo ---
+            const rotulo = unidades.length > 1
+                ? unidades.length + ' imóveis'
+                : casa.unidade;
+            $$('userUnidade').textContent = rotulo;
+            $$('headerUnidade').textContent = rotulo + ' · ' + casa.empreendimento;
+            $$('headerUnidade').hidden = false;
+            $$('lateralSaldo').textContent = saldo > 0 ? dinheiro(saldo) : '—';
+            $$('lateralPagas').textContent = pagas + '/' + parcelas.length;
+            $$('lateralBarra').style.width = parcelas.length
+                ? Math.round((pagas / parcelas.length) * 100) + '%'
+                : '0%';
+            $$('resumoLateral').hidden = false;
+
+            contarFiltros();
+            aplicarFiltro();
+        }
+
+        // A parcela corrigida é o que a pessoa paga de fato; a da construtora é o
+        // valor antes da correção. Prefere a corrigida e cai na outra quando falta.
+        function valorDaParcela(p) {
+            const corrigida = Number(p.parcela_corrigida) || 0;
+            return corrigida > 0 ? corrigida : (Number(p.parcela_construtora) || 0);
+        }
+
+        // ⚠️ Sem acento e em minúscula, para o filtro achar "atraso" digitando
+        // "atraso" e "março" digitando "marco". A faixa dos acentos é montada por
+        // código de caractere: escrever os literais aqui vira lixo se o arquivo
+        // mudar de codificação, e o defeito seria silencioso.
+        const RE_ACENTOS_BUSCA = new RegExp('[' + String.fromCharCode(768) + '-' + String.fromCharCode(879) + ']', 'g');
+        function normalizarBusca(s) {
+            return String(s || '').normalize('NFD').replace(RE_ACENTOS_BUSCA, '').toLowerCase().trim();
+        }
+
+        // Qual botão de situação está ligado: todas | atrasada | aberta | paga.
+        let filtroSituacao = 'todas';
+
+        // A situação sai das CLASSES da linha, que já foram postas na renderização.
+        // Guardar de novo num atributo seria duas fontes para a mesma verdade.
+        function situacaoDaLinha(l) {
+            if (l.classList.contains('paga')) return 'paga';
+            if (l.classList.contains('atrasada')) return 'atrasada';
+            return 'aberta';
+        }
+
+        // Filtra as linhas já renderizadas — nada de nova consulta ao banco por
+        // tecla digitada. Os dois filtros SOMAM: dá para pedir "em atraso" e ainda
+        // digitar 2026 para ver só as daquele ano.
+        function aplicarFiltro() {
+            const termo = normalizarBusca($$('buscaParcela') ? $$('buscaParcela').value : '');
+            const linhas = $$('listaParcelas').querySelectorAll('.table-row');
+            let visiveis = 0;
+            linhas.forEach((l) => {
+                const bateSituacao = filtroSituacao === 'todas' || situacaoDaLinha(l) === filtroSituacao;
+                const bateTexto = !termo || (l.getAttribute('data-busca') || '').indexOf(termo) !== -1;
+                const bate = bateSituacao && bateTexto;
+                l.hidden = !bate;
+                if (bate) visiveis++;
+            });
+
+            // Filtro que esconde tudo e não explica parece tela quebrada.
+            const antigo = document.getElementById('semResultado');
+            if (antigo) antigo.remove();
+            if (linhas.length && !visiveis) {
+                const aviso = document.createElement('div');
+                aviso.id = 'semResultado';
+                aviso.className = 'sem-resultado';
+                // A mensagem diz qual dos dois filtros está cortando — senão a pessoa
+                // apaga a busca, continua vazio, e não entende que o botão é o motivo.
+                const rotulos = { atrasada: 'em atraso', aberta: 'em aberto', paga: 'pagas' };
+                const busca = $$('buscaParcela') ? $$('buscaParcela').value.trim() : '';
+                aviso.textContent = 'Nenhuma parcela'
+                    + (filtroSituacao !== 'todas' ? ' ' + rotulos[filtroSituacao] : '')
+                    + (busca ? ' com "' + busca + '"' : '')
+                    + '.';
+                $$('listaParcelas').appendChild(aviso);
+            }
+        }
+
+        // Conta quantas há de cada situação e escreve nos botões.
+        function contarFiltros() {
+            const linhas = $$('listaParcelas').querySelectorAll('.table-row');
+            let pagas = 0;
+            let atrasadas = 0;
+            let abertas = 0;
+            linhas.forEach((l) => {
+                const s = situacaoDaLinha(l);
+                if (s === 'paga') pagas++;
+                else if (s === 'atrasada') atrasadas++;
+                else abertas++;
+            });
+            $$('numTodas').textContent = linhas.length;
+            $$('numPagas').textContent = pagas;
+            $$('numAtrasadas').textContent = atrasadas;
+            $$('numAbertas').textContent = abertas;
+
+            // O botão de atraso só fica vermelho quando HÁ atraso. Vermelho
+            // permanente vira ruído e a pessoa para de enxergar.
+            const bt = document.querySelector('.filtro[data-filtro="atrasada"]');
+            if (bt) bt.classList.toggle('tem-atraso', atrasadas > 0);
+        }
+
+        // Texto que veio do banco vai para dentro de HTML: escapar é obrigatório.
+        // Nome de comprador e nome de unidade vêm da planilha, e planilha aceita
+        // qualquer coisa digitada.
+        function escapar(s) {
+            return String(s === null || s === undefined ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
 
         // Load data
+
+        // Preenche o cabeçalho e dispara a carga do extrato.
         async function loadDashboardData() {
             const userName = localStorage.getItem('userName') || 'Usuário';
-            
             document.getElementById('userName').textContent = userName;
             document.getElementById('firstName').textContent = userName.split(' ')[0];
             document.getElementById('userInitial').textContent = userName.charAt(0).toUpperCase();
+            // ⚠️ O nome usado para achar a casa é o do CADASTRO, não o do e-mail.
+            // É ele que o banco compara com o comprador da planilha.
+            await carregarExtrato(userName);
         }
 
         /* ===================================================================
@@ -1514,6 +2580,97 @@
             } catch (e) {
                 mostrarRecado('Não foi possível verificar sua sessão. Entre novamente.', 'erro');
             }
+        });
+
+        /* ===================================================================
+           LIGAÇÕES DA TELA — ficam no FIM do script de propósito.
+
+           ⚠️ Estavam lá em cima e derrubaram a página inteira: elas usam `$$`,
+           que é declarado com `const` MAIS ABAIXO. Usar uma const antes da
+           linha que a declara lança ReferenceError, o script morre ali, e
+           NENHUM listener chega a ser ligado — inclusive os do login. O sintoma
+           foi "não entra e não cria conta", que não parece ter nada a ver com
+           uma barra de busca.
+
+           Regra para não repetir: código que RODA no carregamento vai para o
+           fim; no meio do arquivo só declaração de função (essa o JavaScript
+           sobe sozinho, const não).
+           =================================================================== */
+        if ($$('buscaParcela')) {
+            $$('buscaParcela').addEventListener('input', aplicarFiltro);
+        }
+        // O botão Sair usava onclick no atributo — trocado pelo mesmo padrão do
+        // resto da página.
+        if ($$('btSair')) {
+            $$('btSair').addEventListener('click', handleLogout);
+        }
+        // --- botões de situação das parcelas ---
+        document.querySelectorAll('.filtro[data-filtro]').forEach((bt) => {
+            bt.addEventListener('click', () => {
+                document.querySelectorAll('.filtro[data-filtro]').forEach((b) => b.classList.remove('ativo'));
+                bt.classList.add('ativo');
+                filtroSituacao = bt.getAttribute('data-filtro');
+                aplicarFiltro();
+            });
+        });
+
+        // --- troca de página pelo menu lateral ---
+        // São seções da mesma página, não arquivos separados: assim a sessão, o
+        // login e o extrato continuam num lugar só. Duplicar a tela de login em
+        // três arquivos seria três lugares para consertar quando algo mudar.
+        function abrirPagina(qual) {
+            document.querySelectorAll('.pagina').forEach((p) => {
+                p.hidden = (p.id !== 'pagina' + qual.charAt(0).toUpperCase() + qual.slice(1));
+            });
+            document.querySelectorAll('.nav-item[data-pagina]').forEach((i) => {
+                i.classList.toggle('active', i.getAttribute('data-pagina') === qual);
+            });
+            // A busca só faz sentido no extrato.
+            const barra = document.querySelector('.search-bar');
+            if (barra) barra.style.visibility = qual === 'extrato' ? 'visible' : 'hidden';
+            // No celular a página escolhida está atrás do menu: ele precisa sair
+            // da frente sozinho, senão a pessoa toca e parece que nada aconteceu.
+            menuLateral(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- menu lateral no celular ---
+        // Declarada como `function` (e não const) de propósito: assim ela sobe
+        // para o topo do script e `abrirPagina` pode chamá-la sem depender da
+        // ordem. Busca os elementos na hora em vez de guardá-los em constantes
+        // no topo — foi exatamente isso que quebrou o login inteiro em 27/08.
+        function menuLateral(abrir) {
+            const lateral = $$('lateral');
+            const fundo = $$('lateralFundo');
+            const bt = $$('btMenu');
+            if (!lateral || !fundo || !bt) return;
+            lateral.classList.toggle('aberta', abrir);
+            fundo.hidden = !abrir;
+            bt.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+            bt.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+            document.body.classList.toggle('menu-aberto', abrir);
+        }
+
+        document.querySelectorAll('.nav-item[data-pagina]').forEach((item) => {
+            item.addEventListener('click', () => abrirPagina(item.getAttribute('data-pagina')));
+        });
+
+        $$('btMenu').addEventListener('click', () => {
+            menuLateral(!$$('lateral').classList.contains('aberta'));
+        });
+
+        // Tocar fora fecha. É como as pessoas esperam sair de um menu assim.
+        $$('lateralFundo').addEventListener('click', () => menuLateral(false));
+
+        // Esc fecha para quem estiver num teclado.
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape') menuLateral(false);
+        });
+
+        // Girar o celular ou voltar para a tela grande com o menu aberto deixaria
+        // o fundo escuro por cima de tudo, sem nada para clicar.
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) menuLateral(false);
         });
     </script>
 </body>
