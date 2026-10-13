@@ -1319,6 +1319,20 @@
            porque "a fazer" também é informação que a pessoa quer ler. */
         .obra-etapa:not(.concluida):not(.atual) .obra-foto img { filter: grayscale(1); opacity: .55; }
 
+        /* (13/10) Evolução da obra com dado REAL do painel de obras: o mês como
+           cabeçalho dos blocos, as fotos além da primeira em miniatura, o % que
+           veio na atualização e o aviso de "ainda não há". A foto de capa vira
+           link para abrir em tamanho cheio. */
+        .obra-mes { font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); margin: 8px 0 -8px; }
+        .obra-etapa.publicada .obra-foto img { filter: none; opacity: 1; }
+        a.obra-foto { display: block; }
+        .obra-foto.sem-foto { display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 12.5px; }
+        .obra-pct { display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--text); }
+        .obra-fotos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .obra-fotos a { display: block; width: 72px; height: 54px; border-radius: 8px; overflow: hidden; background: var(--gray-50); }
+        .obra-fotos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .obra-vazio { background: var(--white); border: 1px dashed var(--border); border-radius: 14px; padding: 28px 24px; text-align: center; color: var(--text-light); font-size: 14px; line-height: 1.6; }
+
         /* --- futuros projetos --- */
         .projetos-grid {
             display: grid;
@@ -1763,10 +1777,15 @@
                     <div class="welcome-banner">
                         <div class="welcome-content">
                             <div class="welcome-title">Evolução da obra</div>
-                            <div class="welcome-subtitle">Villagio Caucaia II</div>
+                            <div class="welcome-subtitle" id="obraSub">Villagio Caucaia II</div>
                         </div>
                     </div>
 
+                    <!-- (13/10) A DEMONSTRAÇÃO fica dentro de #obraDemo e só aparece
+                         enquanto o empreendimento da casa não estiver cadastrado no
+                         painel de obras. Quando estiver, carregarObra() esconde este
+                         bloco e mostra #obraReal, abaixo, com o que foi APROVADO lá. -->
+                    <div id="obraDemo">
                     <div class="aviso-exemplo">
                         <strong>Conteúdo de demonstração.</strong>
                         As fotos e as datas abaixo são de exemplo, para você ver como a
@@ -1868,6 +1887,50 @@
                                 </div>
                             </div>
 
+                        </div>
+                    </div>
+                    </div><!-- /obraDemo -->
+
+                    <!-- (13/10) O dado real: preenchido por renderizarObra() com
+                         obras_empreendimentos, obras_etapas, obras_atualizacoes
+                         (só situação aprovada) e obras_fotos. Quem filtra é o RLS do
+                         banco: o cliente só lê o empreendimento da casa dele. -->
+                    <div id="obraReal" hidden>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Andamento geral</div>
+                                <div class="stat-value" id="obraPct">—</div>
+                                <div class="stat-change" id="obraPctNota"> </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Etapa atual</div>
+                                <div class="stat-value" style="font-size:22px" id="obraEtapa">—</div>
+                                <div class="stat-change" id="obraEtapaNota"> </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Previsão de entrega</div>
+                                <div class="stat-value" style="font-size:22px" id="obraPrevisao">—</div>
+                                <div class="stat-change" id="obraPrevisaoNota"> </div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Andamento</div>
+                            <div class="barra-obra-card">
+                                <div class="barra-obra-topo">
+                                    <span>Início da obra</span>
+                                    <strong class="barra-obra-pct" id="obraBarraPct">0%</strong>
+                                    <span>Entrega</span>
+                                </div>
+                                <div class="barra-obra" id="obraBarra">
+                                    <div class="barra-obra-cheia" id="obraBarraCheia" style="width:0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Atualizações da obra</div>
+                            <div class="obra-linha" id="obraLinha"></div>
                         </div>
                     </div>
                 </div>
@@ -2171,6 +2234,10 @@
 
             contarFiltros();
             aplicarFiltro();
+
+            // (13/10) A evolução da obra depende de saber a casa: carrega depois do
+            // extrato, sem travar nem derrubar o extrato se falhar.
+            carregarObra(unidades);
         }
 
         // A parcela corrigida é o que a pessoa paga de fato; a da construtora é o
@@ -2178,6 +2245,178 @@
         function valorDaParcela(p) {
             const corrigida = Number(p.parcela_corrigida) || 0;
             return corrigida > 0 ? corrigida : (Number(p.parcela_construtora) || 0);
+        }
+
+        /* ===================================================================
+           (13/10) EVOLUÇÃO DA OBRA — o dado real do painel de obras.
+
+           O painel "Gestão do Cliente" (repo gestao-do-cliente) grava no MESMO
+           Supabase, nas tabelas obras_*. A obra envia, Luana ou Rodrigo aprovam,
+           e o que está com situação 'aprovada' aparece aqui, sozinho. O elo
+           entre a casa e a obra é o NOME do empreendimento (unidades.empreendimento
+           = obras_empreendimentos.nome, sem diferença de maiúsculas).
+
+           ⚠️ Quem filtra é o RLS (sql/001_obras.sql do painel): o cliente só lê
+           o empreendimento cujo nome bate com o da casa dele com vínculo
+           aprovado, e só as atualizações aprovadas (e as fotos delas). A
+           consulta abaixo pede 'aprovada' por clareza; se alguém chamar a API
+           por fora, o banco devolve o mesmo.
+
+           Enquanto o empreendimento da casa não existir no painel, a página
+           continua com a DEMONSTRAÇÃO avisada (#obraDemo). Em erro de rede
+           também: página vazia de verdade seria pior que a demonstração
+           avisada, e o console guarda o erro.
+           =================================================================== */
+        const MESES_OBRA = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        // 'AAAA-MM-DD' -> 'Outubro de 2026'. Sem Date: o mês vem do texto, para não
+        // cair na armadilha de fuso que faria o dia 1 virar o mês anterior.
+        function mesExtensoObra(iso) {
+            const s = String(iso || '').slice(0, 7);
+            if (!/^\d{4}-\d{2}$/.test(s)) return '';
+            return MESES_OBRA[Number(s.slice(5, 7)) - 1] + ' de ' + s.slice(0, 4);
+        }
+        function mesCurtoObra(iso) {   // 'Dez / 2026'
+            const s = String(iso || '').slice(0, 7);
+            if (!/^\d{4}-\d{2}$/.test(s)) return '';
+            return MESES_OBRA[Number(s.slice(5, 7)) - 1].slice(0, 3) + ' / ' + s.slice(0, 4);
+        }
+        // carimbo de data e hora (publicado_em) -> 'dd/mm/aaaa' no horário local
+        function dataLocalObra(iso) {
+            const d = new Date(iso);
+            if (!iso || isNaN(d.getTime())) return '';
+            const dois = (n) => String(n).padStart(2, '0');
+            return dois(d.getDate()) + '/' + dois(d.getMonth() + 1) + '/' + d.getFullYear();
+        }
+        const chaveNomeObra = (s) => String(s || '').trim().toUpperCase();
+        function urlDaFotoDaObra(caminho) {
+            const r = sb.storage.from('obras').getPublicUrl(caminho);
+            return r && r.data && r.data.publicUrl ? r.data.publicUrl : '';
+        }
+
+        async function carregarObra(unidades) {
+            const demo = $$('obraDemo'), real = $$('obraReal');
+            if (!demo || !real) return;
+            try {
+                // 1. Os empreendimentos que o banco deixa este cliente ler (RLS). O
+                //    nome é comparado aqui do mesmo jeito que o banco compara.
+                const { data: emps, error: e1 } = await sb
+                    .from('obras_empreendimentos')
+                    .select('id, nome, cidade, inicio_obra, previsao_entrega, ativo')
+                    .order('nome');
+                if (e1) throw e1;
+                const nomes = (unidades || []).map((u) => chaveNomeObra(u.empreendimento));
+                const emp = (emps || []).find((e) => nomes.indexOf(chaveNomeObra(e.nome)) >= 0);
+                if (!emp) {
+                    demo.hidden = false; real.hidden = true;
+                    return;
+                }
+                // 2. As etapas e as atualizações APROVADAS, com as fotos de cada uma.
+                const [et, at] = await Promise.all([
+                    sb.from('obras_etapas')
+                      .select('id, nome, ordem, situacao, previsao')
+                      .eq('empreendimento_id', emp.id)
+                      .order('ordem'),
+                    sb.from('obras_atualizacoes')
+                      .select('id, titulo, texto, percentual, data_referencia, publicado_em, etapa_id, obras_fotos(id, caminho, legenda, ordem)')
+                      .eq('empreendimento_id', emp.id)
+                      .eq('situacao', 'aprovada')
+                      .order('data_referencia', { ascending: false })
+                      .order('publicado_em', { ascending: false })
+                ]);
+                if (et.error) throw et.error;
+                if (at.error) throw at.error;
+                renderizarObra(emp, et.data || [], at.data || []);
+            } catch (e) {
+                console.error('[obra]', e);
+                demo.hidden = false; real.hidden = true;
+            }
+        }
+
+        function renderizarObra(emp, etapas, atualizacoes) {
+            $$('obraDemo').hidden = true;
+            $$('obraReal').hidden = false;
+            $$('obraSub').textContent = emp.nome + (emp.cidade ? ' · ' + emp.cidade : '');
+
+            // Andamento: o % da atualização aprovada mais recente que trouxe um
+            // número. Sem número em nenhuma, a conta é pelas etapas concluídas.
+            const comPct = atualizacoes.find((a) => a.percentual !== null && a.percentual !== undefined);
+            const concluidas = etapas.filter((e) => e.situacao === 'concluida').length;
+            const pct = comPct
+                ? Math.max(0, Math.min(100, Number(comPct.percentual) || 0))
+                : (etapas.length ? Math.round((concluidas / etapas.length) * 100) : 0);
+            $$('obraPct').textContent = pct + '%';
+            $$('obraPctNota').textContent = comPct
+                ? 'informado em ' + mesExtensoObra(comPct.data_referencia).toLowerCase()
+                : (etapas.length ? concluidas + ' de ' + etapas.length + ' etapas concluídas' : ' ');
+
+            // Etapa atual: a que está em andamento; senão a última concluída;
+            // senão a primeira a fazer.
+            const andando = etapas.find((e) => e.situacao === 'em_andamento');
+            const ultimaFeita = etapas.slice().reverse().find((e) => e.situacao === 'concluida');
+            const proxima = etapas.find((e) => e.situacao === 'a_fazer');
+            const atual = andando || ultimaFeita || proxima;
+            $$('obraEtapa').textContent = atual ? atual.nome : '—';
+            $$('obraEtapaNota').textContent = andando ? 'em andamento' : (ultimaFeita ? 'concluída' : (proxima ? 'a iniciar' : ' '));
+
+            $$('obraPrevisao').textContent = emp.previsao_entrega ? mesCurtoObra(emp.previsao_entrega) : 'a definir';
+            $$('obraPrevisaoNota').textContent = emp.inicio_obra ? 'início em ' + mesCurtoObra(emp.inicio_obra) : ' ';
+
+            // A barra, com as marcas das etapas reais espalhadas por igual.
+            $$('obraBarraPct').textContent = pct + '%';
+            $$('obraBarraCheia').style.width = pct + '%';
+            const barra = $$('obraBarra');
+            barra.querySelectorAll('.barra-marca').forEach((m) => m.remove());
+            const n = etapas.length;
+            etapas.forEach((e, i) => {
+                const esquerda = n === 1 ? 50 : 8 + i * (88 / (n - 1));
+                const marca = document.createElement('span');
+                marca.className = 'barra-marca' + (e.situacao === 'concluida' ? ' feita' : (e.situacao === 'em_andamento' ? ' agora' : ''));
+                marca.style.left = esquerda.toFixed(1) + '%';
+                marca.innerHTML = '<i></i>' + escapar(e.nome);
+                barra.appendChild(marca);
+            });
+
+            // As atualizações aprovadas, mês a mês, da mais recente para a mais antiga.
+            const etapaPorId = {};
+            etapas.forEach((e) => { etapaPorId[e.id] = e; });
+            const linha = $$('obraLinha');
+            if (!atualizacoes.length) {
+                linha.innerHTML = '<div class="obra-vazio">Ainda não há atualizações aprovadas desta obra. '
+                    + 'Assim que a DPR publicar, elas aparecem aqui, mês a mês, com fotos.</div>';
+                return;
+            }
+            let mesAnterior = '';
+            linha.innerHTML = atualizacoes.map((a) => {
+                const mes = mesExtensoObra(a.data_referencia);
+                const cabeca = mes !== mesAnterior ? '<div class="obra-mes">' + escapar(mes) + '</div>' : '';
+                mesAnterior = mes;
+                const fotos = (a.obras_fotos || []).slice().sort((x, y) => (x.ordem || 0) - (y.ordem || 0));
+                const urls = fotos.map((f) => ({ url: urlDaFotoDaObra(f.caminho), legenda: f.legenda || '' }));
+                const capa = urls[0];
+                const etapa = a.etapa_id && etapaPorId[a.etapa_id] ? etapaPorId[a.etapa_id].nome : '';
+                const temPct = a.percentual !== null && a.percentual !== undefined;
+                const texto = escapar(a.texto || '').replace(/\r?\n/g, '<br>');
+                const miniaturas = urls.slice(1).map((f) =>
+                    '<a href="' + escapar(f.url) + '" target="_blank" rel="noopener">'
+                    + '<img loading="lazy" alt="' + escapar(f.legenda || a.titulo) + '" src="' + escapar(f.url) + '">'
+                    + '</a>').join('');
+                return cabeca
+                    + '<article class="obra-etapa atual publicada" data-id="' + escapar(a.id) + '">'
+                    +   (capa
+                        ? '<a class="obra-foto" href="' + escapar(capa.url) + '" target="_blank" rel="noopener">'
+                          + '<img loading="lazy" alt="' + escapar(capa.legenda || a.titulo) + '" src="' + escapar(capa.url) + '"></a>'
+                        : '<div class="obra-foto sem-foto">sem foto</div>')
+                    +   '<div class="obra-texto">'
+                    +     '<div class="obra-selo">' + escapar(etapa || 'Atualização')
+                    +       (temPct ? '<span class="obra-pct">' + Number(a.percentual) + '%</span>' : '') + '</div>'
+                    +     '<div class="obra-titulo">' + escapar(a.titulo) + '</div>'
+                    +     '<div class="obra-data">' + escapar(mes)
+                    +       (a.publicado_em ? ' · publicado em ' + dataLocalObra(a.publicado_em) : '') + '</div>'
+                    +     (texto ? '<p>' + texto + '</p>' : '')
+                    +     (miniaturas ? '<div class="obra-fotos">' + miniaturas + '</div>' : '')
+                    +   '</div>'
+                    + '</article>';
+            }).join('');
         }
 
         // ⚠️ Sem acento e em minúscula, para o filtro achar "atraso" digitando
