@@ -20,19 +20,28 @@ Central".
 
 O nome do empreendimento. Na Central, cada casa tem `unidades.empreendimento`
 (texto, vem da planilha, por exemplo "VILLAGIO CAUCAIA II"). No painel de
-obras, o gestor cadastra o empreendimento com o mesmo nome em
-`obras_empreendimentos.nome`. A comparação ignora maiúsculas e espaços nas
-pontas, mas o resto tem que ser igual, letra por letra. Se o nome for
-diferente, a Central não acha a obra e continua mostrando a demonstração.
+obras, o gestor cadastra o empreendimento em `obras_empreendimentos.nome`. A
+comparação ignora maiúsculas e espaços nas pontas.
+
+Em 13/10 o painel estava com "Villagio Caucaia 2" e a Central com "VILLAGIO
+CAUCAIA II", e nada aparecia. Ela: "a Central vai aparecer de um
+empreendimento só, então tudo que entrar na gestão de obra pode ir pra
+Central". Regra desde então: a Central usa o empreendimento de nome igual ao
+da casa; **se não houver e o painel tiver um empreendimento só, usa esse**.
+Com dois ou mais e nenhum nome igual, fica a demonstração, para não mostrar a
+obra errada. Quando houver mais de um empreendimento, é só deixar os nomes
+iguais aos da Central.
 
 ## O que protege o dado
 
-O RLS do banco, escrito em `gestao-do-cliente/sql/001_obras.sql`: o cliente
-(login da Central com vínculo aprovado) só lê o empreendimento cujo nome bate
-com o da casa dele, as etapas dele, as atualizações `aprovada` dele e as fotos
-dessas atualizações. A consulta da Central pede `situacao = 'aprovada'` por
-clareza; se alguém chamar a API por fora, o banco devolve o mesmo. Não foi
-preciso rodar SQL novo para esta etapa.
+O RLS do banco, escrito em `gestao-do-cliente/sql/001_obras.sql` e ajustado
+pelo `sql/004_cliente_ve_a_obra.sql` (13/10): o cliente (login da Central com
+vínculo aprovado) lê os empreendimentos em acompanhamento, as etapas deles,
+as atualizações `aprovada` deles e as fotos dessas atualizações. Nada que não
+esteja aprovado chega ao cliente. A consulta da Central pede
+`situacao = 'aprovada'` por clareza; se alguém chamar a API por fora, o banco
+devolve o mesmo. O 004 precisa ser rodado no SQL Editor do Supabase; sem
+ele, a trava antiga (nome igual) continua valendo.
 
 ## O que a página mostra
 

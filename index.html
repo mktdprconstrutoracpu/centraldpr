@@ -2305,7 +2305,15 @@
                     .order('nome');
                 if (e1) throw e1;
                 const nomes = (unidades || []).map((u) => chaveNomeObra(u.empreendimento));
-                const emp = (emps || []).find((e) => nomes.indexOf(chaveNomeObra(e.nome)) >= 0);
+                const lista = emps || [];
+                // (13/10, "a Central vai aparecer de um empreendimento só, então tudo
+                // que entrar na gestão de obra pode ir pra Central"): o de nome igual
+                // ao da casa; se não houver e o painel tiver UM só, é esse. Com dois ou
+                // mais e nenhum nome igual, fica a demonstração: mostrar a obra errada
+                // seria pior. O banco (sql/004 do painel) deixa o cliente ler os
+                // empreendimentos em acompanhamento mesmo sem o nome bater.
+                const emp = lista.find((e) => nomes.indexOf(chaveNomeObra(e.nome)) >= 0)
+                    || (lista.length === 1 ? lista[0] : null);
                 if (!emp) {
                     demo.hidden = false; real.hidden = true;
                     return;
