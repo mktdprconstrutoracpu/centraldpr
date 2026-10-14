@@ -2561,6 +2561,151 @@
             .foto-card-legenda { font-size: 12.5px; }
             .galeria-grupo { margin-bottom: 36px; }
         }
+
+        /* ===================================================================
+           (14/10) QUINTA PASSADA: A ENTRADA
+           Ela: "nao gostei do inicio normal de entrar e cadastrar, a tela de
+           inicio esta muito basica, quero mais criativa". A entrada vira uma
+           cena: as imagens do projeto passando devagar atras de tudo, com o
+           nome do ambiente e os pontos; a frase da casa a esquerda; a direita,
+           o cartao em vidro fosco que comeca com uma escolha (Ja sou cliente /
+           Primeiro acesso) e so entao mostra o formulario. Ultimo bloco.
+           =================================================================== */
+
+        .auth-overlay { background: #0f1013; background-image: none; }
+        /* fixa na janela: no celular o overlay rola quando o cadastro e mais alto que a tela, e a cena fica */
+        .auth-cena { position: fixed; inset: 0; overflow: hidden; }
+        .auth-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.6s ease, transform 9s ease-out;   /* entra em 1,6 s e se aproxima devagar */
+        }
+        .auth-slide.ativa { opacity: 1; transform: scale(1); }
+        .auth-cena-veu {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(10, 10, 13, .82) 0%, rgba(10, 10, 13, .45) 48%, rgba(10, 10, 13, .3) 100%),
+                linear-gradient(180deg, rgba(10, 10, 13, .1) 0%, rgba(10, 10, 13, .55) 100%);
+        }
+        .auth-palco { position: relative; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+        .auth-lado { min-height: 100vh; padding: 64px 6vw 48px; }
+        .auth-lado::after { display: none; }
+        .auth-lado-foto { display: none; }
+        .auth-lado-eyebrow { margin-top: auto; }   /* com a legenda tambem em auto, a frase fica no meio e a legenda embaixo */
+        .auth-lado-titulo { font-size: clamp(44px, 5vw, 72px); }
+        .auth-lado-texto { font-size: 16.5px; max-width: 40ch; }
+        .auth-lado-barras { margin-top: 36px; }
+        .auth-cena-legenda {
+            margin-top: auto;
+            padding-top: 56px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .auth-cena-ambiente { font-family: var(--display); font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--white); }
+        .auth-cena-onde { font-family: var(--rotulo); font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+        .auth-cena-pontos { display: flex; gap: 6px; margin-top: 10px; }
+        .auth-cena-pontos i { display: block; width: 22px; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .25); transition: background .3s ease, width .3s ease; }
+        .auth-cena-pontos i.ativo { background: var(--accent-claro); width: 36px; }
+
+        /* --- o cartao em vidro fosco --- */
+        .auth-card {
+            background: rgba(255, 255, 255, .92);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, .5);
+            border-radius: 24px;
+            padding: 36px 34px 30px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, .45);
+            margin: 40px 6vw 40px 0;
+        }
+        .auth-logo { max-width: 170px; margin-bottom: 8px; mix-blend-mode: multiply; }   /* o fundo branco do PNG some no cartao */
+        .auth-slide.primeira { transition: transform 9s ease-out; }   /* a primeira aparece na hora, so se aproxima */
+        .auth-sub { margin: 0 0 22px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-light); }
+
+        .auth-escolha { display: flex; flex-direction: column; gap: 10px; }
+        .auth-escolha[hidden] { display: none; }
+        .auth-opcao {
+            appearance: none;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-align: left;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--white);
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .auth-opcao:hover, .auth-opcao:focus-visible { border-color: var(--accent); box-shadow: 0 10px 28px rgba(225, 6, 0, .14); transform: translateY(-2px); outline: none; }
+        .auth-opcao-icone {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-opcao:hover .auth-opcao-icone, .auth-opcao:focus-visible .auth-opcao-icone { background: var(--accent); }
+        .auth-opcao-icone svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .auth-opcao-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+        .auth-opcao-texto strong { font-family: var(--display); font-size: 16px; font-weight: 800; letter-spacing: -.01em; color: var(--primary); }
+        .auth-opcao-texto span { font-size: 12.5px; color: var(--text-light); }
+        .auth-opcao-seta { font-size: 26px; line-height: 1; color: var(--text-light); }
+        .auth-opcao:hover .auth-opcao-seta { color: var(--accent); }
+
+        .auth-corpo[hidden] { display: none; }
+        .auth-voltar {
+            appearance: none;
+            border: 0;
+            background: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0 0 14px;
+        }
+        .auth-voltar:hover { color: var(--accent); }
+        .auth-abas { border-radius: 14px; }
+        .auth-campo input { border-radius: 14px; min-height: 50px; }
+        .auth-enviar { min-height: 50px; border-radius: 14px; font-size: 15px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .auth-slide { transition: none; transform: none; }
+            .auth-opcao, .auth-opcao:hover { transform: none; }
+        }
+
+        @media (max-width: 768px) {
+            /* a frase e a legenda em cima, o cartao como uma folha embaixo; se nao couber (cadastro num
+               telefone baixo), o overlay rola e a cena, fixa, fica atras */
+            .auth-overlay { align-items: flex-start; overflow-y: auto; }
+            .auth-palco { min-height: 100dvh; display: flex; flex-direction: column; }
+            .auth-lado { min-height: 0; padding: 48px 22px 20px; flex: 1 0 auto; justify-content: flex-end; }
+            .auth-lado-eyebrow { margin-top: 0; }
+            .auth-lado-titulo { font-size: 40px; }
+            .auth-lado-texto { font-size: 14px; max-width: none; }
+            .auth-lado-barras { display: none; }
+            .auth-cena-legenda { margin-top: 0; padding-top: 22px; }
+            .auth-cena-ambiente { font-size: 17px; }
+            .auth-cena-veu {
+                background:
+                    linear-gradient(180deg, rgba(10, 10, 13, .25) 0%, rgba(10, 10, 13, .55) 45%, rgba(10, 10, 13, .9) 100%);
+            }
+            .auth-card { margin: 0 12px calc(12px + env(safe-area-inset-bottom, 0px)); border-radius: 22px; padding: 26px 22px 22px; background: rgba(255, 255, 255, .96); }
+            .auth-logo { max-width: 140px; }
+        }
     </style>
 </head>
 <body>
@@ -2572,19 +2717,47 @@
            da casa com as tres barras do logo; a direita, o cartao de sempre.
            O JS nao sabe do palco: continua falando so com o overlay e os
            formularios. No celular as duas partes empilham. -->
+      <!-- (14/10, quinta passada) A CENA: as imagens do projeto passando devagar
+           atras de tudo, com o nome do ambiente no canto. Montada pelo script
+           (CENA_ENTRADA); sem JavaScript fica o fundo escuro. -->
+      <div class="auth-cena" id="authCena" aria-hidden="true">
+        <div class="auth-cena-veu"></div>
+      </div>
       <div class="auth-palco">
         <aside class="auth-lado" aria-hidden="true">
-          <!-- (14/10) a piscina do Villagio Caucaia II, imagem do proprio site da
-               DPR (fotos/villagio-caucaia-2-piscina*.webp), como pano de fundo -->
-          <div class="auth-lado-foto"></div>
           <span class="auth-lado-eyebrow">Central do Cliente</span>
           <p class="auth-lado-titulo">Sua casa,<br>do contrato<br>à chave.</p>
-          <p class="auth-lado-texto">Extrato, parcelas e a evolução da obra, num lugar só.</p>
+          <p class="auth-lado-texto">Extrato, parcelas, a evolução da obra e o projeto em 3D, num lugar só.</p>
           <div class="auth-lado-barras"><i></i><i></i><i></i></div>
+          <div class="auth-cena-legenda">
+            <span class="auth-cena-ambiente" id="authCenaAmbiente"></span>
+            <span class="auth-cena-onde">Villagio Caucaia II · projeto em 3D</span>
+            <span class="auth-cena-pontos" id="authCenaPontos"></span>
+          </div>
         </aside>
       <div class="auth-card">
         <img class="auth-logo" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
         <p class="auth-sub">Portal do Cliente</p>
+
+        <!-- (14/10, quinta passada) Antes do formulario, uma escolha: quem ja tem
+             conta e quem esta chegando. Cada botao abre a tela certa; "Voltar"
+             traz a escolha de volta. Quem chega pelo link de senha pula a escolha
+             (mostrarTela abre o corpo sozinho). -->
+        <div class="auth-escolha" id="authEscolha">
+          <button type="button" class="auth-opcao" id="opcaoEntrar">
+            <span class="auth-opcao-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20.5v-9l8-6 8 6v9"/><path d="M9.5 20.5v-6h5v6"/></svg></span>
+            <span class="auth-opcao-texto"><strong>Já sou cliente</strong><span>Entrar com e-mail e senha</span></span>
+            <span class="auth-opcao-seta" aria-hidden="true">&#8250;</span>
+          </button>
+          <button type="button" class="auth-opcao" id="opcaoCadastro">
+            <span class="auth-opcao-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5v15M4.5 12h15"/></svg></span>
+            <span class="auth-opcao-texto"><strong>Primeiro acesso</strong><span>Criar a minha conta</span></span>
+            <span class="auth-opcao-seta" aria-hidden="true">&#8250;</span>
+          </button>
+        </div>
+
+        <div class="auth-corpo" id="authCorpo" hidden>
+        <button type="button" class="auth-voltar" id="authVoltar">&#8249; Voltar</button>
 
         <div class="auth-abas" role="tablist">
           <button class="auth-aba" id="abaEntrar"   role="tab" aria-selected="true"  type="button">Entrar</button>
@@ -2650,6 +2823,7 @@
         </form>
 
         <div class="auth-recado" id="authRecado" role="status" aria-live="polite"></div>
+        </div><!-- /auth-corpo -->
       </div>
       </div><!-- /auth-palco -->
     </div>
@@ -3913,8 +4087,20 @@
 
         // Uma tela por vez. As abas ficam escondidas nas telas de recuperação:
         // ali não faz sentido a pessoa poder pular para "Criar conta".
+        // (14/10) a escolha inicial ("Já sou cliente" / "Primeiro acesso") e o corpo
+        // com os formulários: qualquer tela pedida abre o corpo e esconde a escolha
+        function abrirCorpoAuth() {
+            if ($$('authEscolha')) $$('authEscolha').hidden = true;
+            if ($$('authCorpo')) $$('authCorpo').hidden = false;
+        }
+        function voltarEscolhaAuth() {
+            limparRecado();
+            if ($$('authCorpo')) $$('authCorpo').hidden = true;
+            if ($$('authEscolha')) $$('authEscolha').hidden = false;
+        }
         function mostrarTela(qual) {
             limparRecado();
+            abrirCorpoAuth();
             const telas = {
                 entrar:    $$('formEntrar'),
                 cadastro:  $$('formCadastro'),
@@ -3932,6 +4118,54 @@
         $$('abaCadastro').addEventListener('click', () => mostrarTela('cadastro'));
         $$('linkEsqueci').addEventListener('click', () => mostrarTela('esqueci'));
         $$('linkVoltar').addEventListener('click', () => mostrarTela('entrar'));
+        if ($$('opcaoEntrar')) {
+            $$('opcaoEntrar').addEventListener('click', () => { mostrarTela('entrar'); $$('entrarEmail').focus(); });
+            $$('opcaoCadastro').addEventListener('click', () => { mostrarTela('cadastro'); $$('cadNome').focus(); });
+            $$('authVoltar').addEventListener('click', voltarEscolhaAuth);
+        }
+
+        // (14/10) A CENA da entrada: seis imagens do projeto, uma por vez, 6,5 s cada,
+        // com o nome do ambiente e os pontos. Para com a aba escondida ou com o
+        // overlay fechado; com movimento reduzido fica na primeira, parada.
+        const CENA_ENTRADA = [
+            { a: '03', t: 'Centro comercial' },
+            { a: '22', t: 'Piscina' },
+            { a: '14', t: 'Lounge com lareira' },
+            { a: '20', t: 'Redário ao pôr do sol' },
+            { a: '18', t: 'Jardim e lounge' },
+            { a: '17', t: 'Espaço gourmet' }
+        ];
+        (function montarCena() {
+            const cena = $$('authCena');
+            if (!cena) return;
+            const slides = CENA_ENTRADA.map(() => {
+                const s = document.createElement('div');
+                s.className = 'auth-slide';
+                cena.insertBefore(s, cena.firstChild);
+                return s;
+            });
+            // a imagem so e pedida uma cena antes de aparecer: a entrada baixa duas, nao seis
+            const carregar = (i) => { if (!slides[i].style.backgroundImage) slides[i].style.backgroundImage = 'url("' + PASTA_VC2 + CENA_ENTRADA[i].a + '.webp")'; };
+            $$('authCenaPontos').innerHTML = CENA_ENTRADA.map(() => '<i></i>').join('');
+            let atual = 0;
+            const mostrar = (i) => {
+                atual = i;
+                carregar(i);
+                carregar((i + 1) % CENA_ENTRADA.length);
+                slides.forEach((s, k) => s.classList.toggle('ativa', k === i));
+                $$('authCenaPontos').querySelectorAll('i').forEach((p, k) => p.classList.toggle('ativo', k === i));
+                $$('authCenaAmbiente').textContent = CENA_ENTRADA[i].t;
+            };
+            slides[0].classList.add('primeira');
+            void slides[0].offsetWidth;   // força o navegador a assentar o estado inicial para a aproximação valer já na primeira
+            mostrar(0);
+            window.setTimeout(() => slides[0].classList.remove('primeira'), 200);
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            window.setInterval(() => {
+                if (document.hidden || $$('authOverlay').hidden) return;
+                mostrar((atual + 1) % CENA_ENTRADA.length);
+            }, 6500);
+        })();
 
         // ⚠️ Enquanto a pessoa está definindo senha nova, ela JÁ TEM sessão (o link
         // do e-mail autentica). Sem esta trava, a verificação de sessão abriria a
