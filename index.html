@@ -7,7 +7,9 @@
     <!-- (14/10) Archivo e a fonte de destaque do tema novo (titulos e numeros) e
          Syncopate a dos rotulos pequenos, a mesma dupla da identidade da DPR;
          Montserrat fica como reserva. Inter continua no texto corrido. -->
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Syncopate:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- (14/10, terceira passada) Cormorant Garamond e a serifa dos titulos, o tom
+         de imobiliaria de luxo que ela pediu. -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Archivo:wght@500;600;700;800;900&family=Syncopate:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- (25/08) SDK do Supabase — autenticação de e-mail e senha, direto do navegador.
          Expõe o global `supabase` (a fábrica). O cliente configurado vira `sb`, mais abaixo. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2085,6 +2087,156 @@
             .auth-lado-barras { display: none; }
             .auth-card { margin: 0 20px 36px; justify-self: stretch; max-width: none; padding: 30px 24px 26px; }
         }
+
+        /* ===================================================================
+           (14/10) TEMA, TERCEIRA PASSADA: IMOBILIARIA DE LUXO, FUNDO CLARO
+           Ela escolheu "estilo imobiliaria de luxo, fundo claro". O que muda:
+           foto grande no topo de cada pagina (as imagens do Villagio Caucaia
+           II que o site da DPR usa, e na obra a ultima foto aprovada), com um
+           movimento lento de aproximacao; titulos em Cormorant Garamond, a
+           serifa; lateral clara e fina, como uma folha; cartoes com fio de
+           linha e sombra quase nula; mais respiro entre as secoes. A trama
+           de planta no fundo, que ela gostou, fica. Vem por ultimo e ganha
+           das duas passadas anteriores.
+           =================================================================== */
+
+        :root {
+            --serifa: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+            --sombra: 0 1px 2px rgba(23, 24, 27, .04), 0 12px 32px rgba(23, 24, 27, .05);
+            --sombra-alta: 0 2px 4px rgba(23, 24, 27, .05), 0 22px 48px rgba(23, 24, 27, .09);
+        }
+
+        /* --- a serifa nos titulos; os numeros continuam em Archivo --- */
+        .welcome-title, .section-title, .auth-lado-titulo, .obra-titulo, .projeto-nome, .imovel-nome,
+        #avisoAcesso .section-title, .auth-sub {
+            font-family: var(--serifa);
+            font-weight: 500;
+            letter-spacing: -.01em;
+        }
+        .section-title { font-size: 34px; line-height: 1.1; margin-bottom: 26px; gap: 14px; }
+        .section-title::before { width: 3px; height: 28px; border-radius: 0; }
+        .section { margin-bottom: 56px; }
+        .obra-titulo { font-size: 26px; }
+        .projeto-nome { font-size: 24px; }
+        .imovel-nome { font-weight: 500; letter-spacing: 0; }
+        .auth-sub { font-size: 20px; font-weight: 500; }
+
+        /* --- a lateral clara, como uma folha --- */
+        .sidebar { background: var(--white); border-right: 1px solid var(--border); padding: 32px 22px; }
+        .logo-container { background: transparent; border-radius: 0; padding: 0 6px; margin-bottom: 36px; }
+        .user-card { background: transparent; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; padding: 0 6px 22px; margin-bottom: 26px; }
+        .user-name { color: var(--primary); font-family: var(--serifa); font-size: 18px; font-weight: 500; }
+        .user-role { color: var(--text-light); }
+        .user-avatar { width: 44px; height: 44px; box-shadow: 0 0 0 3px rgba(225, 6, 0, .12); }
+        .nav-label { color: var(--text-light); }
+        .nav-item { color: var(--text-light); border-radius: 10px; padding: 12px 12px; font-size: 14.5px; font-weight: 500; }
+        .nav-item:hover { background: var(--gray-50); color: var(--primary); }
+        .nav-item.active { background: transparent; color: var(--primary); font-weight: 600; }
+        .nav-item.active::before { background: var(--accent); }
+        .nav-icon { background: var(--gray-50); color: var(--text-light); }
+        .nav-item:hover .nav-icon { color: var(--primary); }
+        .nav-item.active .nav-icon { background: var(--accent); color: var(--white); }
+        .lateral-caixa { background: transparent; border: 0; border-top: 1px solid var(--border); border-radius: 0; padding: 18px 6px 0; }
+        .lateral-linha > span { color: var(--text-light); }
+        .lateral-linha strong { color: var(--primary); }
+        .lateral-linha + .lateral-linha { border-top-color: var(--border); }
+        .lateral-barra { background: var(--gray-50); }
+        .logout-btn { color: var(--text-light); border-color: var(--border); }
+        .logout-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+        /* --- o topo com a foto grande, sangrando ate as bordas --- */
+        .welcome-banner.hero {
+            margin: -40px -40px 48px;
+            border-radius: 0;
+            min-height: 400px;
+            display: flex;
+            align-items: flex-end;
+            padding: 52px 56px 48px;
+            box-shadow: none;
+            background: linear-gradient(118deg, #121316 0%, #1d1f24 58%, #272a31 100%);
+        }
+        .hero-foto {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity .9s ease;
+        }
+        .com-foto .hero-foto { opacity: 1; animation: hero-aproxima 26s ease-in-out infinite alternate; }
+        @keyframes hero-aproxima {
+            from { transform: scale(1); }
+            to { transform: scale(1.07); }
+        }
+        .welcome-banner.hero::before { display: none; }      /* as barras saem quando ha foto; sem foto, voltam abaixo */
+        .welcome-banner.hero:not(.com-foto)::before { display: block; }
+        .welcome-banner.hero::after {
+            background:
+                linear-gradient(180deg, rgba(10, 10, 12, .05) 0%, rgba(10, 10, 12, .2) 45%, rgba(10, 10, 12, .78) 100%),
+                linear-gradient(90deg, rgba(10, 10, 12, .5) 0%, rgba(10, 10, 12, 0) 60%);
+        }
+        .welcome-banner.hero:not(.com-foto)::after { background: radial-gradient(520px 260px at 82% 50%, rgba(225, 6, 0, .22), transparent 70%); }
+        .welcome-content::before { margin-bottom: 16px; }
+        .welcome-title { font-size: 62px; font-weight: 400; line-height: 1; letter-spacing: -.02em; }
+        .welcome-title #firstName { color: var(--white); font-style: italic; }
+        .welcome-subtitle { opacity: .85; }
+
+        /* --- cartoes com fio de linha, sombra quase nula --- */
+        .stat-card, .table-card, .trilha-caixa, .barra-obra-card, .obra-etapa, .projeto-card {
+            border: 1px solid var(--border);
+            box-shadow: var(--sombra);
+        }
+        .stat-card::after { width: 36px; height: 3px; }
+        .stats-grid { gap: 20px; margin-bottom: 56px; }
+        .stats-grid .stat-card:first-child { border-color: transparent; }
+        .stats-grid .stat-card:first-child .stat-value { font-size: 50px; }
+        .filtro { border-radius: 999px; }
+        .status-badge { font-weight: 600; }
+
+        /* --- a entrada: a foto da piscina atras da frase --- */
+        .auth-lado { overflow: hidden; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .auth-lado-foto {
+            position: absolute;
+            inset: 0;
+            background: url('fotos/villagio-caucaia-2-piscina.webp') center / cover no-repeat;
+            animation: hero-aproxima 30s ease-in-out infinite alternate;
+        }
+        .auth-lado::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(14, 15, 18, .78) 0%, rgba(14, 15, 18, .35) 60%, rgba(14, 15, 18, .85) 100%),
+                linear-gradient(180deg, rgba(14, 15, 18, .2), rgba(14, 15, 18, .7));
+        }
+        .auth-lado > :not(.auth-lado-foto) { position: relative; z-index: 1; }
+        .auth-lado-titulo { font-size: clamp(48px, 5.6vw, 84px); font-weight: 400; line-height: .98; letter-spacing: -.02em; }
+        .auth-lado-titulo br + * { font-style: italic; }
+        .auth-overlay { background: #121316; background-image: none; }
+        .auth-card { border-radius: 18px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .com-foto .hero-foto, .auth-lado-foto { animation: none; }
+        }
+
+        /* --- a terceira passada no celular --- */
+        @media (max-width: 768px) {
+            .welcome-banner.hero { margin: -24px -24px 28px; min-height: 320px; padding: 28px 24px 26px; border-radius: 0 0 22px 22px; }
+            .welcome-title { font-size: 40px; }
+            .section-title { font-size: 28px; margin-bottom: 18px; }
+            .section { margin-bottom: 40px; }
+            .obra-titulo { font-size: 22px; }
+            .auth-lado { min-height: 0; padding: 56px 24px 30px; }
+            .auth-lado-foto { background-image: url('fotos/villagio-caucaia-2-piscina-cel.webp'); }
+            .auth-lado-titulo { font-size: 44px; }
+            .auth-card { border-radius: 18px 18px 0 0; margin: 0; }
+            .sidebar { padding: 22px 18px calc(18px + env(safe-area-inset-bottom, 0px)); }
+            /* o saldo em 40px estourava a borda num telefone de 390px ("R$ 182.350,0"):
+               o corpo acompanha a largura da tela e nunca passa do cartao */
+            .stats-grid .stat-card:first-child .stat-value { font-size: clamp(26px, 8.4vw, 36px); white-space: nowrap; }
+            .stats-grid .stat-card:nth-child(2) .stat-value,
+            .stats-grid .stat-card:nth-child(3) .stat-value { font-size: clamp(24px, 7.4vw, 30px); }
+        }
     </style>
 </head>
 <body>
@@ -2098,6 +2250,9 @@
            formularios. No celular as duas partes empilham. -->
       <div class="auth-palco">
         <aside class="auth-lado" aria-hidden="true">
+          <!-- (14/10) a piscina do Villagio Caucaia II, imagem do proprio site da
+               DPR (fotos/villagio-caucaia-2-piscina*.webp), como pano de fundo -->
+          <div class="auth-lado-foto"></div>
           <span class="auth-lado-eyebrow">Central do Cliente</span>
           <p class="auth-lado-titulo">Sua casa,<br>do contrato<br>à chave.</p>
           <p class="auth-lado-texto">Extrato, parcelas e a evolução da obra, num lugar só.</p>
@@ -2298,8 +2453,11 @@
             <!-- CONTENT -->
             <div class="content">
                 <div id="paginaExtrato" class="pagina">
-                <!-- WELCOME BANNER -->
-                <div class="welcome-banner">
+                <!-- WELCOME BANNER. (14/10) .hero-foto recebe a foto do empreendimento
+                     da casa (fotoHero, no script), amarrada ao NOME do empreendimento:
+                     sem foto conhecida, a faixa fica escura com as barras. -->
+                <div class="welcome-banner hero" id="heroExtrato">
+                    <div class="hero-foto" aria-hidden="true"></div>
                     <div class="welcome-content">
                         <div class="welcome-title">Bem-vindo, <span id="firstName">&nbsp;</span></div>
                         <div class="welcome-subtitle" id="welcomeSub">Carregando seu extrato...</div>
@@ -2396,7 +2554,8 @@
                      é pior que página vazia.
                      =============================================================== -->
                 <div id="paginaObra" class="pagina" hidden>
-                    <div class="welcome-banner">
+                    <div class="welcome-banner hero" id="heroObra">
+                        <div class="hero-foto" aria-hidden="true"></div>
                         <div class="welcome-content">
                             <div class="welcome-title">Evolução da obra</div>
                             <div class="welcome-subtitle" id="obraSub">Villagio Caucaia II</div>
@@ -2561,7 +2720,8 @@
                      FUTUROS PROJETOS — mesmo aviso: fotos de banco de imagens.
                      =============================================================== -->
                 <div id="paginaProjetos" class="pagina" hidden>
-                    <div class="welcome-banner">
+                    <div class="welcome-banner hero" id="heroProjetos">
+                        <div class="hero-foto" aria-hidden="true"></div>
                         <div class="welcome-content">
                             <div class="welcome-title">Futuros projetos</div>
                             <div class="welcome-subtitle">O que a DPR está preparando</div>
@@ -2732,6 +2892,15 @@
                 ? unidades.length + ' imóveis · ' + casa.empreendimento
                 : casa.unidade + ' · ' + casa.empreendimento;
             $$('tituloImoveis').textContent = unidades.length > 1 ? 'Meus imóveis' : 'Meu imóvel';
+
+            // (14/10) as fotos do topo das páginas: as do empreendimento da casa, se
+            // houver no mapa. Sem foto conhecida, as faixas ficam escuras com as barras.
+            const fotosEmp = FOTOS_EMPREENDIMENTO[chaveNomeObra(casa.empreendimento)];
+            if (fotosEmp) {
+                fotoHero($$('heroExtrato'), fotosEmp.extrato);
+                fotoHero($$('heroObra'), fotosEmp.obra);
+                fotoHero($$('heroProjetos'), fotosEmp.projetos);
+            }
 
             // --- cartões dos imóveis ---
             // O cartão antigo mostrava só o nome e a situação num retângulo escuro
@@ -2922,6 +3091,30 @@
             return dois(d.getDate()) + '/' + dois(d.getMonth() + 1) + '/' + d.getFullYear();
         }
         const chaveNomeObra = (s) => String(s || '').trim().toUpperCase();
+
+        /* (14/10) As fotos do topo das páginas, por empreendimento. São as imagens
+           que o site da DPR usa para o Villagio Caucaia II (fotos/ neste repo, em
+           1920 e 960 de largura). Chave = nome como está na planilha, em maiúsculas.
+           Um empreendimento sem entrada aqui fica com a faixa escura das barras:
+           melhor sem foto do que com a foto de outro lugar. */
+        const FOTOS_EMPREENDIMENTO = {
+            'VILLAGIO CAUCAIA II': {
+                extrato: 'fotos/villagio-caucaia-2-lareira',
+                obra: 'fotos/villagio-caucaia-2-fachada',
+                projetos: 'fotos/villagio-caucaia-2-piscina'
+            }
+        };
+        // Põe a foto no topo de uma página. `base` é o caminho sem extensão (ganha
+        // -cel.webp no celular) ou uma URL completa (foto da obra, do Storage).
+        function fotoHero(el, base) {
+            const foto = el && el.querySelector('.hero-foto');
+            if (!foto || !base) return;
+            const completa = /^(https?:)?\/\//.test(base);
+            const movel = window.matchMedia('(max-width: 768px)').matches;
+            const url = completa ? base : base + (movel ? '-cel' : '') + '.webp';
+            foto.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+            el.classList.add('com-foto');
+        }
         function urlDaFotoDaObra(caminho) {
             const r = sb.storage.from('obras').getPublicUrl(caminho);
             return r && r.data && r.data.publicUrl ? r.data.publicUrl : '';
@@ -2978,6 +3171,11 @@
             $$('obraDemo').hidden = true;
             $$('obraReal').hidden = false;
             $$('obraSub').textContent = emp.nome + (emp.cidade ? ' · ' + emp.cidade : '');
+
+            // (14/10) o topo da página da obra mostra a foto aprovada mais recente, a
+            // foto real da obra; sem nenhuma, fica a do empreendimento (fotoHero no extrato)
+            const capaObra = atualizacoes.map((a) => ((a.obras_fotos || []).slice().sort((x, y) => (x.ordem || 0) - (y.ordem || 0)))[0]).find(Boolean);
+            if (capaObra) fotoHero($$('heroObra'), urlDaFotoDaObra(capaObra.caminho));
 
             // Andamento: o % da atualização aprovada mais recente que trouxe um
             // número. Sem número em nenhuma, a conta é pelas etapas concluídas.
