@@ -43,12 +43,16 @@ imagem de outro lugar.
 - Menu: "Projeto 3D" na lateral; no celular, o terceiro lugar da barra de
   baixo ("Projeto"). "Futuros projetos" continua na lateral e, no celular,
   abre pelo "Menu".
-- Grade com ritmo (a primeira imagem e, a cada seis, mais uma ocupam o dobro),
-  legenda ao passar o mouse (no celular, sempre visível), filtros Todas, Áreas
-  de lazer e Apartamento.
-- Tocar numa imagem abre a tela cheia: a imagem em 1600, legenda, contador
-  ("3 / 22", contando só as visíveis no filtro), setas, teclado (Esc, setas) e,
-  no celular, arrastar para o lado.
+- (14/10, tarde, "as fotos 3D deixe de um jeito mais bonito") Uma **vitrine**
+  grande no alto: a imagem escolhida em 16:9, o grupo em vermelho, a legenda, o
+  contador e as setas; a vitrine troca sozinha a cada 7 segundos (para com o
+  mouse em cima, com a tela cheia aberta, fora da página ou com movimento
+  reduzido). Embaixo, a **tira de miniaturas** (rola para o lado, a ativa com
+  contorno vermelho). Depois, as imagens **por ambiente**, "Áreas de lazer" e
+  "O apartamento", em cartões iguais com a legenda escrita embaixo.
+- Tocar na vitrine ou num cartão abre a tela cheia: a imagem em 1600, legenda,
+  contador ("3 / 22"), setas, teclado (Esc, setas) e, no celular, arrastar para
+  o lado. Ao fechar, a vitrine fica na imagem em que a pessoa parou.
 
 ## Futuros projetos
 

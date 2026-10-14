@@ -7,9 +7,9 @@
     <!-- (14/10) Archivo e a fonte de destaque do tema novo (titulos e numeros) e
          Syncopate a dos rotulos pequenos, a mesma dupla da identidade da DPR;
          Montserrat fica como reserva. Inter continua no texto corrido. -->
-    <!-- (14/10, terceira passada) Cormorant Garamond e a serifa dos titulos, o tom
-         de imobiliaria de luxo que ela pediu. -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Archivo:wght@500;600;700;800;900&family=Syncopate:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- (14/10, quarta passada) Archivo nos titulos e numeros, Inter no resto. A serifa
+         (Cormorant) e a fonte larga dos rotulos (Syncopate) sairam: "nao gostei da fonte". -->
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- (25/08) SDK do Supabase — autenticação de e-mail e senha, direto do navegador.
          Expõe o global `supabase` (a fábrica). O cliente configurado vira `sb`, mais abaixo. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2356,6 +2356,211 @@
             .caixa-luz-seta.anterior { left: 18px; }
             .caixa-luz-seta.proxima { right: 18px; }
         }
+
+        /* ===================================================================
+           (14/10) QUARTA PASSADA
+           Ela: "nao gostei da fonte", "nao gostei desse layout do carne",
+           "nas parcelas coloque paginacao", "as fotos 3D deixe de um jeito
+           mais bonito". A serifa e a fonte larga saem (Archivo nos titulos e
+           numeros, Inter nos rotulos), a trilha do carne sai, entra o rodape
+           de paginas, e a galeria vira vitrine + miniaturas + cartoes por
+           ambiente. Ultimo bloco da folha: ganha dos anteriores.
+           =================================================================== */
+
+        :root {
+            --serifa: 'Archivo', 'Montserrat', sans-serif;      /* o nome ficou; a fonte, nao */
+            --rotulo: 'Inter', sans-serif;
+        }
+        .welcome-title, .section-title, .auth-lado-titulo, .obra-titulo, .projeto-nome, .imovel-nome,
+        #avisoAcesso .section-title, .auth-sub, .user-name, .galeria-legenda, .caixa-luz-figura figcaption, .projeto-numeral {
+            font-family: var(--display);
+            font-weight: 800;
+            font-style: normal;
+            letter-spacing: -.02em;
+        }
+        .welcome-title { font-size: 48px; font-weight: 900; letter-spacing: -.03em; line-height: 1.02; }
+        .welcome-title #firstName { font-style: normal; color: var(--accent-claro); }
+        .section-title { font-size: 26px; }
+        .obra-titulo { font-size: 20px; }
+        .projeto-nome { font-size: 20px; }
+        .user-name { font-size: 14px; font-weight: 700; letter-spacing: 0; }
+        .auth-sub { font-size: 15px; font-weight: 700; letter-spacing: 0; }
+        .auth-lado-titulo { font-size: clamp(40px, 4.8vw, 68px); font-weight: 900; line-height: 1; letter-spacing: -.035em; }
+        .auth-lado-titulo br + * { font-style: normal; }
+        .projeto-numeral { font-size: 64px; font-weight: 900; }
+        .caixa-luz-figura figcaption { font-size: 18px; font-weight: 700; }
+        .welcome-content::before, .stat-label, .nav-label, .lateral-linha > span, .table-header-row,
+        .imovel-emp, .imovel-numeros dt, .obra-mes, .auth-lado-eyebrow, .welcome-subtitle, .caixa-luz-contador {
+            font-family: var(--rotulo);
+            font-weight: 700;
+            letter-spacing: .12em;
+        }
+        .welcome-content::before { font-size: 11px; letter-spacing: .24em; }
+        .welcome-subtitle { font-size: 11.5px; letter-spacing: .14em; }
+        .stat-label { font-size: 11px; }
+        .table-header-row { font-size: 11px; }
+        .imovel-emp, .imovel-numeros dt, .lateral-linha > span, .nav-label { font-size: 10px; }
+        .obra-mes { font-size: 12px; }
+        .trilha-caixa { display: none; }
+
+        /* --- o rodape de paginas das parcelas --- */
+        .paginacao {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--gray-50);
+            background: var(--white);
+        }
+        .paginacao[hidden] { display: none; }
+        .pag-meio { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; }
+        .pag-info { font-size: 12.5px; color: var(--text-light); font-variant-numeric: tabular-nums; }
+        .pag-numeros { display: flex; align-items: center; gap: 4px; }
+        .pag-bt, .pag-num {
+            appearance: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 14px;
+            min-height: 38px;
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
+        }
+        .pag-num { min-width: 38px; padding: 8px 10px; text-align: center; font-variant-numeric: tabular-nums; }
+        .pag-bt:hover:not(:disabled), .pag-num:hover { border-color: var(--gray); }
+        .pag-num.ativo { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .pag-bt:disabled { opacity: .4; cursor: default; }
+        .pag-ret { color: var(--text-light); padding: 0 4px; }
+
+        /* --- a vitrine do Projeto 3D --- */
+        .vitrine { margin-bottom: 48px; }
+        .vitrine[hidden] { display: none; }
+        .vitrine-foto {
+            appearance: none;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 22px;
+            overflow: hidden;
+            background: var(--gray-50);
+            cursor: zoom-in;
+            box-shadow: 0 24px 60px rgba(18, 19, 22, .14);
+        }
+        .vitrine-foto:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+        .vitrine-foto img { width: 100%; height: 100%; object-fit: cover; display: block; animation: vitrine-entra .6s ease both; }
+        @keyframes vitrine-entra { from { opacity: 0; transform: scale(1.02); } to { opacity: 1; transform: none; } }
+        .vitrine-rodape { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 6px 14px; }
+        .vitrine-texto { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .vitrine-grupo { font-family: var(--rotulo); font-size: 10.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+        .vitrine-legenda { font-family: var(--display); font-size: 24px; font-weight: 800; letter-spacing: -.02em; color: var(--primary); }
+        .vitrine-controles { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+        .vitrine-contador { font-size: 12.5px; color: var(--text-light); font-variant-numeric: tabular-nums; min-width: 52px; text-align: center; }
+        .vitrine-seta {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--primary);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
+        }
+        .vitrine-seta:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .miniaturas {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 6px 10px;
+            scroll-snap-type: x proximity;
+            scrollbar-width: thin;
+        }
+        .miniatura {
+            appearance: none;
+            border: 0;
+            padding: 0;
+            flex: 0 0 auto;
+            width: 118px;
+            height: 74px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--gray-50);
+            cursor: pointer;
+            opacity: .62;
+            scroll-snap-align: center;
+            transition: opacity .2s ease, box-shadow .2s ease;
+        }
+        .miniatura img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .miniatura:hover { opacity: 1; }
+        .miniatura.ativa { opacity: 1; box-shadow: 0 0 0 2.5px var(--accent); }
+        .miniatura:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; opacity: 1; }
+
+        /* --- os cartoes por ambiente --- */
+        .galeria-grupo { margin-bottom: 48px; }
+        .section-conta { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 0; color: var(--text-light); margin-left: 6px; }
+        .fotos-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 18px; }
+        .foto-card {
+            appearance: none;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            text-align: left;
+            cursor: zoom-in;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-family: inherit;
+        }
+        .foto-card-imagem {
+            display: block;
+            aspect-ratio: 16 / 10;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--gray-50);
+            box-shadow: var(--sombra);
+            transition: box-shadow .25s ease, transform .25s ease;
+        }
+        .foto-card-imagem img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s ease; }
+        .foto-card:hover .foto-card-imagem { box-shadow: var(--sombra-alta); transform: translateY(-3px); }
+        .foto-card:hover .foto-card-imagem img { transform: scale(1.04); }
+        .foto-card:focus-visible { outline: none; }
+        .foto-card:focus-visible .foto-card-imagem { box-shadow: 0 0 0 3px var(--accent); }
+        .foto-card-legenda { font-size: 14px; font-weight: 600; color: var(--primary); padding: 0 4px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .vitrine-foto img, .foto-card-imagem, .foto-card-imagem img { animation: none; transition: none; }
+        }
+
+        @media (max-width: 768px) {
+            .welcome-title { font-size: 34px; }
+            .section-title { font-size: 22px; }
+            .auth-lado-titulo { font-size: 38px; }
+            .paginacao { flex-wrap: wrap; justify-content: center; padding: 12px 14px; }
+            .pag-info { width: 100%; text-align: center; order: 3; }
+            .vitrine { margin-bottom: 36px; }
+            .vitrine-foto { border-radius: 16px; }
+            .vitrine-rodape { padding: 14px 2px 10px; }
+            .vitrine-legenda { font-size: 19px; }
+            .miniatura { width: 92px; height: 58px; }
+            .fotos-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; }
+            .foto-card-imagem { border-radius: 12px; }
+            .foto-card-legenda { font-size: 12.5px; }
+            .galeria-grupo { margin-bottom: 36px; }
+        }
     </style>
 </head>
 <body>
@@ -2647,17 +2852,6 @@
                         <button type="button" class="filtro" data-filtro="paga">Pagas <span class="filtro-num" id="numPagas">0</span></button>
                     </div>
 
-                    <!-- (14/10) A trilha do carnê: um bloco por parcela, na cor da
-                         situação, para a pessoa ver o contrato inteiro de uma
-                         olhada antes da lista. Preenchida por renderizarExtrato(). -->
-                    <div class="trilha-caixa" id="trilhaCaixa" hidden>
-                        <div class="trilha-topo">
-                            <span class="trilha-titulo">O carnê, parcela a parcela</span>
-                            <span class="trilha-legenda"><i class="paga"></i>paga <i class="atrasada"></i>em atraso <i class="aberta"></i>em aberto</span>
-                        </div>
-                        <div class="trilha" id="trilhaParcelas"></div>
-                    </div>
-
                     <div class="table-card">
                         <div class="table-header-row">
                             <div>Vencimento</div>
@@ -2666,6 +2860,10 @@
                             <div>Situação</div>
                         </div>
                         <div id="listaParcelas"></div>
+                        <!-- (14/10) A paginação, 12 parcelas por página: montada por
+                             aplicarFiltro(), que já decide quais linhas aparecem. Some
+                             quando cabe tudo numa página. -->
+                        <nav class="paginacao" id="paginacaoParcelas" aria-label="Páginas das parcelas" hidden></nav>
                     </div>
                 </div>
 
@@ -2862,16 +3060,31 @@
                         </div>
                     </div>
 
-                    <div class="section">
-                        <div class="galeria-topo">
-                            <div class="section-title">O projeto, ambiente por ambiente</div>
-                            <div class="filtros galeria-filtros" id="galeriaFiltros" hidden>
-                                <button type="button" class="filtro ativo" data-grupo="todas">Todas</button>
-                                <button type="button" class="filtro" data-grupo="lazer">Áreas de lazer</button>
-                                <button type="button" class="filtro" data-grupo="apartamento">Apartamento</button>
+                    <!-- (14/10, quarta passada) "as fotos 3D deixe de um jeito mais bonito":
+                         uma vitrine grande (a imagem escolhida, legenda, setas, contador,
+                         troca sozinha a cada 7 s) com a tira de miniaturas embaixo, e
+                         depois as imagens por ambiente (Áreas de lazer, O apartamento) em
+                         cartões iguais com a legenda escrita. Tocar na vitrine ou num
+                         cartão abre em tela cheia. Tudo montado por renderizarGaleria(). -->
+                    <div class="section" id="galeria">
+                        <div class="vitrine" id="vitrine" hidden>
+                            <button type="button" class="vitrine-foto" id="vitrineFoto" aria-label="Abrir a imagem em tela cheia">
+                                <img id="vitrineImagem" alt="" decoding="async">
+                            </button>
+                            <div class="vitrine-rodape">
+                                <div class="vitrine-texto">
+                                    <span class="vitrine-grupo" id="vitrineGrupo"></span>
+                                    <span class="vitrine-legenda" id="vitrineLegenda"></span>
+                                </div>
+                                <div class="vitrine-controles">
+                                    <button type="button" class="vitrine-seta" id="vitrineAnterior" aria-label="Imagem anterior">&#8249;</button>
+                                    <span class="vitrine-contador" id="vitrineContador"></span>
+                                    <button type="button" class="vitrine-seta" id="vitrineProxima" aria-label="Próxima imagem">&#8250;</button>
+                                </div>
                             </div>
+                            <div class="miniaturas" id="miniaturas" role="list"></div>
                         </div>
-                        <div class="galeria" id="galeria"></div>
+                        <div id="galeriaGrupos"></div>
                         <div class="obra-vazio" id="galeriaVazia" hidden>As imagens do projeto deste empreendimento ainda não estão aqui. Em breve.</div>
                     </div>
                 </div>
@@ -3151,18 +3364,6 @@
                     + '</div>';
             }).join('') || '<div class="sem-resultado">Nenhuma parcela cadastrada.</div>';
 
-            // --- (14/10) a trilha do carnê: um bloco por parcela, na ordem do carnê ---
-            if ($$('trilhaParcelas')) {
-                $$('trilhaParcelas').innerHTML = parcelas.map((p) => {
-                    const emAtraso = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
-                    const classe = p.pago ? 'paga' : (emAtraso ? 'atrasada' : 'aberta');
-                    const eProxima = proxima && p === proxima ? ' proxima' : '';
-                    const titulo = dataBR(p.data_vencimento) + ' · ' + dinheiro(valorDaParcela(p)) + ' · ' + (p.pago ? 'paga' : (emAtraso ? 'em atraso' : 'em aberto'));
-                    return '<i class="trilha-bloco ' + classe + eProxima + '" title="' + escapar(titulo) + '"></i>';
-                }).join('');
-                $$('trilhaCaixa').hidden = parcelas.length === 0;
-            }
-
             // --- resumo na lateral e etiqueta no topo ---
             const rotulo = unidades.length > 1
                 ? unidades.length + ' imóveis'
@@ -3178,6 +3379,7 @@
             $$('resumoLateral').hidden = false;
 
             contarFiltros();
+            paginaParcelas = 1;
             aplicarFiltro();
 
             // (13/10) A evolução da obra depende de saber a casa: carrega depois do
@@ -3289,42 +3491,82 @@
             el.classList.add('com-foto');
         }
 
-        /* --- (14/10) a galeria do Projeto 3D e a visualização em tela cheia --- */
-        let galeriaItens = [];        // os itens, na ordem da tela
-        let galeriaAtual = -1;
+        /* --- (14/10) a galeria do Projeto 3D: vitrine, miniaturas, grupos e tela cheia --- */
+        const NOME_GRUPO = { lazer: 'Áreas de lazer', apartamento: 'O apartamento' };
+        let galeriaItens = [];        // a lista, na ordem da tira de miniaturas
+        let galeriaAtual = -1;        // a imagem na tela cheia
+        let vitrineAtual = 0;         // a imagem na vitrine
+        let vitrineRelogio = null;
         function renderizarGaleria(imagens, nomeEmp) {
-            const grade = $$('galeria'), vazio = $$('galeriaVazia'), filtros = $$('galeriaFiltros');
-            if (!grade) return;
+            const vitrine = $$('vitrine'), grupos = $$('galeriaGrupos'), vazio = $$('galeriaVazia');
+            if (!vitrine) return;
             $$('galeriaSub').textContent = nomeEmp ? nomeEmp + ' · como vai ficar' : 'Como vai ficar';
             galeriaItens = (imagens || []).slice();
             if (!galeriaItens.length) {
-                grade.innerHTML = ''; vazio.hidden = false; filtros.hidden = true;
+                vitrine.hidden = true; grupos.innerHTML = ''; vazio.hidden = false;
                 return;
             }
-            vazio.hidden = true; filtros.hidden = false;
-            grade.innerHTML = galeriaItens.map((f, i) =>
-                '<button type="button" class="galeria-item" data-grupo="' + escapar(f.g) + '" data-i="' + i + '" aria-label="' + escapar(f.t) + ', abrir em tela cheia">'
-                + '<img loading="lazy" decoding="async" alt="' + escapar(f.t) + '" src="' + PASTA_VC2 + f.a + '-mini.webp" width="480" height="270">'
-                + '<span class="galeria-legenda">' + escapar(f.t) + '</span>'
+            vazio.hidden = true; vitrine.hidden = false;
+            $$('miniaturas').innerHTML = galeriaItens.map((f, i) =>
+                '<button type="button" class="miniatura" data-i="' + i + '" role="listitem" aria-label="' + escapar(f.t) + '">'
+                + '<img loading="lazy" decoding="async" alt="" src="' + PASTA_VC2 + f.a + '-mini.webp" width="480" height="270">'
                 + '</button>').join('');
+            grupos.innerHTML = Object.keys(NOME_GRUPO).map((g) => {
+                const do_grupo = galeriaItens.map((f, i) => ({ f, i })).filter((x) => x.f.g === g);
+                if (!do_grupo.length) return '';
+                return '<div class="section galeria-grupo">'
+                    + '<div class="section-title">' + escapar(NOME_GRUPO[g]) + '<span class="section-conta">' + do_grupo.length + ' imagens</span></div>'
+                    + '<div class="fotos-grade">'
+                    + do_grupo.map((x) =>
+                        '<button type="button" class="foto-card" data-i="' + x.i + '" aria-label="' + escapar(x.f.t) + ', abrir em tela cheia">'
+                        + '<span class="foto-card-imagem"><img loading="lazy" decoding="async" alt="" src="' + PASTA_VC2 + x.f.a + '-mini.webp" width="480" height="270"></span>'
+                        + '<span class="foto-card-legenda">' + escapar(x.f.t) + '</span>'
+                        + '</button>').join('')
+                    + '</div></div>';
+            }).join('');
+            mostrarNaVitrine(0);
+            ligarVitrine();
         }
-        function filtrarGaleria(grupo) {
-            document.querySelectorAll('#galeriaFiltros .filtro').forEach((b) => b.classList.toggle('ativo', b.getAttribute('data-grupo') === grupo));
-            document.querySelectorAll('#galeria .galeria-item').forEach((it) => { it.hidden = grupo !== 'todas' && it.getAttribute('data-grupo') !== grupo; });
+        function mostrarNaVitrine(i) {
+            const f = galeriaItens[i];
+            if (!f) return;
+            vitrineAtual = i;
+            const img = $$('vitrineImagem');
+            img.src = PASTA_VC2 + f.a + '.webp';
+            img.alt = f.t;
+            $$('vitrineGrupo').textContent = NOME_GRUPO[f.g] || '';
+            $$('vitrineLegenda').textContent = f.t;
+            $$('vitrineContador').textContent = (i + 1) + ' / ' + galeriaItens.length;
+            document.querySelectorAll('#miniaturas .miniatura').forEach((m) => {
+                const ativa = Number(m.getAttribute('data-i')) === i;
+                m.classList.toggle('ativa', ativa);
+                if (ativa) m.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+            });
         }
-        function visiveisDaGaleria() {
-            return Array.from(document.querySelectorAll('#galeria .galeria-item')).filter((it) => !it.hidden).map((it) => Number(it.getAttribute('data-i')));
+        function andarVitrine(passo) {
+            if (!galeriaItens.length) return;
+            mostrarNaVitrine((vitrineAtual + passo + galeriaItens.length) % galeriaItens.length);
+        }
+        // a vitrine troca sozinha a cada 7 s, só com a página da galeria à vista, a
+        // tela cheia fechada e a aba visível; com movimento reduzido, não troca
+        function ligarVitrine() {
+            if (vitrineRelogio) window.clearInterval(vitrineRelogio);
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            vitrineRelogio = window.setInterval(() => {
+                const pagina = $$('paginaGaleria');
+                if (!pagina || pagina.hidden || document.hidden || !$$('caixaLuz').hidden) return;
+                if ($$('vitrine').matches(':hover')) return;
+                andarVitrine(1);
+            }, 7000);
         }
         function mostrarNaCaixa(i) {
             const f = galeriaItens[i];
             if (!f) return;
             galeriaAtual = i;
-            const visiveis = visiveisDaGaleria();
-            const pos = visiveis.indexOf(i);
             $$('caixaLuzImagem').src = PASTA_VC2 + f.a + '.webp';
             $$('caixaLuzImagem').alt = f.t;
             $$('caixaLuzLegenda').textContent = f.t;
-            $$('caixaLuzContador').textContent = (pos + 1) + ' / ' + visiveis.length;
+            $$('caixaLuzContador').textContent = (i + 1) + ' / ' + galeriaItens.length;
         }
         function abrirCaixa(i) {
             mostrarNaCaixa(i);
@@ -3335,14 +3577,13 @@
         function fecharCaixa() {
             $$('caixaLuz').hidden = true;
             document.body.classList.remove('caixa-aberta');
-            const it = document.querySelector('#galeria .galeria-item[data-i="' + galeriaAtual + '"]');
-            if (it) it.focus();
+            mostrarNaVitrine(galeriaAtual);   // a vitrine acompanha onde a pessoa parou
+            const it = document.querySelector('#galeriaGrupos .foto-card[data-i="' + galeriaAtual + '"]');
+            if (it) it.focus({ preventScroll: true });
         }
         function andarCaixa(passo) {
-            const visiveis = visiveisDaGaleria();
-            if (!visiveis.length) return;
-            const pos = visiveis.indexOf(galeriaAtual);
-            mostrarNaCaixa(visiveis[(pos + passo + visiveis.length) % visiveis.length]);
+            if (!galeriaItens.length) return;
+            mostrarNaCaixa((galeriaAtual + passo + galeriaItens.length) % galeriaItens.length);
         }
         function urlDaFotoDaObra(caminho) {
             const r = sb.storage.from('obras').getPublicUrl(caminho);
@@ -3511,17 +3752,29 @@
         // Filtra as linhas já renderizadas — nada de nova consulta ao banco por
         // tecla digitada. Os dois filtros SOMAM: dá para pedir "em atraso" e ainda
         // digitar 2026 para ver só as daquele ano.
+        // (14/10) 12 parcelas por página. A página atual volta a 1 quando o filtro
+        // ou a busca mudam (quem muda, zera). A paginação vem DEPOIS dos filtros:
+        // primeiro se decide quais linhas batem, depois qual fatia delas aparece.
+        const POR_PAGINA = 12;
+        let paginaParcelas = 1;
+
         function aplicarFiltro() {
             const termo = normalizarBusca($$('buscaParcela') ? $$('buscaParcela').value : '');
             const linhas = $$('listaParcelas').querySelectorAll('.table-row');
-            let visiveis = 0;
+            const batem = [];
             linhas.forEach((l) => {
                 const bateSituacao = filtroSituacao === 'todas' || situacaoDaLinha(l) === filtroSituacao;
                 const bateTexto = !termo || (l.getAttribute('data-busca') || '').indexOf(termo) !== -1;
-                const bate = bateSituacao && bateTexto;
-                l.hidden = !bate;
-                if (bate) visiveis++;
+                l.hidden = true;
+                if (bateSituacao && bateTexto) batem.push(l);
             });
+            const visiveis = batem.length;
+            const paginas = Math.max(1, Math.ceil(visiveis / POR_PAGINA));
+            if (paginaParcelas > paginas) paginaParcelas = paginas;
+            if (paginaParcelas < 1) paginaParcelas = 1;
+            const de = (paginaParcelas - 1) * POR_PAGINA;
+            batem.slice(de, de + POR_PAGINA).forEach((l) => { l.hidden = false; });
+            renderizarPaginacao(visiveis, paginas, de);
 
             // Filtro que esconde tudo e não explica parece tela quebrada.
             const antigo = document.getElementById('semResultado');
@@ -3540,6 +3793,36 @@
                     + '.';
                 $$('listaParcelas').appendChild(aviso);
             }
+        }
+
+        // (14/10) O rodapé de páginas: anterior, os números (todos, quando são até
+        // sete; senão os vizinhos da atual com reticências) e próxima. Some quando
+        // cabe tudo numa página.
+        function renderizarPaginacao(total, paginas, de) {
+            const nav = $$('paginacaoParcelas');
+            if (!nav) return;
+            if (paginas <= 1) { nav.hidden = true; nav.innerHTML = ''; return; }
+            nav.hidden = false;
+            let numeros = [];
+            if (paginas <= 7) {
+                for (let i = 1; i <= paginas; i++) numeros.push(i);
+            } else {
+                numeros = [1];
+                for (let i = paginaParcelas - 1; i <= paginaParcelas + 1; i++) if (i > 1 && i < paginas) numeros.push(i);
+                numeros.push(paginas);
+                numeros = numeros.filter((n, i, a) => a.indexOf(n) === i).sort((a, b) => a - b);
+            }
+            let botoes = '';
+            let anterior = 0;
+            numeros.forEach((n) => {
+                if (n - anterior > 1) botoes += '<span class="pag-ret">…</span>';
+                botoes += '<button type="button" class="pag-num' + (n === paginaParcelas ? ' ativo' : '') + '" data-pag="' + n + '"' + (n === paginaParcelas ? ' aria-current="page"' : '') + '>' + n + '</button>';
+                anterior = n;
+            });
+            const ate = Math.min(de + POR_PAGINA, total);
+            nav.innerHTML = '<button type="button" class="pag-bt" data-pag="anterior"' + (paginaParcelas === 1 ? ' disabled' : '') + '>&#8249; Anterior</button>'
+                + '<div class="pag-meio"><span class="pag-info">' + (de + 1) + '–' + ate + ' de ' + total + '</span><div class="pag-numeros">' + botoes + '</div></div>'
+                + '<button type="button" class="pag-bt" data-pag="proxima"' + (paginaParcelas === paginas ? ' disabled' : '') + '>Próxima &#8250;</button>';
         }
 
         // Conta quantas há de cada situação e escreve nos botões.
@@ -3907,7 +4190,21 @@
            sobe sozinho, const não).
            =================================================================== */
         if ($$('buscaParcela')) {
-            $$('buscaParcela').addEventListener('input', aplicarFiltro);
+            $$('buscaParcela').addEventListener('input', () => { paginaParcelas = 1; aplicarFiltro(); });
+        }
+        // (14/10) os botões de página; ao trocar, a lista volta ao topo
+        if ($$('paginacaoParcelas')) {
+            $$('paginacaoParcelas').addEventListener('click', (ev) => {
+                const bt = ev.target.closest('button[data-pag]');
+                if (!bt || bt.disabled) return;
+                const p = bt.getAttribute('data-pag');
+                if (p === 'anterior') paginaParcelas--;
+                else if (p === 'proxima') paginaParcelas++;
+                else paginaParcelas = Number(p);
+                aplicarFiltro();
+                const topo = document.querySelector('.table-card');
+                if (topo) window.scrollTo({ top: topo.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+            });
         }
         // O botão Sair usava onclick no atributo — trocado pelo mesmo padrão do
         // resto da página.
@@ -3920,6 +4217,7 @@
                 document.querySelectorAll('.filtro[data-filtro]').forEach((b) => b.classList.remove('ativo'));
                 bt.classList.add('ativo');
                 filtroSituacao = bt.getAttribute('data-filtro');
+                paginaParcelas = 1;
                 aplicarFiltro();
             });
         });
@@ -3980,15 +4278,27 @@
             });
         }
 
-        // (14/10) a galeria: filtros, abrir em tela cheia, setas, teclado e arrastar no celular
+        // (14/10) a galeria: vitrine (setas, miniaturas, tocar abre), cartões, tela
+        // cheia com setas, teclado e arrastar no celular
         if ($$('galeria')) {
-            $$('galeriaFiltros').addEventListener('click', (ev) => {
-                const bt = ev.target.closest('.filtro[data-grupo]');
-                if (bt) filtrarGaleria(bt.getAttribute('data-grupo'));
+            $$('vitrineAnterior').addEventListener('click', () => andarVitrine(-1));
+            $$('vitrineProxima').addEventListener('click', () => andarVitrine(1));
+            $$('vitrineFoto').addEventListener('click', () => abrirCaixa(vitrineAtual));
+            $$('miniaturas').addEventListener('click', (ev) => {
+                const m = ev.target.closest('.miniatura');
+                if (m) mostrarNaVitrine(Number(m.getAttribute('data-i')));
             });
-            $$('galeria').addEventListener('click', (ev) => {
-                const it = ev.target.closest('.galeria-item');
+            $$('galeriaGrupos').addEventListener('click', (ev) => {
+                const it = ev.target.closest('.foto-card');
                 if (it) abrirCaixa(Number(it.getAttribute('data-i')));
+            });
+            let toqueVitrine = null;
+            $$('vitrineFoto').addEventListener('touchstart', (ev) => { toqueVitrine = ev.touches[0].clientX; }, { passive: true });
+            $$('vitrineFoto').addEventListener('touchend', (ev) => {
+                if (toqueVitrine === null) return;
+                const dx = ev.changedTouches[0].clientX - toqueVitrine;
+                toqueVitrine = null;
+                if (Math.abs(dx) > 48) { ev.preventDefault(); andarVitrine(dx < 0 ? 1 : -1); }
             });
             $$('caixaLuzFechar').addEventListener('click', fecharCaixa);
             $$('caixaLuzAnterior').addEventListener('click', () => andarCaixa(-1));
