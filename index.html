@@ -2752,6 +2752,197 @@
         @media (prefers-reduced-motion: reduce) {
             .auth-card.aberto { animation: none; }
         }
+
+        /* ===================================================================
+           (14/10) SEXTA PASSADA: O CELULAR DEPOIS DE ENTRAR, E A OBRA
+           Ela: "em mobile quando entra a imagem tem que ficar responsiva",
+           "as parcelas estao pegando muito espaco", "a parte da obra esta
+           muito simples". (1) No celular a foto do topo fica em fluxo,
+           INTEIRA na largura da tela (a proporcao vem da imagem, posta por
+           fotoHero), sem zoom, com o titulo sobre um esfumado na base.
+           (2) A parcela vira uma linha so (bolinha, data, tipo, valor) e a
+           lista comeca resumida. (3) A obra ganha o painel com o anel, as
+           etapas passo a passo e as atualizacoes em mosaico. Ultimo bloco.
+           =================================================================== */
+
+        /* --- 1. o topo no celular --- */
+        @media (max-width: 768px) {
+            .welcome-banner.hero.com-foto { display: block; min-height: 0; padding: 0 24px 24px; overflow: hidden; }
+            .welcome-banner.hero.com-foto .hero-foto {
+                position: relative;
+                inset: auto;
+                width: calc(100% + 48px);
+                margin: 0 -24px;
+                aspect-ratio: 16 / 9;   /* ate a imagem chegar; depois fotoHero poe a proporcao dela */
+                animation: none;
+                transform: none;
+            }
+            .welcome-banner.hero.com-foto .hero-foto::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 48%;
+                background: linear-gradient(180deg, rgba(18, 19, 22, 0) 0%, rgba(18, 19, 22, .55) 55%, rgba(18, 19, 22, .96) 100%);
+            }
+            .welcome-banner.hero.com-foto::after { display: none; }
+            .welcome-banner.hero.com-foto .welcome-content { position: relative; z-index: 1; margin-top: -46px; }
+        }
+
+        /* --- 2. as parcelas no celular: uma linha so, lista resumida --- */
+        .parcelas-pe[hidden] { display: none; }
+        @media (max-width: 768px) {
+            .table-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; }
+            .table-row:hover { padding-left: 16px; }
+            .table-row .table-cell:nth-child(1) { display: flex; align-items: center; gap: 9px; min-width: 0; }
+            .table-row .table-cell:nth-child(1)::before { content: ''; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #2e7d32; }
+            .table-row.paga .table-cell:nth-child(1)::before { background: #b9bec5; }
+            .table-row.atrasada .table-cell:nth-child(1)::before { background: var(--accent); box-shadow: 0 0 0 3px rgba(225, 6, 0, .16); }
+            .table-row .table-cell:nth-child(1) strong { font-size: 14.5px; white-space: nowrap; }
+            .table-row .table-cell:nth-child(2) { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+            .table-row .table-cell:nth-child(3) { margin-left: auto; font-family: var(--display); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+            .table-row.paga .table-cell:nth-child(3) { color: var(--text-light); font-weight: 600; }
+            .table-row.atrasada .table-cell:nth-child(3) { color: var(--accent); }
+            .table-row .table-cell:nth-child(4) { display: none; }
+            .parcelas-pe { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 16px 18px; border-top: 1px solid var(--border); text-align: center; }
+            .parcelas-pe span { font-size: 12.5px; color: var(--text-light); }
+            .parcelas-ver {
+                appearance: none;
+                min-height: 44px;
+                padding: 0 22px;
+                border: 1.5px solid var(--primary);
+                border-radius: 999px;
+                background: var(--white);
+                color: var(--primary);
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+            .parcelas-ver:active { background: var(--gray-50); }
+        }
+
+        /* --- 3. a obra: o painel --- */
+        .obra-painel {
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 40px 44px;
+            margin-bottom: 48px;
+            border-radius: 22px;
+            color: var(--white);
+            background: linear-gradient(118deg, #121316 0%, #1d1f24 58%, #272a31 100%);
+            box-shadow: var(--sombra-alta);
+        }
+        .obra-painel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(560px 320px at 100% 100%, rgba(225, 6, 0, .3), transparent 70%);
+            pointer-events: none;
+        }
+        .obra-painel > * { position: relative; }
+        .obra-anel { position: relative; width: 200px; height: 200px; }
+        .obra-anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .obra-anel .trilho { fill: none; stroke: rgba(255, 255, 255, .12); stroke-width: 10; }
+        .obra-anel .progresso { fill: none; stroke: var(--accent-claro); stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 1.2s cubic-bezier(.2, .8, .2, 1); }
+        .obra-anel-texto { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .obra-anel-texto strong { font-family: var(--display); font-size: 48px; font-weight: 900; letter-spacing: -.04em; line-height: 1; }
+        .obra-anel-texto span { font-family: var(--rotulo); font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .6); margin-top: 6px; }
+        .obra-painel-eyebrow { display: block; font-family: var(--rotulo); font-size: 10.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent-claro); margin-bottom: 10px; }
+        .obra-painel-titulo { font-family: var(--display); font-size: clamp(26px, 2.4vw, 34px); font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+        .obra-painel-nota { margin: 8px 0 24px; font-size: 14px; color: rgba(255, 255, 255, .72); }
+        .obra-painel-nota [hidden] { display: none; }
+        .obra-fatos { display: grid; grid-template-columns: repeat(3, auto); gap: 24px 40px; margin: 0; justify-content: start; }
+        .obra-fatos div { display: flex; flex-direction: column; gap: 4px; }
+        .obra-fatos dt { font-family: var(--rotulo); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+        .obra-fatos dd { margin: 0; font-family: var(--display); font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+        .obra-tempo-barra { margin-top: 18px; height: 6px; max-width: 440px; border-radius: 6px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+        .obra-tempo-barra i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, rgba(255, 255, 255, .5), var(--white)); transition: width 1.2s cubic-bezier(.2, .8, .2, 1); }
+        .obra-tempo-barra[hidden] { display: none; }
+
+        /* --- as etapas, passo a passo --- */
+        .obra-passos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
+        .obra-passo {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 22px 20px 20px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+        }
+        .obra-passo-marca {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--display);
+            font-size: 15px;
+            font-weight: 800;
+            background: var(--gray-50);
+            color: var(--text-light);
+            border: 1.5px solid var(--border);
+        }
+        .obra-passo-marca svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+        .obra-passo.feita .obra-passo-marca { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .obra-passo.agora { border-color: rgba(225, 6, 0, .45); box-shadow: 0 14px 36px rgba(225, 6, 0, .12); }
+        .obra-passo.agora .obra-passo-marca { background: var(--accent); color: var(--white); border-color: var(--accent); animation: passo-pulsa 2.4s ease-in-out infinite; }
+        @keyframes passo-pulsa {
+            0%, 100% { box-shadow: 0 0 0 5px rgba(225, 6, 0, .14); }
+            50% { box-shadow: 0 0 0 11px rgba(225, 6, 0, .05); }
+        }
+        .obra-passo-texto { display: flex; flex-direction: column; gap: 4px; }
+        .obra-passo-texto strong { font-family: var(--display); font-size: 16px; font-weight: 800; letter-spacing: -.01em; color: var(--primary); line-height: 1.2; }
+        .obra-passo-texto span { font-size: 12.5px; color: var(--text-light); }
+        .obra-passo.agora .obra-passo-texto span { color: var(--accent); font-weight: 600; }
+        .obra-passo.futura .obra-passo-texto strong { color: var(--text-light); }
+        .obra-passo:not(:last-child)::after { content: ''; position: absolute; top: 41px; left: calc(100% + 1px); width: 16px; height: 2px; background: var(--border); }
+        .obra-passo.feita:not(:last-child)::after { background: var(--primary); }
+
+        /* --- as atualizacoes em mosaico --- */
+        .obra-etapa { grid-template-columns: 380px 1fr; gap: 0; border-radius: 20px; }
+        .obra-etapa .obra-texto { padding: 26px 30px; }
+        .obra-mosaico { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; aspect-ratio: 4 / 3; background: var(--gray-50); }
+        .obra-mosaico-foto { position: relative; display: block; overflow: hidden; background: var(--gray-50); }
+        .obra-mosaico-foto img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+        .obra-mosaico-foto:hover img { transform: scale(1.04); }
+        .obra-mosaico.n1 .obra-mosaico-foto { grid-column: 1 / -1; grid-row: 1 / -1; }
+        .obra-mosaico.n2 .obra-mosaico-foto { grid-column: 1 / -1; }
+        .obra-mosaico.n3 .obra-mosaico-foto:first-child { grid-column: 1 / -1; }
+        .obra-mosaico-mais { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(10, 10, 12, .55); color: var(--white); font-family: var(--display); font-size: 22px; font-weight: 800; }
+        .obra-mosaico.vazio { display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 12.5px; }
+        .obra-fotos-n { margin-top: 14px; font-family: var(--rotulo); font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-light); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .obra-passo.agora .obra-passo-marca { animation: none; box-shadow: 0 0 0 5px rgba(225, 6, 0, .14); }
+            .obra-anel .progresso, .obra-tempo-barra i, .obra-mosaico-foto img { transition: none; }
+        }
+
+        @media (max-width: 768px) {
+            .obra-painel { grid-template-columns: 1fr; gap: 24px; padding: 30px 22px 28px; margin-bottom: 36px; border-radius: 20px; justify-items: center; text-align: center; }
+            .obra-anel { width: 168px; height: 168px; }
+            .obra-anel-texto strong { font-size: 40px; }
+            .obra-painel-dados { width: 100%; }
+            .obra-painel-titulo { font-size: 26px; }
+            .obra-painel-nota { margin-bottom: 20px; }
+            .obra-fatos { grid-template-columns: repeat(3, 1fr); gap: 12px; justify-content: stretch; }
+            .obra-fatos dd { font-size: 16px; }
+            .obra-tempo-barra { max-width: none; }
+            .obra-passos { grid-template-columns: 1fr; gap: 10px; }
+            .obra-passo { flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
+            .obra-passo:not(:last-child)::after { top: calc(100% + 1px); left: 35px; width: 2px; height: 10px; }
+            .obra-etapa { grid-template-columns: 1fr; }
+            .obra-etapa .obra-texto { padding: 20px 20px 22px; }
+        }
     </style>
 </head>
 <body>
@@ -3084,6 +3275,12 @@
                              aplicarFiltro(), que já decide quais linhas aparecem. Some
                              quando cabe tudo numa página. -->
                         <nav class="paginacao" id="paginacaoParcelas" aria-label="Páginas das parcelas" hidden></nav>
+                        <!-- (14/10) No celular a lista começa resumida (as em atraso e as três
+                             próximas); este pé mostra quantas são e o botão "Ver todas". -->
+                        <div class="parcelas-pe" id="parcelasPe" hidden>
+                            <span id="parcelasPeNota"></span>
+                            <button type="button" class="parcelas-ver" id="parcelasVer"></button>
+                        </div>
                     </div>
                 </div>
 
@@ -3221,36 +3418,34 @@
                          (só situação aprovada) e obras_fotos. Quem filtra é o RLS do
                          banco: o cliente só lê o empreendimento da casa dele. -->
                     <div id="obraReal" hidden>
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-label">Andamento geral</div>
-                                <div class="stat-value" id="obraPct">—</div>
-                                <div class="stat-change" id="obraPctNota"> </div>
+                        <!-- (14/10, "a parte da obra esta muito simples") O PAINEL: o anel com o
+                             andamento, a etapa atual e os fatos da obra (inicio, entrega prevista,
+                             tempo de obra com a barra do calendario). Preenchido por renderizarObra(). -->
+                        <section class="obra-painel">
+                            <div class="obra-anel" aria-hidden="true">
+                                <svg viewBox="0 0 120 120">
+                                    <circle class="trilho" cx="60" cy="60" r="52"/>
+                                    <circle class="progresso" id="obraAnelProgresso" cx="60" cy="60" r="52" stroke-dasharray="0 326.7"/>
+                                </svg>
+                                <div class="obra-anel-texto"><strong id="obraPct">—</strong><span>da obra</span></div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Etapa atual</div>
-                                <div class="stat-value" style="font-size:22px" id="obraEtapa">—</div>
-                                <div class="stat-change" id="obraEtapaNota"> </div>
+                            <div class="obra-painel-dados">
+                                <span class="obra-painel-eyebrow">Andamento geral</span>
+                                <div class="obra-painel-titulo" id="obraEtapa">—</div>
+                                <p class="obra-painel-nota"><span id="obraEtapaNota"> </span><span id="obraPainelSep" aria-hidden="true"> · </span><span id="obraPctNota"> </span></p>
+                                <dl class="obra-fatos">
+                                    <div><dt>Início</dt><dd id="obraInicio">—</dd></div>
+                                    <div><dt>Entrega prevista</dt><dd id="obraPrevisao">—</dd></div>
+                                    <div><dt>Tempo de obra</dt><dd id="obraTempo">—</dd></div>
+                                </dl>
+                                <div class="obra-tempo-barra" id="obraTempoCaixa" aria-hidden="true"><i id="obraTempoBarra" style="width:0%"></i></div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Previsão de entrega</div>
-                                <div class="stat-value" style="font-size:22px" id="obraPrevisao">—</div>
-                                <div class="stat-change" id="obraPrevisaoNota"> </div>
-                            </div>
-                        </div>
+                        </section>
 
+                        <!-- as etapas, passo a passo: concluida (check), em andamento (pulsa), a iniciar -->
                         <div class="section">
-                            <div class="section-title">Andamento</div>
-                            <div class="barra-obra-card">
-                                <div class="barra-obra-topo">
-                                    <span>Início da obra</span>
-                                    <strong class="barra-obra-pct" id="obraBarraPct">0%</strong>
-                                    <span>Entrega</span>
-                                </div>
-                                <div class="barra-obra" id="obraBarra">
-                                    <div class="barra-obra-cheia" id="obraBarraCheia" style="width:0%"></div>
-                                </div>
-                            </div>
+                            <div class="section-title">Etapas da obra</div>
+                            <ol class="obra-passos" id="obraPassos"></ol>
                         </div>
 
                         <div class="section">
@@ -3642,6 +3837,21 @@
             if (!/^\d{4}-\d{2}$/.test(s)) return '';
             return MESES_OBRA[Number(s.slice(5, 7)) - 1] + ' de ' + s.slice(0, 4);
         }
+        // (14/10) meses inteiros entre dois 'AAAA-MM...' (sem Date, pelo texto); null se faltar
+        function mesesEntreObra(a, b) {
+            const A = String(a || '').slice(0, 7), B = String(b || '').slice(0, 7);
+            if (!/^\d{4}-\d{2}$/.test(A) || !/^\d{4}-\d{2}$/.test(B)) return null;
+            return (Number(B.slice(0, 4)) - Number(A.slice(0, 4))) * 12 + (Number(B.slice(5, 7)) - Number(A.slice(5, 7)));
+        }
+        // "Tempo de obra": quantos meses do calendário da obra já passaram (de 0 ao total)
+        function tempoDeObra(inicio, entrega) {
+            const total = mesesEntreObra(inicio, entrega);
+            if (total === null || total <= 0) return null;
+            const hoje = new Date();
+            const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+            const passados = Math.max(0, Math.min(total, mesesEntreObra(inicio, mesAtual)));
+            return { total: total, passados: passados };
+        }
         function mesCurtoObra(iso) {   // 'Dez / 2026'
             const s = String(iso || '').slice(0, 7);
             if (!/^\d{4}-\d{2}$/.test(s)) return '';
@@ -3709,6 +3919,17 @@
             const url = completa ? base : base + (movel ? '-cel' : '') + '.webp';
             foto.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
             el.classList.add('com-foto');
+            // (14/10, "a imagem tem que ficar responsiva no celular") a caixa da foto ganha a
+            // proporção da própria imagem, e no celular (onde ela fica em fluxo, não absoluta)
+            // a imagem aparece INTEIRA. No máximo 4:3: uma foto em pé da obra cortada ao meio
+            // em vez de tomar a tela toda. Na tela grande a caixa é absoluta e isso não muda nada.
+            foto.setAttribute('data-url', url);
+            const im = new Image();
+            im.onload = () => {
+                if (foto.getAttribute('data-url') !== url || !im.naturalWidth || !im.naturalHeight) return;
+                foto.style.aspectRatio = Math.max(im.naturalWidth / im.naturalHeight, 4 / 3).toFixed(4) + ' / 1';
+            };
+            im.src = url;
         }
 
         /* --- (14/10) a galeria do Projeto 3D: vitrine, miniaturas, grupos e tela cheia --- */
@@ -3779,16 +4000,24 @@
                 andarVitrine(1);
             }, 7000);
         }
+        // (14/10) A tela cheia serve a galeria do projeto E as fotos da obra: `caixaLista`
+        // nula = a galeria (itens com `a` e `t`); senão é a lista aberta ({src, t}).
+        let caixaLista = null;
+        function itensDaCaixa() {
+            return caixaLista || galeriaItens.map((f) => ({ src: PASTA_VC2 + f.a + '.webp', t: f.t }));
+        }
         function mostrarNaCaixa(i) {
-            const f = galeriaItens[i];
+            const lista = itensDaCaixa();
+            const f = lista[i];
             if (!f) return;
             galeriaAtual = i;
-            $$('caixaLuzImagem').src = PASTA_VC2 + f.a + '.webp';
+            $$('caixaLuzImagem').src = f.src;
             $$('caixaLuzImagem').alt = f.t;
             $$('caixaLuzLegenda').textContent = f.t;
-            $$('caixaLuzContador').textContent = (i + 1) + ' / ' + galeriaItens.length;
+            $$('caixaLuzContador').textContent = (i + 1) + ' / ' + lista.length;
         }
-        function abrirCaixa(i) {
+        function abrirCaixa(i, lista) {
+            caixaLista = lista || null;
             mostrarNaCaixa(i);
             $$('caixaLuz').hidden = false;
             document.body.classList.add('caixa-aberta');
@@ -3797,13 +4026,17 @@
         function fecharCaixa() {
             $$('caixaLuz').hidden = true;
             document.body.classList.remove('caixa-aberta');
-            mostrarNaVitrine(galeriaAtual);   // a vitrine acompanha onde a pessoa parou
-            const it = document.querySelector('#galeriaGrupos .foto-card[data-i="' + galeriaAtual + '"]');
-            if (it) it.focus({ preventScroll: true });
+            if (!caixaLista) {
+                mostrarNaVitrine(galeriaAtual);   // a vitrine acompanha onde a pessoa parou
+                const it = document.querySelector('#galeriaGrupos .foto-card[data-i="' + galeriaAtual + '"]');
+                if (it) it.focus({ preventScroll: true });
+            }
+            caixaLista = null;
         }
         function andarCaixa(passo) {
-            if (!galeriaItens.length) return;
-            mostrarNaCaixa((galeriaAtual + passo + galeriaItens.length) % galeriaItens.length);
+            const n = itensDaCaixa().length;
+            if (!n) return;
+            mostrarNaCaixa((galeriaAtual + passo + n) % n);
         }
         function urlDaFotoDaObra(caminho) {
             const r = sb.storage.from('obras').getPublicUrl(caminho);
@@ -3888,23 +4121,30 @@
             $$('obraEtapa').textContent = atual ? atual.nome : '—';
             $$('obraEtapaNota').textContent = andando ? 'em andamento' : (ultimaFeita ? 'concluída' : (proxima ? 'a iniciar' : ' '));
 
+            // (14/10) o painel: o anel (perímetro 2·π·52 ≈ 326.7), o separador da nota, os fatos
+            $$('obraAnelProgresso').setAttribute('stroke-dasharray', (326.7 * pct / 100).toFixed(1) + ' 326.7');
+            $$('obraPainelSep').hidden = !($$('obraEtapaNota').textContent.trim() && $$('obraPctNota').textContent.trim());
+            $$('obraInicio').textContent = emp.inicio_obra ? mesCurtoObra(emp.inicio_obra) : '—';
             $$('obraPrevisao').textContent = emp.previsao_entrega ? mesCurtoObra(emp.previsao_entrega) : 'a definir';
-            $$('obraPrevisaoNota').textContent = emp.inicio_obra ? 'início em ' + mesCurtoObra(emp.inicio_obra) : ' ';
+            const tempo = tempoDeObra(emp.inicio_obra, emp.previsao_entrega);
+            $$('obraTempo').textContent = tempo ? tempo.passados + ' de ' + tempo.total + ' meses' : '—';
+            $$('obraTempoBarra').style.width = tempo ? Math.round((tempo.passados / tempo.total) * 100) + '%' : '0%';
+            $$('obraTempoCaixa').hidden = !tempo;
 
-            // A barra, com as marcas das etapas reais espalhadas por igual.
-            $$('obraBarraPct').textContent = pct + '%';
-            $$('obraBarraCheia').style.width = pct + '%';
-            const barra = $$('obraBarra');
-            barra.querySelectorAll('.barra-marca').forEach((m) => m.remove());
-            const n = etapas.length;
-            etapas.forEach((e, i) => {
-                const esquerda = n === 1 ? 50 : 8 + i * (88 / (n - 1));
-                const marca = document.createElement('span');
-                marca.className = 'barra-marca' + (e.situacao === 'concluida' ? ' feita' : (e.situacao === 'em_andamento' ? ' agora' : ''));
-                marca.style.left = esquerda.toFixed(1) + '%';
-                marca.innerHTML = '<i></i>' + escapar(e.nome);
-                barra.appendChild(marca);
-            });
+            // As etapas, passo a passo: concluída (check), em andamento (pulsa), a iniciar.
+            $$('obraPassos').innerHTML = etapas.map((e, i) => {
+                const classe = e.situacao === 'concluida' ? 'feita' : (e.situacao === 'em_andamento' ? 'agora' : 'futura');
+                const estado = e.situacao === 'concluida' ? 'Concluída' : (e.situacao === 'em_andamento' ? 'Em andamento' : 'A iniciar');
+                const quando = e.previsao ? ' · previsão ' + mesCurtoObra(e.previsao) : '';
+                const marca = classe === 'feita'
+                    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+                    : String(i + 1);
+                return '<li class="obra-passo ' + classe + '">'
+                    + '<span class="obra-passo-marca">' + marca + '</span>'
+                    + '<div class="obra-passo-texto"><strong>' + escapar(e.nome) + '</strong><span>' + estado + escapar(quando) + '</span></div>'
+                    + '</li>';
+            }).join('') || '<li class="obra-passo futura"><span class="obra-passo-marca">1</span>'
+                + '<div class="obra-passo-texto"><strong>Etapas ainda não cadastradas</strong><span>a DPR informa em breve</span></div></li>';
 
             // As atualizações aprovadas, mês a mês, da mais recente para a mais antiga.
             const etapaPorId = {};
@@ -3916,26 +4156,31 @@
                 return;
             }
             let mesAnterior = '';
+            obraFotosPorId = {};
             linha.innerHTML = atualizacoes.map((a) => {
                 const mes = mesExtensoObra(a.data_referencia);
                 const cabeca = mes !== mesAnterior ? '<div class="obra-mes">' + escapar(mes) + '</div>' : '';
                 mesAnterior = mes;
                 const fotos = (a.obras_fotos || []).slice().sort((x, y) => (x.ordem || 0) - (y.ordem || 0));
-                const urls = fotos.map((f) => ({ url: urlDaFotoDaObra(f.caminho), legenda: f.legenda || '' }));
-                const capa = urls[0];
+                // (14/10) as fotos em MOSAICO: uma grande e até duas pequenas; da terceira em
+                // diante, "+N" sobre a última. Tocar abre a tela cheia com todas (obraFotosPorId).
+                const lista = fotos.map((f) => ({ src: urlDaFotoDaObra(f.caminho), t: f.legenda || a.titulo }));
+                obraFotosPorId[String(a.id)] = lista;
+                const n = lista.length;
                 const etapa = a.etapa_id && etapaPorId[a.etapa_id] ? etapaPorId[a.etapa_id].nome : '';
                 const temPct = a.percentual !== null && a.percentual !== undefined;
                 const texto = escapar(a.texto || '').replace(/\r?\n/g, '<br>');
-                const miniaturas = urls.slice(1).map((f) =>
-                    '<a href="' + escapar(f.url) + '" target="_blank" rel="noopener">'
-                    + '<img loading="lazy" alt="' + escapar(f.legenda || a.titulo) + '" src="' + escapar(f.url) + '">'
+                const quadros = lista.slice(0, 3).map((f, i) =>
+                    '<a class="obra-mosaico-foto" href="' + escapar(f.src) + '" target="_blank" rel="noopener" data-foto="' + i + '">'
+                    + '<img loading="lazy" alt="' + escapar(f.t) + '" src="' + escapar(f.src) + '">'
+                    + (i === 2 && n > 3 ? '<span class="obra-mosaico-mais">+' + (n - 3) + '</span>' : '')
                     + '</a>').join('');
+                const mosaico = n
+                    ? '<div class="obra-mosaico n' + Math.min(n, 3) + '">' + quadros + '</div>'
+                    : '<div class="obra-mosaico vazio">sem foto</div>';
                 return cabeca
                     + '<article class="obra-etapa atual publicada" data-id="' + escapar(a.id) + '">'
-                    +   (capa
-                        ? '<a class="obra-foto" href="' + escapar(capa.url) + '" target="_blank" rel="noopener">'
-                          + '<img loading="lazy" alt="' + escapar(capa.legenda || a.titulo) + '" src="' + escapar(capa.url) + '"></a>'
-                        : '<div class="obra-foto sem-foto">sem foto</div>')
+                    +   mosaico
                     +   '<div class="obra-texto">'
                     +     '<div class="obra-selo">' + escapar(etapa || 'Atualização')
                     +       (temPct ? '<span class="obra-pct">' + Number(a.percentual) + '%</span>' : '') + '</div>'
@@ -3943,11 +4188,13 @@
                     +     '<div class="obra-data">' + escapar(mes)
                     +       (a.publicado_em ? ' · publicado em ' + dataLocalObra(a.publicado_em) : '') + '</div>'
                     +     (texto ? '<p>' + texto + '</p>' : '')
-                    +     (miniaturas ? '<div class="obra-fotos">' + miniaturas + '</div>' : '')
+                    +     (n ? '<div class="obra-fotos-n">' + n + (n === 1 ? ' foto' : ' fotos') + ' · toque para ampliar</div>' : '')
                     +   '</div>'
                     + '</article>';
             }).join('');
         }
+        // (14/10) as fotos de cada atualização aprovada, pelo id, para a tela cheia
+        let obraFotosPorId = {};
 
         // ⚠️ Sem acento e em minúscula, para o filtro achar "atraso" digitando
         // "atraso" e "março" digitando "marco". A faixa dos acentos é montada por
@@ -3977,6 +4224,14 @@
         // primeiro se decide quais linhas batem, depois qual fatia delas aparece.
         const POR_PAGINA = 12;
         let paginaParcelas = 1;
+        // (14/10, "as parcelas estão pegando muito espaço") No celular a lista começa
+        // RESUMIDA: só as em atraso e as três próximas em aberto (tudo pago: as três
+        // últimas). "Ver todas" abre a lista completa, paginada; um filtro ou uma
+        // busca já mostram tudo o que bate. Na tela grande a lista é sempre completa.
+        let parcelasResumidas = true;
+        function podeResumirParcelas(termo) {
+            return filtroSituacao === 'todas' && !termo && window.matchMedia('(max-width: 768px)').matches;
+        }
 
         function aplicarFiltro() {
             const termo = normalizarBusca($$('buscaParcela') ? $$('buscaParcela').value : '');
@@ -3989,12 +4244,33 @@
                 if (bateSituacao && bateTexto) batem.push(l);
             });
             const visiveis = batem.length;
-            const paginas = Math.max(1, Math.ceil(visiveis / POR_PAGINA));
-            if (paginaParcelas > paginas) paginaParcelas = paginas;
-            if (paginaParcelas < 1) paginaParcelas = 1;
-            const de = (paginaParcelas - 1) * POR_PAGINA;
-            batem.slice(de, de + POR_PAGINA).forEach((l) => { l.hidden = false; });
-            renderizarPaginacao(visiveis, paginas, de);
+            const pe = $$('parcelasPe');
+            const resumivel = podeResumirParcelas(termo) && visiveis > 4;
+            if (resumivel && parcelasResumidas) {
+                const atrasadas = batem.filter((l) => situacaoDaLinha(l) === 'atrasada');
+                const abertas = batem.filter((l) => situacaoDaLinha(l) === 'aberta').slice(0, 3);
+                let poucas = atrasadas.concat(abertas);
+                if (!poucas.length) poucas = batem.slice(-3);
+                poucas.forEach((l) => { l.hidden = false; });
+                renderizarPaginacao(poucas.length, 1, 0);
+                pe.hidden = false;
+                $$('parcelasPeNota').textContent = atrasadas.length
+                    ? (atrasadas.length === 1 ? '1 em atraso' : atrasadas.length + ' em atraso') + (abertas.length ? ' e as próximas a vencer' : '')
+                    : (abertas.length ? 'As próximas a vencer' : 'As últimas pagas');
+                $$('parcelasVer').textContent = 'Ver todas as ' + visiveis + ' parcelas';
+            } else {
+                const paginas = Math.max(1, Math.ceil(visiveis / POR_PAGINA));
+                if (paginaParcelas > paginas) paginaParcelas = paginas;
+                if (paginaParcelas < 1) paginaParcelas = 1;
+                const de = (paginaParcelas - 1) * POR_PAGINA;
+                batem.slice(de, de + POR_PAGINA).forEach((l) => { l.hidden = false; });
+                renderizarPaginacao(visiveis, paginas, de);
+                pe.hidden = !resumivel;
+                if (resumivel) {
+                    $$('parcelasPeNota').textContent = 'Todas as ' + visiveis + ' parcelas';
+                    $$('parcelasVer').textContent = 'Ver só as próximas';
+                }
+            }
 
             // Filtro que esconde tudo e não explica parece tela quebrada.
             const antigo = document.getElementById('semResultado');
@@ -4577,6 +4853,18 @@
                 const it = ev.target.closest('.foto-card');
                 if (it) abrirCaixa(Number(it.getAttribute('data-i')));
             });
+            // (14/10) as fotos da obra abrem na mesma tela cheia, com todas as da atualização
+            if ($$('obraLinha')) {
+                $$('obraLinha').addEventListener('click', (ev) => {
+                    const a = ev.target.closest('a.obra-mosaico-foto');
+                    if (!a) return;
+                    const art = a.closest('article[data-id]');
+                    const lista = art && obraFotosPorId[art.getAttribute('data-id')];
+                    if (!lista || !lista.length) return;   // sem lista, o link abre a foto numa aba
+                    ev.preventDefault();
+                    abrirCaixa(Number(a.getAttribute('data-foto')) || 0, lista);
+                });
+            }
             let toqueVitrine = null;
             $$('vitrineFoto').addEventListener('touchstart', (ev) => { toqueVitrine = ev.touches[0].clientX; }, { passive: true });
             $$('vitrineFoto').addEventListener('touchend', (ev) => {
@@ -4607,6 +4895,15 @@
 
         // Tocar fora fecha. É como as pessoas esperam sair de um menu assim.
         $$('lateralFundo').addEventListener('click', () => menuLateral(false));
+
+        // (14/10) "Ver todas as N parcelas" / "Ver só as próximas" (lista resumida do celular)
+        if ($$('parcelasVer')) {
+            $$('parcelasVer').addEventListener('click', () => {
+                parcelasResumidas = !parcelasResumidas;
+                paginaParcelas = 1;
+                aplicarFiltro();
+            });
+        }
 
         // Esc fecha para quem estiver num teclado.
         document.addEventListener('keydown', (ev) => {

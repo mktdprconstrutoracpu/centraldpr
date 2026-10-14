@@ -45,19 +45,29 @@ ele, a trava antiga (nome igual) continua valendo.
 
 ## O que a página mostra
 
-- **Andamento geral**: o percentual da atualização aprovada mais recente que
-  trouxe um número. Se nenhuma trouxe, a conta é etapas concluídas sobre o
-  total.
-- **Etapa atual**: a etapa em andamento; senão a última concluída; senão a
-  primeira a fazer.
-- **Previsão de entrega**: `previsao_entrega` do empreendimento ("Dez / 2027"),
-  ou "a definir".
-- **Barra**: as etapas reais do empreendimento, espalhadas por igual, com a
-  marca da concluída e da atual.
+- **O painel** (14/10): um cartão escuro com o **anel** do andamento geral (o
+  percentual da atualização aprovada mais recente que trouxe um número; se
+  nenhuma trouxe, a conta é etapas concluídas sobre o total), a **etapa atual**
+  (a em andamento; senão a última concluída; senão a primeira a fazer) com a
+  nota "em andamento · informado em outubro de 2026", e três fatos: **Início**
+  (`inicio_obra`), **Entrega prevista** (`previsao_entrega`, ou "a definir") e
+  **Tempo de obra** ("8 de 22 meses": meses do início até o mês de hoje sobre
+  os meses do início à entrega, com uma barra; some quando falta uma das
+  datas). A barra não compara o tempo com o andamento: a obra não é linear e
+  a comparação automática poderia dizer ao cliente algo que a DPR não disse.
+- **Etapas da obra**: as etapas reais do empreendimento, passo a passo, com
+  check na concluída, a atual pulsando em vermelho e as próximas em cinza;
+  a previsão de cada etapa, se cadastrada ("previsão Mar / 2027"). Em coluna
+  no celular.
 - **Atualizações da obra**: as aprovadas, da mais recente para a mais antiga,
   agrupadas pelo mês (`data_referencia`, dia 1 do mês), cada uma com a etapa,
-  o percentual, o título, o mês, a data de publicação, o texto e as fotos: a
-  primeira grande, as outras em miniatura; todas abrem em tamanho cheio.
+  o percentual, o título, o mês, a data de publicação, o texto e as fotos em
+  **mosaico** (uma grande e até duas pequenas; da quarta em diante, "+N" sobre
+  a última). Tocar numa foto abre a mesma tela cheia do Projeto 3D, com todas
+  as fotos daquela atualização, setas e arrastar.
+- No celular, a foto do topo da página (a mais recente aprovada, ou a do
+  empreendimento) aparece inteira na largura da tela, com a proporção da
+  própria imagem (no máximo 4:3, para uma foto em pé não tomar a tela).
 - Enquanto o empreendimento da casa **não estiver cadastrado** no painel de
   obras, a página continua com o **conteúdo de demonstração** avisado em
   amarelo, como antes. Cadastrado e sem nenhuma aprovada: "Ainda não há
