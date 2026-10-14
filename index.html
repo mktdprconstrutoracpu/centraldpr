@@ -203,6 +203,16 @@
             background: var(--accent);
             color: white;
         }
+        /* (14/10) os ícones são SVG de traço, na cor do texto ao redor (currentColor) */
+        .nav-icon svg, .barra-icone svg {
+            display: block;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .nav-icon svg { width: 15px; height: 15px; }
 
         /* ===================================================================
            (25/08) TELA DE ENTRADA — login e cadastro.
@@ -1557,10 +1567,26 @@
                 cursor: pointer;
                 -webkit-tap-highlight-color: transparent;
             }
-            .barra-item .barra-icone { font-size: 18px; line-height: 1; }
-            .barra-item:active { background: var(--gray-50); }
+            /* o ícone mora numa pílula: apagada quando o item está parado, com o
+               vermelho da marca bem suave quando é a página aberta */
+            .barra-icone {
+                width: 46px;
+                height: 30px;
+                border-radius: 999px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background .2s ease, color .2s ease;
+            }
+            .barra-icone svg { width: 22px; height: 22px; }
+            .barra-item:active .barra-icone { background: var(--gray-50); }
             .barra-item.active,
-            .barra-item[aria-expanded="true"] { color: var(--primary); }
+            .barra-item[aria-expanded="true"] { color: var(--primary); font-weight: 700; }
+            .barra-item.active .barra-icone,
+            .barra-item[aria-expanded="true"] .barra-icone {
+                background: rgba(211, 47, 47, .10);
+                color: var(--accent);
+            }
 
             /* O conteúdo não termina atrás da barra: sobra espaço no fim de cada página. */
             body.logado .content { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
@@ -1677,15 +1703,15 @@
                  impressão é de sistema quebrado. Ficou só o que existe de verdade. -->
             <nav class="nav-section">
                 <div class="nav-item active" data-pagina="extrato">
-                    <div class="nav-icon">▨</div>
+                    <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-2.75-1.8L12 20.5l-2.75-1.8-2.75 1.8z"/><path d="M9.5 8.5h5M9.5 12h5M9.5 15.5h3"/></svg></div>
                     <span>Meu extrato</span>
                 </div>
                 <div class="nav-item" data-pagina="obra">
-                    <div class="nav-icon">▲</div>
+                    <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M5.5 20.5v-10l5.5-3v13"/><path d="M11 20.5V11.5l7.5-3.5v12.5"/><path d="M8.2 13.6v.3M8.2 16.6v.3M14.6 13.1v.3M14.6 16.1v.3"/></svg></div>
                     <span>Evolução da obra</span>
                 </div>
                 <div class="nav-item" data-pagina="projetos">
-                    <div class="nav-icon">◈</div>
+                    <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.2 5.8 5.8 2.2-5.8 2.2L12 19.5l-2.2-5.8L4 11.5l5.8-2.2z"/></svg></div>
                     <span>Futuros projetos</span>
                 </div>
             </nav>
@@ -1718,19 +1744,22 @@
              fixos no pé da tela, como nos aplicativos, em vez do botão de três
              traços no topo. Só aparece no celular e só depois do login
              (body.logado); em tela grande a lateral continua sendo o menu. -->
+        <!-- Os ícones são desenhados (SVG de traço, 14/10, "deixe mais bonito
+             esse menu, esses ícones"): recibo, prédios, estrela e três traços.
+             Os mesmos desenhos estão na lateral, para a casa ser uma só. -->
         <nav class="barra-cel" id="barraCel" aria-label="Menu principal">
             <button type="button" class="barra-item active" data-pagina="extrato">
-                <span class="barra-icone" aria-hidden="true">▨</span><span>Extrato</span>
+                <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-2.75-1.8L12 20.5l-2.75-1.8-2.75 1.8z"/><path d="M9.5 8.5h5M9.5 12h5M9.5 15.5h3"/></svg></span><span>Extrato</span>
             </button>
             <button type="button" class="barra-item" data-pagina="obra">
-                <span class="barra-icone" aria-hidden="true">▲</span><span>Obra</span>
+                <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M5.5 20.5v-10l5.5-3v13"/><path d="M11 20.5V11.5l7.5-3.5v12.5"/><path d="M8.2 13.6v.3M8.2 16.6v.3M14.6 13.1v.3M14.6 16.1v.3"/></svg></span><span>Obra</span>
             </button>
             <button type="button" class="barra-item" data-pagina="projetos">
-                <span class="barra-icone" aria-hidden="true">◈</span><span>Projetos</span>
+                <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.2 5.8 5.8 2.2-5.8 2.2L12 19.5l-2.2-5.8L4 11.5l5.8-2.2z"/></svg></span><span>Projetos</span>
             </button>
             <button type="button" class="barra-item" id="barraMais"
                     aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral">
-                <span class="barra-icone" aria-hidden="true">☰</span><span>Menu</span>
+                <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Menu</span>
             </button>
         </nav>
 
