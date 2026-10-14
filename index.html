@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central DPR - Portal do Cliente</title>
-    <!-- (14/10) Archivo e a fonte de destaque do tema novo (titulos e numeros);
+    <!-- (14/10) Archivo e a fonte de destaque do tema novo (titulos e numeros) e
+         Syncopate a dos rotulos pequenos, a mesma dupla da identidade da DPR;
          Montserrat fica como reserva. Inter continua no texto corrido. -->
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Syncopate:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- (25/08) SDK do Supabase — autenticação de e-mail e senha, direto do navegador.
          Expõe o global `supabase` (a fábrica). O cliente configurado vira `sb`, mais abaixo. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1853,6 +1854,237 @@
             body.logado .barra-cel { background: rgba(255, 255, 255, .92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
             .logo-cel { height: 32px; }
         }
+
+        /* ===================================================================
+           (14/10) TEMA, SEGUNDA PASSADA
+           Ela: "ainda esta muito basico". A primeira passada trocou a pele;
+           esta muda a composicao: a entrada vira um palco em duas partes com
+           a frase da casa, o saldo vira o painel dominante do extrato (os
+           outros dois numeros empilham ao lado), o carne ganha uma trilha
+           visual antes da lista, a obra vira uma linha do tempo de verdade,
+           os rotulos pequenos usam Syncopate (a fonte larga da identidade
+           DPR) e o fundo recebe a trama fina de uma planta. Vem depois da
+           primeira passada e ganha dela.
+           =================================================================== */
+
+        :root { --rotulo: 'Syncopate', 'Archivo', sans-serif; }
+
+        /* --- a trama de planta, bem apagada, atras de tudo --- */
+        body {
+            background-image:
+                radial-gradient(1100px 520px at 100% -8%, rgba(225, 6, 0, .06), transparent 62%),
+                repeating-linear-gradient(0deg, rgba(23, 24, 27, .035) 0 1px, transparent 1px 56px),
+                repeating-linear-gradient(90deg, rgba(23, 24, 27, .035) 0 1px, transparent 1px 56px);
+        }
+
+        /* --- os rotulos pequenos em Syncopate --- */
+        .welcome-content::before, .stat-label, .nav-label, .lateral-linha > span, .table-header-row,
+        .imovel-emp, .imovel-numeros dt, .obra-mes, .trilha-titulo, .auth-lado-eyebrow, .welcome-subtitle {
+            font-family: var(--rotulo);
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+        .stat-label { font-size: 9.5px; }
+        .welcome-content::before { font-size: 9.5px; letter-spacing: .3em; }
+        .welcome-subtitle { font-size: 10px; letter-spacing: .18em; }
+        .table-header-row { font-size: 9px; }
+        .imovel-emp, .imovel-numeros dt, .lateral-linha > span, .nav-label { font-size: 8.5px; }
+        .obra-mes { font-size: 10px; }
+
+        /* --- a faixa de boas-vindas: maior, com a trama e o titulo em caixa pesada --- */
+        .welcome-banner {
+            padding: 54px 52px 50px;
+            background-image:
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, .04) 0 1px, transparent 1px 48px),
+                repeating-linear-gradient(90deg, rgba(255, 255, 255, .04) 0 1px, transparent 1px 48px),
+                linear-gradient(118deg, #121316 0%, #1d1f24 58%, #272a31 100%);
+        }
+        .welcome-title { font-size: 54px; font-weight: 900; letter-spacing: -.035em; }
+
+        /* --- o saldo e o painel dominante; os outros dois empilham ao lado --- */
+        .stats-grid {
+            grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            gap: 18px;
+        }
+        .stats-grid .stat-card:first-child {
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 36px 40px;
+            background-image:
+                radial-gradient(420px 260px at 100% 110%, rgba(225, 6, 0, .28), transparent 70%),
+                linear-gradient(135deg, #1a1b1f, #2b2d34);
+        }
+        .stats-grid .stat-card:first-child .stat-value { font-size: 52px; font-weight: 900; letter-spacing: -.04em; line-height: 1; margin: 10px 0 12px; }
+        .stats-grid .stat-card:first-child .stat-change { font-size: 14px; }
+        .stats-grid .stat-card:first-child::after { width: 72px; }
+        .stats-grid .stat-card:nth-child(2) .stat-value,
+        .stats-grid .stat-card:nth-child(3) .stat-value { font-size: 32px; }
+        .stats-grid .stat-card:nth-child(2),
+        .stats-grid .stat-card:nth-child(3) { padding: 24px 28px 26px; }
+
+        /* --- os cartoes entram um depois do outro --- */
+        #conteudoExtrato:not([hidden]) .stat-card,
+        #conteudoExtrato:not([hidden]) .imovel-caixa,
+        #conteudoExtrato:not([hidden]) .trilha-caixa,
+        #conteudoExtrato:not([hidden]) .table-card {
+            animation: cartao-entra .55s cubic-bezier(.2, .7, .2, 1) both;
+        }
+        #conteudoExtrato:not([hidden]) .stat-card:nth-child(2) { animation-delay: .08s; }
+        #conteudoExtrato:not([hidden]) .stat-card:nth-child(3) { animation-delay: .16s; }
+        #conteudoExtrato:not([hidden]) .imovel-caixa { animation-delay: .22s; }
+        #conteudoExtrato:not([hidden]) .trilha-caixa { animation-delay: .3s; }
+        #conteudoExtrato:not([hidden]) .table-card { animation-delay: .36s; }
+        @keyframes cartao-entra {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* --- a trilha do carne --- */
+        .trilha-caixa {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--sombra);
+            padding: 20px 24px 22px;
+            margin-bottom: 16px;
+        }
+        .trilha-caixa[hidden] { display: none; }
+        .trilha-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+        .trilha-titulo { font-size: 9.5px; color: var(--text-light); }
+        .trilha-legenda { display: flex; align-items: center; gap: 6px 10px; font-size: 11.5px; color: var(--text-light); flex-wrap: wrap; }
+        .trilha-legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: -4px; }
+        .trilha { display: flex; flex-wrap: wrap; gap: 5px; }
+        .trilha-bloco {
+            display: block;
+            flex: 1 1 18px;
+            max-width: 34px;
+            height: 30px;
+            border-radius: 6px;
+            transition: transform .15s ease;
+        }
+        .trilha-bloco:hover { transform: translateY(-3px); }
+        .trilha-bloco.paga, .trilha-legenda i.paga { background: var(--primary); }
+        .trilha-bloco.atrasada, .trilha-legenda i.atrasada { background: var(--accent); }
+        .trilha-bloco.aberta, .trilha-legenda i.aberta { background: var(--white); box-shadow: inset 0 0 0 1.5px var(--border); }
+        .trilha-bloco.proxima { box-shadow: inset 0 0 0 2px var(--accent); }
+
+        /* --- a lateral com mais presenca --- */
+        .user-avatar { width: 46px; height: 46px; font-size: 18px; box-shadow: 0 0 0 3px rgba(225, 6, 0, .22), 0 6px 16px rgba(225, 6, 0, .3); }
+        .nav-item { font-size: 14.5px; padding: 13px 14px; }
+
+        /* --- a obra como linha do tempo --- */
+        .obra-linha { position: relative; padding-left: 30px; gap: 26px; }
+        .obra-linha::before {
+            content: '';
+            position: absolute;
+            left: 9px;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent) 0 120px, var(--border) 120px 100%);
+            border-radius: 2px;
+        }
+        .obra-mes { position: relative; margin: 2px 0 -10px; }
+        .obra-mes::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            margin-top: -6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 4px rgba(225, 6, 0, .16);
+        }
+        .obra-mes ~ .obra-mes::before { background: var(--white); box-shadow: inset 0 0 0 2.5px var(--border); }
+        .obra-etapa { grid-template-columns: 300px 1fr; }
+        .obra-foto { min-height: 200px; }
+        .obra-texto { padding: 24px 28px 24px 0; }
+        .obra-titulo { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+        .obra-fotos a { width: 84px; height: 62px; border-radius: 10px; }
+        .barra-obra-card { padding: 30px 34px 60px; }
+        .barra-obra-pct { font-size: 32px; font-weight: 900; }
+
+        /* --- a entrada em duas partes --- */
+        .auth-overlay { padding: 0; }
+        .auth-palco {
+            width: 100%;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            align-items: center;
+        }
+        .auth-lado {
+            position: relative;
+            padding: 64px 7vw;
+            color: var(--white);
+        }
+        .auth-lado-eyebrow { display: block; font-size: 10px; letter-spacing: .32em; color: rgba(255, 255, 255, .55); margin-bottom: 26px; }
+        .auth-lado-titulo {
+            font-family: var(--display);
+            font-size: clamp(44px, 5.4vw, 78px);
+            font-weight: 900;
+            line-height: .98;
+            letter-spacing: -.04em;
+            margin-bottom: 22px;
+        }
+        .auth-lado-texto { font-size: 16px; line-height: 1.6; color: rgba(255, 255, 255, .7); max-width: 38ch; }
+        .auth-lado-barras { display: flex; gap: 10px; margin-top: 40px; }
+        .auth-lado-barras i {
+            display: block;
+            width: 14px;
+            height: 54px;
+            background: var(--accent);
+            transform: skewX(-14deg);
+            border-radius: 2px;
+            animation: barra-sobe .9s cubic-bezier(.2, .7, .2, 1) both;
+        }
+        .auth-lado-barras i:nth-child(2) { height: 76px; margin-top: -22px; animation-delay: .12s; }
+        .auth-lado-barras i:nth-child(3) { height: 42px; margin-top: 12px; opacity: .55; animation-delay: .24s; }
+        @keyframes barra-sobe {
+            from { transform: skewX(-14deg) translateY(18px); opacity: 0; }
+            to { transform: skewX(-14deg) translateY(0); opacity: 1; }
+        }
+        .auth-lado-barras i:nth-child(3) { animation-name: barra-sobe-fraca; }
+        @keyframes barra-sobe-fraca {
+            from { transform: skewX(-14deg) translateY(18px); opacity: 0; }
+            to { transform: skewX(-14deg) translateY(0); opacity: .55; }
+        }
+        .auth-overlay::before { display: none; }
+        .auth-card { margin: 40px 7vw 40px 0; justify-self: center; }
+
+        @media (prefers-reduced-motion: reduce) {
+            #conteudoExtrato:not([hidden]) .stat-card, #conteudoExtrato:not([hidden]) .imovel-caixa,
+            #conteudoExtrato:not([hidden]) .trilha-caixa, #conteudoExtrato:not([hidden]) .table-card,
+            .auth-lado-barras i { animation: none; }
+        }
+
+        /* --- a segunda passada no celular --- */
+        @media (max-width: 768px) {
+            .welcome-banner { padding: 34px 26px 32px; }
+            .welcome-title { font-size: 36px; }
+            .stats-grid { grid-template-columns: 1fr; grid-template-rows: none; gap: 14px; }
+            .stats-grid .stat-card:first-child { grid-row: auto; padding: 30px 26px; }
+            .stats-grid .stat-card:first-child .stat-value { font-size: 40px; }
+            .trilha-caixa { padding: 16px 18px 18px; }
+            .trilha-bloco { height: 26px; flex-basis: 14px; }
+            .obra-linha { padding-left: 24px; }
+            .obra-linha::before { left: 6px; }
+            .obra-mes::before { left: -24px; width: 10px; height: 10px; margin-top: -5px; }
+            .obra-etapa { grid-template-columns: 1fr; }
+            .obra-texto { padding: 20px; }
+            .auth-palco { grid-template-columns: 1fr; min-height: 100dvh; align-content: start; }
+            .auth-lado { padding: 44px 24px 18px; }
+            .auth-lado-eyebrow { margin-bottom: 14px; }
+            .auth-lado-titulo { font-size: 38px; margin-bottom: 10px; }
+            .auth-lado-texto { font-size: 14px; }
+            .auth-lado-barras { display: none; }
+            .auth-card { margin: 0 20px 36px; justify-self: stretch; max-width: none; padding: 30px 24px 26px; }
+        }
     </style>
 </head>
 <body>
@@ -1860,6 +2092,17 @@
          A ordem importa: se nascesse escondida, a Central apareceria por um
          instante antes do JS rodar — e quem tirasse print pegaria o painel. -->
     <div class="auth-overlay" id="authOverlay">
+      <!-- (14/10) A entrada virou um palco em duas partes: a esquerda, a frase
+           da casa com as tres barras do logo; a direita, o cartao de sempre.
+           O JS nao sabe do palco: continua falando so com o overlay e os
+           formularios. No celular as duas partes empilham. -->
+      <div class="auth-palco">
+        <aside class="auth-lado" aria-hidden="true">
+          <span class="auth-lado-eyebrow">Central do Cliente</span>
+          <p class="auth-lado-titulo">Sua casa,<br>do contrato<br>à chave.</p>
+          <p class="auth-lado-texto">Extrato, parcelas e a evolução da obra, num lugar só.</p>
+          <div class="auth-lado-barras"><i></i><i></i><i></i></div>
+        </aside>
       <div class="auth-card">
         <img class="auth-logo" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
         <p class="auth-sub">Portal do Cliente</p>
@@ -1929,6 +2172,7 @@
 
         <div class="auth-recado" id="authRecado" role="status" aria-live="polite"></div>
       </div>
+      </div><!-- /auth-palco -->
     </div>
 
     <div class="container">
@@ -2117,6 +2361,17 @@
                         <button type="button" class="filtro" data-filtro="atrasada">Em atraso <span class="filtro-num" id="numAtrasadas">0</span></button>
                         <button type="button" class="filtro" data-filtro="aberta">Em aberto <span class="filtro-num" id="numAbertas">0</span></button>
                         <button type="button" class="filtro" data-filtro="paga">Pagas <span class="filtro-num" id="numPagas">0</span></button>
+                    </div>
+
+                    <!-- (14/10) A trilha do carnê: um bloco por parcela, na cor da
+                         situação, para a pessoa ver o contrato inteiro de uma
+                         olhada antes da lista. Preenchida por renderizarExtrato(). -->
+                    <div class="trilha-caixa" id="trilhaCaixa" hidden>
+                        <div class="trilha-topo">
+                            <span class="trilha-titulo">O carnê, parcela a parcela</span>
+                            <span class="trilha-legenda"><i class="paga"></i>paga <i class="atrasada"></i>em atraso <i class="aberta"></i>em aberto</span>
+                        </div>
+                        <div class="trilha" id="trilhaParcelas"></div>
                     </div>
 
                     <div class="table-card">
@@ -2584,6 +2839,18 @@
                     + '<div class="table-cell">' + selo + '</div>'
                     + '</div>';
             }).join('') || '<div class="sem-resultado">Nenhuma parcela cadastrada.</div>';
+
+            // --- (14/10) a trilha do carnê: um bloco por parcela, na ordem do carnê ---
+            if ($$('trilhaParcelas')) {
+                $$('trilhaParcelas').innerHTML = parcelas.map((p) => {
+                    const emAtraso = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
+                    const classe = p.pago ? 'paga' : (emAtraso ? 'atrasada' : 'aberta');
+                    const eProxima = proxima && p === proxima ? ' proxima' : '';
+                    const titulo = dataBR(p.data_vencimento) + ' · ' + dinheiro(valorDaParcela(p)) + ' · ' + (p.pago ? 'paga' : (emAtraso ? 'em atraso' : 'em aberto'));
+                    return '<i class="trilha-bloco ' + classe + eProxima + '" title="' + escapar(titulo) + '"></i>';
+                }).join('');
+                $$('trilhaCaixa').hidden = parcelas.length === 0;
+            }
 
             // --- resumo na lateral e etiqueta no topo ---
             const rotulo = unidades.length > 1
