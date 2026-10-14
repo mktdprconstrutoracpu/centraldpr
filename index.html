@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central DPR - Portal do Cliente</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- (14/10) Archivo e a fonte de destaque do tema novo (titulos e numeros);
+         Montserrat fica como reserva. Inter continua no texto corrido. -->
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- (25/08) SDK do Supabase — autenticação de e-mail e senha, direto do navegador.
          Expõe o global `supabase` (a fábrica). O cliente configurado vira `sb`, mais abaixo. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1597,6 +1599,259 @@
             .sidebar { padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px)); height: 100dvh; }
             .logo-container { margin-bottom: 16px; }
             .user-card { margin-bottom: 18px; }
+        }
+
+        /* ===================================================================
+           (14/10) TEMA "CONCRETO E VERMELHO"
+           Ela: "o design em geral da Central esta muito simples, quero uma
+           coisa bem bonita, criativa". Este bloco redesenha a casca sem mexer
+           na estrutura nem no JS: so cores, fontes, sombras, formas e uma
+           assinatura visual, as tres barras vermelhas do logo da DPR, que
+           reaparecem na faixa de boas-vindas, na tela de entrada e no fio
+           dos titulos. Vem DEPOIS do bloco do celular de proposito: o que
+           aqui e so pele, ganha; a parte do celular que precisa ser diferente
+           esta no fim, no seu proprio @media.
+           =================================================================== */
+
+        :root {
+            --primary: #17181b;          /* carvao, um pouco mais frio e fundo */
+            --secondary: #24262b;
+            --accent: #e10600;           /* o vermelho da marca (identidade DPR) */
+            --accent-claro: #ff3b2f;     /* o mesmo vermelho para brilhar sobre o escuro */
+            --light: #faf8f5;
+            --lighter: #f4f1ec;          /* papel quente, nao cinza de sistema */
+            --text: #1d1e22;
+            --text-light: #6c6a68;
+            --border: #e7e2db;
+            --gray-50: #f3f0eb;
+            --display: 'Archivo', 'Montserrat', sans-serif;
+            --sombra: 0 10px 30px rgba(23, 24, 27, .06);
+            --sombra-alta: 0 18px 44px rgba(23, 24, 27, .11);
+        }
+        body {
+            background-image: radial-gradient(1100px 520px at 100% -8%, rgba(225, 6, 0, .06), transparent 62%);
+            background-attachment: fixed;
+        }
+
+        /* --- tipografia de destaque: Archivo nos titulos e numeros --- */
+        .welcome-title, .section-title, .stat-value, .imovel-nome, .obra-titulo, .projeto-nome,
+        .lateral-linha strong, .barra-obra-pct, .imovel-anel-texto strong, .imovel-numeros dd,
+        .auth-marca, .auth-enviar, .header-tag, .table-cell strong, .auth-sub {
+            font-family: var(--display);
+        }
+
+        /* --- lateral escura, com o logo numa placa branca --- */
+        .sidebar { background: #15161a; border-right: 0; }
+        .logo-container { background: var(--white); border-radius: 14px; padding: 14px 16px; }
+        .user-card { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .08); }
+        .user-name { color: var(--white); }
+        .user-role { color: rgba(255, 255, 255, .55); }
+        .user-avatar { background: var(--accent); color: var(--white); box-shadow: 0 6px 16px rgba(225, 6, 0, .35); }
+        .nav-label { color: rgba(255, 255, 255, .42); }
+        .nav-item { color: rgba(255, 255, 255, .74); border-radius: 12px; }
+        .nav-item:hover { background: rgba(255, 255, 255, .06); color: var(--white); }
+        .nav-item.active { background: rgba(225, 6, 0, .16); color: var(--white); }
+        .nav-item.active::before { background: var(--accent-claro); }
+        .nav-icon { background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .82); }
+        .nav-item:hover .nav-icon { color: var(--white); }
+        .nav-item.active .nav-icon { background: var(--accent); color: var(--white); }
+        .lateral-caixa { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .08); }
+        .lateral-linha > span { color: rgba(255, 255, 255, .5); }
+        .lateral-linha strong { color: var(--white); }
+        .lateral-linha + .lateral-linha { border-top-color: rgba(255, 255, 255, .1); }
+        .lateral-barra { background: rgba(255, 255, 255, .12); }
+        .lateral-barra span { background: linear-gradient(90deg, var(--accent), #ff6a5c); }
+        .logout-btn { color: rgba(255, 255, 255, .72); border-color: rgba(255, 255, 255, .18); letter-spacing: .12em; }
+        .logout-btn:hover { background: var(--white); color: var(--primary); border-color: var(--white); }
+
+        /* --- topo translucido --- */
+        header {
+            background: rgba(250, 248, 245, .86);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            box-shadow: none;
+        }
+        .search-bar input { border-radius: 999px; background: var(--white); }
+        .header-tag { background: var(--white); border-color: var(--border); color: var(--primary); letter-spacing: .02em; }
+
+        /* --- a faixa de boas-vindas: carvao com as tres barras vermelhas --- */
+        .welcome-banner {
+            background: linear-gradient(118deg, #121316 0%, #1d1f24 58%, #272a31 100%);
+            border-radius: 22px;
+            padding: 46px 48px;
+            box-shadow: 0 24px 60px rgba(18, 19, 22, .2);
+        }
+        .welcome-banner::before {
+            content: '';
+            top: -35%;
+            right: 7%;
+            width: 230px;
+            height: 170%;
+            border-radius: 0;
+            background: linear-gradient(90deg,
+                var(--accent) 0 22%, transparent 22% 38%,
+                rgba(225, 6, 0, .55) 38% 58%, transparent 58% 76%,
+                rgba(225, 6, 0, .28) 76% 100%);
+            transform: skewX(-14deg);
+            opacity: .95;
+        }
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(520px 260px at 82% 50%, rgba(225, 6, 0, .22), transparent 70%);
+            pointer-events: none;
+        }
+        .welcome-content::before {
+            content: 'Central do Cliente';
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .24em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .55);
+            margin-bottom: 14px;
+        }
+        .welcome-title { font-size: 42px; font-weight: 800; letter-spacing: -.03em; line-height: 1.02; margin-bottom: 12px; }
+        .welcome-title #firstName { color: var(--accent-claro); }
+        .welcome-subtitle { font-size: 12.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .78; }
+
+        /* --- titulos de secao com o fio vermelho --- */
+        .section-title { font-size: 24px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 12px; }
+        .section-title::before {
+            content: '';
+            flex: 0 0 auto;
+            width: 6px;
+            height: 22px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, var(--accent), #ff6a5c);
+        }
+        #avisoAcesso .section-title { justify-content: center; }
+
+        /* --- cartoes: sem borda, sombra suave, um traco vermelho no pe --- */
+        .stat-card { border: 0; border-radius: 20px; padding: 28px 30px 30px; box-shadow: var(--sombra); cursor: default; }
+        .stat-card::before { display: none; }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            left: 30px;
+            bottom: 0;
+            width: 44px;
+            height: 4px;
+            border-radius: 4px 4px 0 0;
+            background: var(--accent);
+            transition: width .3s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--sombra-alta); border-color: transparent; }
+        .stat-card:hover::after { width: 72px; }
+        .stat-label { font-size: 11px; letter-spacing: .16em; }
+        .stat-value { font-size: 40px; font-weight: 800; letter-spacing: -.03em; }
+        .stat-change { color: var(--text-light); font-weight: 500; }
+        .stats-grid .stat-card:first-child { background: linear-gradient(135deg, #1a1b1f, #2b2d34); border-color: transparent; }
+        .stats-grid .stat-card:first-child::after { background: var(--accent-claro); }
+        .stats-grid .stat-card:first-child .stat-value { font-size: 40px; }
+
+        /* --- o cartao do imovel --- */
+        .imovel { border-radius: 22px; background: linear-gradient(140deg, #202227 0%, #15161a 58%, #1c1d22 100%); box-shadow: 0 16px 40px rgba(18, 19, 22, .22); }
+        .imovel-anel .progresso { stroke: var(--accent-claro); }
+        .imovel-status.ativo { background: rgba(31, 138, 72, .22); color: #9fe0b4; }
+
+        /* --- a lista de parcelas --- */
+        .table-card { border: 0; border-radius: 20px; box-shadow: var(--sombra); background: var(--white); }
+        .table-header-row { background: transparent; font-size: 11px; letter-spacing: .14em; border-bottom-color: var(--gray-50); }
+        .table-row { border-bottom-color: var(--gray-50); }
+        .table-row:hover { background: var(--light); border-left: 0; padding-left: 28px; }
+        .table-cell strong { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
+        .status-badge { border-radius: 999px; padding: 6px 12px 6px 10px; }
+        .status-badge::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 7px;
+            vertical-align: 1px;
+        }
+        .status-completed { background: rgba(23, 24, 27, .06); color: #55585f; }
+        .status-active { background: rgba(31, 138, 72, .1); color: #1f8a48; }
+        .status-pending { background: rgba(225, 6, 0, .1); color: var(--accent); }
+        .table-row.atrasada { background: rgba(225, 6, 0, .04); box-shadow: inset 3px 0 0 var(--accent); }
+        .filtro { font-weight: 600; }
+        .filtro.ativo { background: var(--primary); border-color: var(--primary); }
+        #avisoAcesso .table-card { border: 0; }
+
+        /* --- a obra --- */
+        .barra-obra-card, .obra-etapa, .projeto-card, .obra-vazio { border: 0; border-radius: 20px; box-shadow: var(--sombra); }
+        .obra-vazio { border: 1px dashed var(--border); box-shadow: none; }
+        .barra-obra { border: 0; background: var(--gray-50); }
+        .barra-obra-cheia { background: linear-gradient(90deg, #ff6a5c, var(--accent)); }
+        .barra-marca.feita i { background: var(--accent); border-color: var(--accent); }
+        .barra-marca.agora i { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(225, 6, 0, .16); }
+        .obra-etapa.atual { border: 0; box-shadow: 0 0 0 1.5px rgba(225, 6, 0, .35), var(--sombra); }
+        .obra-etapa:hover { box-shadow: var(--sombra-alta); }
+        .obra-foto img { transition: transform .6s ease; }
+        .obra-etapa:hover .obra-foto img { transform: scale(1.03); }
+        .obra-mes { display: flex; align-items: center; gap: 12px; color: var(--primary); font-weight: 700; }
+        .obra-mes::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .obra-selo { background: var(--gray-50); }
+        .obra-etapa.atual .obra-selo { background: rgba(225, 6, 0, .1); color: var(--accent); }
+        .projeto-card:hover { box-shadow: var(--sombra-alta); }
+
+        /* --- a tela de entrada --- */
+        .auth-overlay {
+            background: #121316;
+            background-image:
+                radial-gradient(760px 420px at 85% -5%, rgba(225, 6, 0, .28), transparent 62%),
+                repeating-linear-gradient(115deg, transparent 0 150px, rgba(255, 255, 255, .025) 150px 152px);
+            overflow: hidden;
+        }
+        .auth-overlay::before {
+            content: '';
+            position: absolute;
+            left: -4%;
+            bottom: -24%;
+            width: 260px;
+            height: 124%;
+            background: linear-gradient(90deg,
+                var(--accent) 0 24%, transparent 24% 40%,
+                rgba(225, 6, 0, .5) 40% 60%, transparent 60% 78%,
+                rgba(225, 6, 0, .22) 78% 100%);
+            transform: skewX(-14deg);
+            opacity: .85;
+            pointer-events: none;
+        }
+        .auth-card { position: relative; border-radius: 22px; padding: 40px 36px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+        .auth-sub { font-weight: 700; color: var(--primary); font-size: 15px; letter-spacing: -.01em; }
+        .auth-abas { border-radius: 12px; }
+        .auth-aba[aria-selected="true"] { color: var(--accent); }
+        .auth-campo input { border-radius: 12px; }
+        .auth-campo input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(225, 6, 0, .12); }
+        .auth-enviar { background: var(--accent); border-radius: 12px; letter-spacing: .02em; box-shadow: 0 10px 24px rgba(225, 6, 0, .28); }
+        .auth-enviar:hover:not(:disabled) { filter: brightness(1.08); }
+
+        /* --- a pagina entra com um respiro --- */
+        .pagina:not([hidden]) { animation: pagina-entra .45s ease both; }
+        @keyframes pagina-entra {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .pagina:not([hidden]) { animation: none; }
+            .obra-foto img, .stat-card, .projeto-card, .imovel { transition: none; }
+        }
+
+        /* --- o tema no celular --- */
+        @media (max-width: 768px) {
+            .welcome-banner { padding: 32px 26px 30px; border-radius: 20px; }
+            .welcome-banner::before { right: -46px; width: 150px; }
+            .welcome-title { font-size: 32px; }
+            .welcome-content::before { margin-bottom: 10px; }
+            .stat-card { border-radius: 18px; padding: 24px 24px 26px; }
+            .stat-card::after { left: 24px; }
+            .table-card, .barra-obra-card, .obra-etapa, .projeto-card { border-radius: 18px; }
+            body.logado .barra-cel { background: rgba(255, 255, 255, .92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+            .logo-cel { height: 32px; }
         }
     </style>
 </head>
