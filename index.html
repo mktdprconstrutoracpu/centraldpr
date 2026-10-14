@@ -2624,7 +2624,7 @@
             box-shadow: 0 40px 100px rgba(0, 0, 0, .45);
             margin: 40px 6vw 40px 0;
         }
-        .auth-logo { max-width: 170px; margin-bottom: 8px; mix-blend-mode: multiply; }   /* o fundo branco do PNG some no cartao */
+        .auth-logo { max-width: 170px; margin-bottom: 8px; }   /* logo-dpr-transparente.png: sem o fundo branco do PNG original */
         .auth-slide.primeira { transition: transform 9s ease-out; }   /* a primeira aparece na hora, so se aproxima */
         .auth-sub { margin: 0 0 22px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-light); }
 
@@ -2706,6 +2706,52 @@
             .auth-card { margin: 0 12px calc(12px + env(safe-area-inset-bottom, 0px)); border-radius: 22px; padding: 26px 22px 22px; background: rgba(255, 255, 255, .96); }
             .auth-logo { max-width: 140px; }
         }
+
+        /* --- (14/10, depois do "gostei") ao tocar em "Ja sou cliente" ou "Primeiro acesso" o cartao
+           SOBE e ocupa a tela: no celular vira uma folha fixa cobrindo tudo; no computador toma a
+           altura toda do lado direito, com a cena continuando a esquerda. "Voltar" devolve o cartao. --- */
+        @keyframes folha-sobe { from { transform: translateY(8%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes folha-sobe-cel { from { transform: translateY(32%); opacity: .4; } to { transform: none; opacity: 1; } }
+        .auth-card.aberto {
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+            border: 0;
+            box-shadow: none;
+            animation: folha-sobe .55s cubic-bezier(.2, .8, .2, 1) both;
+        }
+        .auth-card.aberto .auth-logo { margin-top: auto; }     /* com o corpo em auto embaixo, o conteudo fica no meio */
+        .auth-card.aberto .auth-corpo { margin-bottom: auto; width: 100%; }
+        @media (min-width: 769px) {
+            .auth-card.aberto {
+                justify-self: stretch;
+                max-width: none;
+                margin: 0;
+                min-height: 100vh;
+                border-radius: 0;
+                padding: 48px clamp(32px, 7vw, 110px);
+                align-items: center;
+            }
+            .auth-card.aberto > :not(.auth-logo) { width: 100%; max-width: 420px; }
+        }
+        @media (max-width: 768px) {
+            .auth-card.aberto {
+                position: fixed;
+                inset: 0;
+                z-index: 2;
+                margin: 0;
+                max-width: none;
+                border-radius: 0;
+                overflow-y: auto;
+                padding: 28px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+                animation-name: folha-sobe-cel;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .auth-card.aberto { animation: none; }
+        }
     </style>
 </head>
 <body>
@@ -2736,7 +2782,7 @@
           </div>
         </aside>
       <div class="auth-card">
-        <img class="auth-logo" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
+        <img class="auth-logo" src="logo-dpr-transparente.png" alt="DPR Construtora &amp; Incorporadora">
         <p class="auth-sub">Portal do Cliente</p>
 
         <!-- (14/10, quinta passada) Antes do formulario, uma escolha: quem ja tem
@@ -2837,7 +2883,7 @@
                  imagem e outro de texto — o espaçamento e o peso da fonte nunca
                  batem com o original. -->
             <div class="logo-container">
-                <img class="logo-img" src="logo-dpr.png"
+                <img class="logo-img" src="logo-dpr-transparente.png"
                      alt="DPR Construtora &amp; Incorporadora">
             </div>
 
@@ -2937,7 +2983,7 @@
                 <!-- (14/10) No celular o menu foi para a barra de baixo e o botão
                      acima some; o logo, que vivia só na lateral escondida, passa
                      a aparecer aqui no topo. Em tela grande fica escondido. -->
-                <img class="logo-cel" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
+                <img class="logo-cel" src="logo-dpr-transparente.png" alt="DPR Construtora &amp; Incorporadora">
 
                 <!-- ⚠️ (27/08) A busca não buscava nada. Agora ela FILTRA as parcelas
                      de verdade — por mês, ano, tipo ou situação. Campo que não faz nada
@@ -4092,11 +4138,16 @@
         function abrirCorpoAuth() {
             if ($$('authEscolha')) $$('authEscolha').hidden = true;
             if ($$('authCorpo')) $$('authCorpo').hidden = false;
+            // o cartao sobe e ocupa a tela (classe .aberto; no celular ele proprio rola)
+            const cartao = document.querySelector('.auth-card');
+            if (cartao) { cartao.classList.add('aberto'); cartao.scrollTop = 0; }
         }
         function voltarEscolhaAuth() {
             limparRecado();
             if ($$('authCorpo')) $$('authCorpo').hidden = true;
             if ($$('authEscolha')) $$('authEscolha').hidden = false;
+            const cartao = document.querySelector('.auth-card');
+            if (cartao) cartao.classList.remove('aberto');
         }
         function mostrarTela(qual) {
             limparRecado();
