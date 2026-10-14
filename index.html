@@ -1393,6 +1393,9 @@
            sempre visível, e um botão para abrir o que já está aberto confunde. */
         .bt-menu { display: none; }
         .lateral-fundo { display: none; }
+        /* (14/10) a barra de baixo e o logo do topo só existem no celular */
+        .barra-cel { display: none; }
+        .logo-cel { display: none; }
 
         @media (max-width: 768px) {
 
@@ -1513,6 +1516,61 @@
             .logout-btn { min-height: 46px; }
             .auth-enviar, .auth-aba { min-height: 46px; }
             .filtros { gap: 8px; }
+
+            /* --- 5. (14/10) a barra de baixo, "quero o menu embaixo" --- */
+
+            /* O botão de três traços sai: o "Menu" da barra faz o mesmo. */
+            .bt-menu { display: none; }
+            .logo-cel { display: block; height: 30px; width: auto; flex: 0 0 auto; }
+
+            body.logado .barra-cel {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 4px;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 997;                      /* abaixo da lateral (999) e do fundo dela (998) */
+                padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+                background: var(--white);
+                border-top: 1px solid var(--border);
+                box-shadow: 0 -6px 24px rgba(0, 0, 0, .06);
+            }
+            .barra-item {
+                appearance: none;
+                border: 0;
+                background: transparent;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                min-height: 54px;                  /* alvo de toque folgado */
+                padding: 6px 4px;
+                border-radius: 12px;
+                font-family: inherit;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: .02em;
+                color: var(--text-light);
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .barra-item .barra-icone { font-size: 18px; line-height: 1; }
+            .barra-item:active { background: var(--gray-50); }
+            .barra-item.active,
+            .barra-item[aria-expanded="true"] { color: var(--primary); }
+
+            /* O conteúdo não termina atrás da barra: sobra espaço no fim de cada página. */
+            body.logado .content { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+
+            /* A lateral aberta num telefone baixo (740px): com os espaçamentos de
+               mesa o Sair ficava 4px abaixo da borda. Espaçamentos menores e a
+               altura pela tela útil (dvh), que desconta a barra do navegador. */
+            .sidebar { padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px)); height: 100dvh; }
+            .logo-container { margin-bottom: 16px; }
+            .user-card { margin-bottom: 18px; }
         }
     </style>
 </head>
@@ -1655,6 +1713,27 @@
              fora para fechar", que é como as pessoas esperam fechar um menu. -->
         <div class="lateral-fundo" id="lateralFundo" hidden></div>
 
+        <!-- (14/10) BARRA DE BAIXO DO CELULAR, "quero o menu embaixo": as três
+             páginas e o "Menu" (que abre a lateral com o resumo e o Sair) ficam
+             fixos no pé da tela, como nos aplicativos, em vez do botão de três
+             traços no topo. Só aparece no celular e só depois do login
+             (body.logado); em tela grande a lateral continua sendo o menu. -->
+        <nav class="barra-cel" id="barraCel" aria-label="Menu principal">
+            <button type="button" class="barra-item active" data-pagina="extrato">
+                <span class="barra-icone" aria-hidden="true">▨</span><span>Extrato</span>
+            </button>
+            <button type="button" class="barra-item" data-pagina="obra">
+                <span class="barra-icone" aria-hidden="true">▲</span><span>Obra</span>
+            </button>
+            <button type="button" class="barra-item" data-pagina="projetos">
+                <span class="barra-icone" aria-hidden="true">◈</span><span>Projetos</span>
+            </button>
+            <button type="button" class="barra-item" id="barraMais"
+                    aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral">
+                <span class="barra-icone" aria-hidden="true">☰</span><span>Menu</span>
+            </button>
+        </nav>
+
         <!-- MAIN CONTENT -->
         <main class="main">
             <!-- HEADER -->
@@ -1667,6 +1746,10 @@
                         aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral">
                     <span></span><span></span><span></span>
                 </button>
+                <!-- (14/10) No celular o menu foi para a barra de baixo e o botão
+                     acima some; o logo, que vivia só na lateral escondida, passa
+                     a aparecer aqui no topo. Em tela grande fica escondido. -->
+                <img class="logo-cel" src="logo-dpr.png" alt="DPR Construtora &amp; Incorporadora">
 
                 <!-- ⚠️ (27/08) A busca não buscava nada. Agora ela FILTRA as parcelas
                      de verdade — por mês, ano, tipo ou situação. Campo que não faz nada
@@ -2666,6 +2749,8 @@
             localStorage.setItem('userName', nome);
             localStorage.setItem('userEmail', user.email);
             overlay.hidden = true;
+            // (14/10) liga a barra de baixo do celular; a tela de entrada não tem menu
+            document.body.classList.add('logado');
             loadDashboardData();
         }
 
@@ -2869,7 +2954,8 @@
             document.querySelectorAll('.pagina').forEach((p) => {
                 p.hidden = (p.id !== 'pagina' + qual.charAt(0).toUpperCase() + qual.slice(1));
             });
-            document.querySelectorAll('.nav-item[data-pagina]').forEach((i) => {
+            // a lateral e a barra de baixo (14/10) marcam a mesma página
+            document.querySelectorAll('.nav-item[data-pagina], .barra-item[data-pagina]').forEach((i) => {
                 i.classList.toggle('active', i.getAttribute('data-pagina') === qual);
             });
             // A busca só faz sentido no extrato.
@@ -2893,18 +2979,28 @@
             if (!lateral || !fundo || !bt) return;
             lateral.classList.toggle('aberta', abrir);
             fundo.hidden = !abrir;
-            bt.setAttribute('aria-expanded', abrir ? 'true' : 'false');
-            bt.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+            // o botão do topo (escondido no celular desde 14/10) e o "Menu" da barra de baixo
+            [bt, $$('barraMais')].forEach((b) => {
+                if (!b) return;
+                b.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+                b.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+            });
             document.body.classList.toggle('menu-aberto', abrir);
         }
 
-        document.querySelectorAll('.nav-item[data-pagina]').forEach((item) => {
+        document.querySelectorAll('.nav-item[data-pagina], .barra-item[data-pagina]').forEach((item) => {
             item.addEventListener('click', () => abrirPagina(item.getAttribute('data-pagina')));
         });
 
         $$('btMenu').addEventListener('click', () => {
             menuLateral(!$$('lateral').classList.contains('aberta'));
         });
+        // (14/10) o "Menu" da barra de baixo abre e fecha a lateral, como o botão do topo fazia
+        if ($$('barraMais')) {
+            $$('barraMais').addEventListener('click', () => {
+                menuLateral(!$$('lateral').classList.contains('aberta'));
+            });
+        }
 
         // Tocar fora fecha. É como as pessoas esperam sair de um menu assim.
         $$('lateralFundo').addEventListener('click', () => menuLateral(false));
