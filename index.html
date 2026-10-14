@@ -2198,7 +2198,7 @@
         .auth-lado-foto {
             position: absolute;
             inset: 0;
-            background: url('fotos/villagio-caucaia-2-piscina.webp') center / cover no-repeat;
+            background: url('fotos/villagio-caucaia-2/20.webp') center / cover no-repeat;   /* o redário ao pôr do sol */
             animation: hero-aproxima 30s ease-in-out infinite alternate;
         }
         .auth-lado::after {
@@ -2227,15 +2227,134 @@
             .section { margin-bottom: 40px; }
             .obra-titulo { font-size: 22px; }
             .auth-lado { min-height: 0; padding: 56px 24px 30px; }
-            .auth-lado-foto { background-image: url('fotos/villagio-caucaia-2-piscina-cel.webp'); }
             .auth-lado-titulo { font-size: 44px; }
             .auth-card { border-radius: 18px 18px 0 0; margin: 0; }
+            /* com quatro itens no menu (Projeto 3D entrou em 14/10), a lateral aberta num telefone
+               de 740px precisa de espacamentos menores para o Sair caber */
             .sidebar { padding: 22px 18px calc(18px + env(safe-area-inset-bottom, 0px)); }
+            .logo-container { margin-bottom: 20px; }
+            .user-card { padding-bottom: 14px; margin-bottom: 14px; }
+            .nav-section { margin-bottom: 18px; }
+            .nav-item { padding: 10px 12px; }
+            .lateral-caixa { padding-top: 12px; }
             /* o saldo em 40px estourava a borda num telefone de 390px ("R$ 182.350,0"):
                o corpo acompanha a largura da tela e nunca passa do cartao */
             .stats-grid .stat-card:first-child .stat-value { font-size: clamp(26px, 8.4vw, 36px); white-space: nowrap; }
             .stats-grid .stat-card:nth-child(2) .stat-value,
             .stats-grid .stat-card:nth-child(3) .stat-value { font-size: clamp(24px, 7.4vw, 30px); }
+        }
+
+        /* ===================================================================
+           (14/10, tarde) PROJETO 3D: a galeria e a tela cheia; e o cartao do
+           Villagio Caucaia III sem foto, em Futuros projetos.
+           =================================================================== */
+        .galeria-topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 22px; }
+        .galeria-topo .section-title { margin-bottom: 0; }
+        .galeria-filtros { margin-bottom: 0; }
+        .galeria-filtros[hidden] { display: none; }
+        .galeria {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-auto-rows: 200px;
+            grid-auto-flow: dense;
+            gap: 14px;
+        }
+        /* ritmo: a primeira imagem e, a cada seis, mais uma ocupam o dobro */
+        .galeria-item:first-child, .galeria-item:nth-child(6n + 5) { grid-column: span 2; grid-row: span 2; }
+        .galeria-item {
+            appearance: none;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            background: var(--gray-50);
+            cursor: zoom-in;
+            box-shadow: var(--sombra);
+            text-align: left;
+            font-family: inherit;
+        }
+        .galeria-item[hidden] { display: none; }
+        .galeria-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s ease; }
+        .galeria-item:hover img, .galeria-item:focus-visible img { transform: scale(1.05); }
+        .galeria-item:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .galeria-legenda {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            padding: 36px 16px 14px;
+            font-family: var(--serifa);
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--white);
+            background: linear-gradient(180deg, rgba(10, 10, 12, 0), rgba(10, 10, 12, .72));
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+        .galeria-item:hover .galeria-legenda, .galeria-item:focus-visible .galeria-legenda { opacity: 1; }
+
+        .caixa-luz {
+            position: fixed;
+            inset: 0;
+            z-index: 1500;                       /* acima da lateral (999) e da barra (997) */
+            background: rgba(10, 10, 12, .94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 56px 72px;
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+        }
+        .caixa-luz[hidden] { display: none; }
+        body.caixa-aberta { overflow: hidden; }
+        .caixa-luz-figura { margin: 0; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .caixa-luz-figura img { max-width: 100%; max-height: calc(100vh - 150px); border-radius: 12px; box-shadow: 0 30px 80px rgba(0, 0, 0, .5); }
+        .caixa-luz-figura figcaption { display: flex; gap: 18px; align-items: baseline; color: var(--white); font-family: var(--serifa); font-size: 22px; }
+        .caixa-luz-contador { font-family: var(--rotulo); font-size: 10px; letter-spacing: .18em; color: rgba(255, 255, 255, .6); }
+        .caixa-luz-fechar, .caixa-luz-seta {
+            appearance: none;
+            border: 0;
+            background: rgba(255, 255, 255, .1);
+            color: var(--white);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 30px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s ease;
+        }
+        .caixa-luz-fechar:hover, .caixa-luz-seta:hover { background: var(--accent); }
+        .caixa-luz-fechar { position: absolute; top: 18px; right: 18px; }
+        .caixa-luz-seta { position: absolute; top: 50%; transform: translateY(-50%); font-size: 36px; }
+        .caixa-luz-seta.anterior { left: 16px; }
+        .caixa-luz-seta.proxima { right: 16px; }
+
+        .projeto-sem-foto {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                linear-gradient(90deg, transparent 0 62%, rgba(225, 6, 0, .9) 62% 68%, transparent 68% 74%, rgba(225, 6, 0, .5) 74% 80%, transparent 80% 86%, rgba(225, 6, 0, .25) 86% 92%, transparent 92%),
+                linear-gradient(118deg, #121316, #272a31);
+            height: 200px;
+        }
+        .projeto-numeral { font-family: var(--serifa); font-size: 72px; font-weight: 400; color: rgba(255, 255, 255, .9); letter-spacing: .04em; }
+        .projetos-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+
+        @media (max-width: 768px) {
+            .galeria { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 120px; gap: 10px; }
+            .galeria-item:first-child, .galeria-item:nth-child(6n + 5) { grid-column: span 2; grid-row: span 2; }
+            .galeria-legenda { opacity: 1; font-size: 14px; padding: 26px 12px 10px; }
+            .caixa-luz { padding: 64px 10px 24px; }
+            .caixa-luz-figura img { max-height: calc(100vh - 140px); border-radius: 8px; }
+            .caixa-luz-figura figcaption { font-size: 17px; }
+            .caixa-luz-seta { width: 42px; height: 42px; top: auto; bottom: 18px; transform: none; }
+            .caixa-luz-seta.anterior { left: 18px; }
+            .caixa-luz-seta.proxima { right: 18px; }
         }
     </style>
 </head>
@@ -2364,6 +2483,11 @@
                     <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M5.5 20.5v-10l5.5-3v13"/><path d="M11 20.5V11.5l7.5-3.5v12.5"/><path d="M8.2 13.6v.3M8.2 16.6v.3M14.6 13.1v.3M14.6 16.1v.3"/></svg></div>
                     <span>Evolução da obra</span>
                 </div>
+                <!-- (14/10) a galeria do projeto em 3D, com as 22 imagens que ela subiu -->
+                <div class="nav-item" data-pagina="galeria">
+                    <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l7.5 4.3v8.4L12 20.5l-7.5-4.3V7.8z"/><path d="M12 12l7.5-4.2M12 12v8.5M12 12L4.5 7.8"/></svg></div>
+                    <span>Projeto 3D</span>
+                </div>
                 <div class="nav-item" data-pagina="projetos">
                     <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.2 5.8 5.8 2.2-5.8 2.2L12 19.5l-2.2-5.8L4 11.5l5.8-2.2z"/></svg></div>
                     <span>Futuros projetos</span>
@@ -2408,8 +2532,10 @@
             <button type="button" class="barra-item" data-pagina="obra">
                 <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M5.5 20.5v-10l5.5-3v13"/><path d="M11 20.5V11.5l7.5-3.5v12.5"/><path d="M8.2 13.6v.3M8.2 16.6v.3M14.6 13.1v.3M14.6 16.1v.3"/></svg></span><span>Obra</span>
             </button>
-            <button type="button" class="barra-item" data-pagina="projetos">
-                <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.2 5.8 5.8 2.2-5.8 2.2L12 19.5l-2.2-5.8L4 11.5l5.8-2.2z"/></svg></span><span>Projetos</span>
+            <!-- (14/10) o terceiro lugar da barra e do Projeto 3D; "Futuros projetos"
+                 fica no Menu (a lateral), para a barra continuar com quatro itens -->
+            <button type="button" class="barra-item" data-pagina="galeria">
+                <span class="barra-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l7.5 4.3v8.4L12 20.5l-7.5-4.3V7.8z"/><path d="M12 12l7.5-4.2M12 12v8.5M12 12L4.5 7.8"/></svg></span><span>Projeto</span>
             </button>
             <button type="button" class="barra-item" id="barraMais"
                     aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral">
@@ -2719,6 +2845,42 @@
                 <!-- ===============================================================
                      FUTUROS PROJETOS — mesmo aviso: fotos de banco de imagens.
                      =============================================================== -->
+                <!-- ===============================================================
+                     (14/10) PROJETO 3D: as 22 imagens do Villagio Caucaia II que ela
+                     subiu no repositório (convertidas para fotos/villagio-caucaia-2/
+                     NN.webp, 1600 de largura, e NN-mini.webp, 480). A grade e a
+                     visualização em tela cheia são montadas por renderizarGaleria(),
+                     a partir da lista em FOTOS_EMPREENDIMENTO, amarrada ao nome do
+                     empreendimento da casa. Outro empreendimento vê "Em breve".
+                     =============================================================== -->
+                <div id="paginaGaleria" class="pagina" hidden>
+                    <div class="welcome-banner hero" id="heroGaleria">
+                        <div class="hero-foto" aria-hidden="true"></div>
+                        <div class="welcome-content">
+                            <div class="welcome-title">Projeto 3D</div>
+                            <div class="welcome-subtitle" id="galeriaSub">Como vai ficar</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="galeria-topo">
+                            <div class="section-title">O projeto, ambiente por ambiente</div>
+                            <div class="filtros galeria-filtros" id="galeriaFiltros" hidden>
+                                <button type="button" class="filtro ativo" data-grupo="todas">Todas</button>
+                                <button type="button" class="filtro" data-grupo="lazer">Áreas de lazer</button>
+                                <button type="button" class="filtro" data-grupo="apartamento">Apartamento</button>
+                            </div>
+                        </div>
+                        <div class="galeria" id="galeria"></div>
+                        <div class="obra-vazio" id="galeriaVazia" hidden>As imagens do projeto deste empreendimento ainda não estão aqui. Em breve.</div>
+                    </div>
+                </div>
+
+                <!-- ===============================================================
+                     FUTUROS PROJETOS. (14/10) Saiu a demonstração: entra o Villagio
+                     Caucaia III, a próxima fase, sem imagem (não há render dele ainda;
+                     usar uma do Caucaia II seria enganar) e sem número inventado.
+                     =============================================================== -->
                 <div id="paginaProjetos" class="pagina" hidden>
                     <div class="welcome-banner hero" id="heroProjetos">
                         <div class="hero-foto" aria-hidden="true"></div>
@@ -2728,59 +2890,37 @@
                         </div>
                     </div>
 
-                    <div class="aviso-exemplo">
-                        <strong>Conteúdo de demonstração.</strong>
-                        Os projetos abaixo são de exemplo, para você ver como a página
-                        fica. Não representam lançamentos reais da DPR.
-                    </div>
-
                     <div class="section">
                         <div class="projetos-grid">
-
                             <div class="projeto-card">
-                                <div class="projeto-foto">
-                                    <img loading="lazy" alt="Projeto de exemplo"
-                                         src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&q=80">
-                                    <span class="projeto-selo">Lançamento</span>
+                                <div class="projeto-foto projeto-sem-foto" aria-hidden="true">
+                                    <span class="projeto-numeral">III</span>
+                                    <span class="projeto-selo">Em breve</span>
                                 </div>
                                 <div class="projeto-corpo">
                                     <div class="projeto-nome">Villagio Caucaia III</div>
                                     <div class="projeto-local">Caucaia do Alto · SP</div>
-                                    <p>Nova fase do Villagio, com 48 casas e área de lazer ampliada.</p>
+                                    <p>A próxima fase do Villagio Caucaia. As informações e as imagens do projeto aparecem aqui assim que forem divulgadas.</p>
                                 </div>
                             </div>
-
-                            <div class="projeto-card">
-                                <div class="projeto-foto">
-                                    <img loading="lazy" alt="Projeto de exemplo"
-                                         src="https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?w=900&q=80">
-                                    <span class="projeto-selo">Em estudo</span>
-                                </div>
-                                <div class="projeto-corpo">
-                                    <div class="projeto-nome">Residencial Parque Verde</div>
-                                    <div class="projeto-local">Cotia · SP</div>
-                                    <p>Condomínio fechado com foco em áreas verdes e mobilidade.</p>
-                                </div>
-                            </div>
-
-                            <div class="projeto-card">
-                                <div class="projeto-foto">
-                                    <img loading="lazy" alt="Projeto de exemplo"
-                                         src="https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?w=900&q=80">
-                                    <span class="projeto-selo">Em estudo</span>
-                                </div>
-                                <div class="projeto-corpo">
-                                    <div class="projeto-nome">DPR Corporate</div>
-                                    <div class="projeto-local">São Paulo · SP</div>
-                                    <p>Primeiro empreendimento comercial da construtora.</p>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- (14/10) A visualização em tela cheia da galeria: uma imagem por vez, com
+         anterior, próxima, legenda e contador; fecha com Esc, com o X ou tocando
+         fora; no celular, arrastar para o lado troca a imagem. -->
+    <div class="caixa-luz" id="caixaLuz" hidden role="dialog" aria-modal="true" aria-label="Imagem em tela cheia">
+        <button type="button" class="caixa-luz-fechar" id="caixaLuzFechar" aria-label="Fechar">&times;</button>
+        <button type="button" class="caixa-luz-seta anterior" id="caixaLuzAnterior" aria-label="Imagem anterior">&#8249;</button>
+        <figure class="caixa-luz-figura">
+            <img id="caixaLuzImagem" alt="">
+            <figcaption><span id="caixaLuzLegenda"></span><span class="caixa-luz-contador" id="caixaLuzContador"></span></figcaption>
+        </figure>
+        <button type="button" class="caixa-luz-seta proxima" id="caixaLuzProxima" aria-label="Próxima imagem">&#8250;</button>
     </div>
 
     <script>
@@ -2899,8 +3039,10 @@
             if (fotosEmp) {
                 fotoHero($$('heroExtrato'), fotosEmp.extrato);
                 fotoHero($$('heroObra'), fotosEmp.obra);
-                fotoHero($$('heroProjetos'), fotosEmp.projetos);
+                fotoHero($$('heroGaleria'), fotosEmp.galeria);
             }
+            // a galeria do Projeto 3D (vazia, com "em breve", para quem não tem imagens)
+            renderizarGaleria(fotosEmp ? fotosEmp.imagens : [], casa.empreendimento);
 
             // --- cartões dos imóveis ---
             // O cartão antigo mostrava só o nome e a situação num retângulo escuro
@@ -3097,23 +3239,110 @@
            1920 e 960 de largura). Chave = nome como está na planilha, em maiúsculas.
            Um empreendimento sem entrada aqui fica com a faixa escura das barras:
            melhor sem foto do que com a foto de outro lugar. */
+        /* (14/10, tarde) As 22 imagens do projeto que ela subiu no repositório
+           (fotos/villagio-caucaia-2/NN.webp e NN-mini.webp). A legenda é o que
+           cada imagem mostra; o grupo separa as áreas de lazer dos ambientes do
+           apartamento. A ordem é a da galeria: lazer primeiro, depois o
+           apartamento. As fotos do topo das páginas saem desta mesma pasta. */
+        const PASTA_VC2 = 'fotos/villagio-caucaia-2/';
         const FOTOS_EMPREENDIMENTO = {
             'VILLAGIO CAUCAIA II': {
-                extrato: 'fotos/villagio-caucaia-2-lareira',
-                obra: 'fotos/villagio-caucaia-2-fachada',
-                projetos: 'fotos/villagio-caucaia-2-piscina'
+                extrato: PASTA_VC2 + '14.webp',   // lounge com lareira ao entardecer
+                obra: PASTA_VC2 + '03.webp',      // o centro comercial visto de cima
+                galeria: PASTA_VC2 + '22.webp',   // a piscina
+                imagens: [
+                    { a: '03', t: 'Centro comercial, vista aérea', g: 'lazer' },
+                    { a: '16', t: 'Centro comercial', g: 'lazer' },
+                    { a: '22', t: 'Piscina', g: 'lazer' },
+                    { a: '14', t: 'Lounge com lareira', g: 'lazer' },
+                    { a: '20', t: 'Redário ao pôr do sol', g: 'lazer' },
+                    { a: '18', t: 'Jardim e lounge', g: 'lazer' },
+                    { a: '01', t: 'Terraço de convivência', g: 'lazer' },
+                    { a: '17', t: 'Espaço gourmet', g: 'lazer' },
+                    { a: '06', t: 'Quadra poliesportiva', g: 'lazer' },
+                    { a: '13', t: 'Espaço fitness ao ar livre', g: 'lazer' },
+                    { a: '10', t: 'Parede de escalada', g: 'lazer' },
+                    { a: '19', t: 'Espaço pet', g: 'lazer' },
+                    { a: '04', t: 'Brinquedoteca', g: 'lazer' },
+                    { a: '15', t: 'Living integrado', g: 'apartamento' },
+                    { a: '09', t: 'Sala de jantar', g: 'apartamento' },
+                    { a: '05', t: 'Sala de estar', g: 'apartamento' },
+                    { a: '21', t: 'Sala com TV', g: 'apartamento' },
+                    { a: '11', t: 'Cozinha e lavanderia', g: 'apartamento' },
+                    { a: '08', t: 'Suíte', g: 'apartamento' },
+                    { a: '12', t: 'Quarto', g: 'apartamento' },
+                    { a: '07', t: 'Quarto com home office', g: 'apartamento' },
+                    { a: '02', t: 'Quarto infantil', g: 'apartamento' }
+                ]
             }
         };
-        // Põe a foto no topo de uma página. `base` é o caminho sem extensão (ganha
-        // -cel.webp no celular) ou uma URL completa (foto da obra, do Storage).
+        // Põe a foto no topo de uma página. `base` é um caminho com extensão (vai
+        // como está), um caminho sem extensão (ganha -cel.webp no celular) ou uma
+        // URL completa (foto da obra, do Storage).
         function fotoHero(el, base) {
             const foto = el && el.querySelector('.hero-foto');
             if (!foto || !base) return;
-            const completa = /^(https?:)?\/\//.test(base);
+            const completa = /^(https?:)?\/\//.test(base) || /\.(webp|jpe?g|png)$/i.test(base);
             const movel = window.matchMedia('(max-width: 768px)').matches;
             const url = completa ? base : base + (movel ? '-cel' : '') + '.webp';
             foto.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
             el.classList.add('com-foto');
+        }
+
+        /* --- (14/10) a galeria do Projeto 3D e a visualização em tela cheia --- */
+        let galeriaItens = [];        // os itens, na ordem da tela
+        let galeriaAtual = -1;
+        function renderizarGaleria(imagens, nomeEmp) {
+            const grade = $$('galeria'), vazio = $$('galeriaVazia'), filtros = $$('galeriaFiltros');
+            if (!grade) return;
+            $$('galeriaSub').textContent = nomeEmp ? nomeEmp + ' · como vai ficar' : 'Como vai ficar';
+            galeriaItens = (imagens || []).slice();
+            if (!galeriaItens.length) {
+                grade.innerHTML = ''; vazio.hidden = false; filtros.hidden = true;
+                return;
+            }
+            vazio.hidden = true; filtros.hidden = false;
+            grade.innerHTML = galeriaItens.map((f, i) =>
+                '<button type="button" class="galeria-item" data-grupo="' + escapar(f.g) + '" data-i="' + i + '" aria-label="' + escapar(f.t) + ', abrir em tela cheia">'
+                + '<img loading="lazy" decoding="async" alt="' + escapar(f.t) + '" src="' + PASTA_VC2 + f.a + '-mini.webp" width="480" height="270">'
+                + '<span class="galeria-legenda">' + escapar(f.t) + '</span>'
+                + '</button>').join('');
+        }
+        function filtrarGaleria(grupo) {
+            document.querySelectorAll('#galeriaFiltros .filtro').forEach((b) => b.classList.toggle('ativo', b.getAttribute('data-grupo') === grupo));
+            document.querySelectorAll('#galeria .galeria-item').forEach((it) => { it.hidden = grupo !== 'todas' && it.getAttribute('data-grupo') !== grupo; });
+        }
+        function visiveisDaGaleria() {
+            return Array.from(document.querySelectorAll('#galeria .galeria-item')).filter((it) => !it.hidden).map((it) => Number(it.getAttribute('data-i')));
+        }
+        function mostrarNaCaixa(i) {
+            const f = galeriaItens[i];
+            if (!f) return;
+            galeriaAtual = i;
+            const visiveis = visiveisDaGaleria();
+            const pos = visiveis.indexOf(i);
+            $$('caixaLuzImagem').src = PASTA_VC2 + f.a + '.webp';
+            $$('caixaLuzImagem').alt = f.t;
+            $$('caixaLuzLegenda').textContent = f.t;
+            $$('caixaLuzContador').textContent = (pos + 1) + ' / ' + visiveis.length;
+        }
+        function abrirCaixa(i) {
+            mostrarNaCaixa(i);
+            $$('caixaLuz').hidden = false;
+            document.body.classList.add('caixa-aberta');
+            $$('caixaLuzFechar').focus();
+        }
+        function fecharCaixa() {
+            $$('caixaLuz').hidden = true;
+            document.body.classList.remove('caixa-aberta');
+            const it = document.querySelector('#galeria .galeria-item[data-i="' + galeriaAtual + '"]');
+            if (it) it.focus();
+        }
+        function andarCaixa(passo) {
+            const visiveis = visiveisDaGaleria();
+            if (!visiveis.length) return;
+            const pos = visiveis.indexOf(galeriaAtual);
+            mostrarNaCaixa(visiveis[(pos + passo + visiveis.length) % visiveis.length]);
         }
         function urlDaFotoDaObra(caminho) {
             const r = sb.storage.from('obras').getPublicUrl(caminho);
@@ -3749,6 +3978,36 @@
             $$('barraMais').addEventListener('click', () => {
                 menuLateral(!$$('lateral').classList.contains('aberta'));
             });
+        }
+
+        // (14/10) a galeria: filtros, abrir em tela cheia, setas, teclado e arrastar no celular
+        if ($$('galeria')) {
+            $$('galeriaFiltros').addEventListener('click', (ev) => {
+                const bt = ev.target.closest('.filtro[data-grupo]');
+                if (bt) filtrarGaleria(bt.getAttribute('data-grupo'));
+            });
+            $$('galeria').addEventListener('click', (ev) => {
+                const it = ev.target.closest('.galeria-item');
+                if (it) abrirCaixa(Number(it.getAttribute('data-i')));
+            });
+            $$('caixaLuzFechar').addEventListener('click', fecharCaixa);
+            $$('caixaLuzAnterior').addEventListener('click', () => andarCaixa(-1));
+            $$('caixaLuzProxima').addEventListener('click', () => andarCaixa(1));
+            $$('caixaLuz').addEventListener('click', (ev) => { if (ev.target === $$('caixaLuz')) fecharCaixa(); });
+            document.addEventListener('keydown', (ev) => {
+                if ($$('caixaLuz').hidden) return;
+                if (ev.key === 'Escape') fecharCaixa();
+                if (ev.key === 'ArrowLeft') andarCaixa(-1);
+                if (ev.key === 'ArrowRight') andarCaixa(1);
+            });
+            let toqueX = null;
+            $$('caixaLuz').addEventListener('touchstart', (ev) => { toqueX = ev.touches[0].clientX; }, { passive: true });
+            $$('caixaLuz').addEventListener('touchend', (ev) => {
+                if (toqueX === null) return;
+                const dx = ev.changedTouches[0].clientX - toqueX;
+                toqueX = null;
+                if (Math.abs(dx) > 48) andarCaixa(dx < 0 ? 1 : -1);
+            }, { passive: true });
         }
 
         // Tocar fora fecha. É como as pessoas esperam sair de um menu assim.
