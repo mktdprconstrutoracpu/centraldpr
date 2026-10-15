@@ -3006,6 +3006,157 @@
         .parcelas-ver:hover { background: var(--primary); color: var(--white); }
         .parcelas-pe[hidden] { display: none; }
 
+        /* ===================================================================
+           (15/10) O PROJETO 3D COMO REVISTA
+           Ela: "a pagina do projeto onde mostra as fotos, queria deixar mais
+           bonito ainda". A vitrine vira um bloco escuro de cinema (a imagem com
+           a legenda, o contador e as setas sobre ela; "Tela cheia"; a tira de
+           miniaturas na faixa escura do pe; aproximacao lenta a cada troca) e
+           os grupos viram mosaicos editoriais: a primeira imagem grande, as
+           quatro seguintes ao lado, a sexta grande do outro lado, e assim por
+           diante, com a legenda sobre a foto. Ultimo bloco da galeria.
+           =================================================================== */
+        .vitrine { margin-bottom: 56px; }
+        .vitrine-palco {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px 24px 0 0;
+            background: #0f1013;
+        }
+        .vitrine-foto { border-radius: 0; box-shadow: none; background: #0f1013; }
+        .vitrine-foto img { animation: vitrine-cinema 9s ease-out both; }
+        @keyframes vitrine-cinema {
+            0% { opacity: 0; transform: scale(1.07); }
+            7% { opacity: 1; }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .vitrine-veu {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(10, 10, 12, .22) 0%, rgba(10, 10, 12, 0) 28%, rgba(10, 10, 12, 0) 52%, rgba(10, 10, 12, .82) 100%);
+        }
+        .vitrine-ampliar {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px 9px 11px;
+            border: 1px solid rgba(255, 255, 255, .3);
+            border-radius: 999px;
+            background: rgba(10, 10, 12, .38);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            color: var(--white);
+            font-family: var(--rotulo);
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease;
+        }
+        .vitrine-ampliar svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .vitrine-ampliar:hover { background: var(--white); color: var(--primary); border-color: var(--white); }
+        .vitrine-rodape { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 30px 26px; color: var(--white); }
+        .vitrine-grupo { color: var(--accent-claro); }
+        .vitrine-legenda { color: var(--white); font-size: clamp(24px, 2.6vw, 36px); line-height: 1.05; text-shadow: 0 2px 18px rgba(0, 0, 0, .4); }
+        .vitrine-contador { color: rgba(255, 255, 255, .78); }
+        .vitrine-seta {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, .14);
+            border-color: rgba(255, 255, 255, .28);
+            color: var(--white);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+        }
+        .vitrine-seta:hover { background: var(--white); color: var(--primary); border-color: var(--white); }
+        .miniaturas {
+            padding: 14px 16px 16px;
+            gap: 10px;
+            background: #15161a;
+            border-radius: 0 0 24px 24px;
+            scrollbar-width: none;
+            box-shadow: 0 30px 80px rgba(18, 19, 22, .22);
+        }
+        .miniaturas::-webkit-scrollbar { display: none; }
+        .miniatura { width: 112px; height: 70px; border-radius: 8px; opacity: .42; background: #1d1f24; }
+        .miniatura:hover { opacity: .85; }
+        .miniatura.ativa { opacity: 1; box-shadow: 0 0 0 2px var(--accent-claro); }
+
+        /* --- os grupos como mosaico editorial --- */
+        .galeria-grupo { margin-bottom: 56px; }
+        .galeria-cabeca { margin-bottom: 20px; }
+        .galeria-cabeca .section-title { margin-bottom: 6px; }
+        .galeria-resumo { margin: 0 0 0 18px; font-size: 14px; color: var(--text-light); max-width: 64ch; }
+        .fotos-grade {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-rows: clamp(140px, 12.5vw, 200px);
+            grid-auto-flow: dense;
+            gap: 12px;
+        }
+        .foto-card {
+            position: relative;
+            gap: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--gray-50);
+            box-shadow: var(--sombra);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .foto-card:nth-child(5n+1) { grid-column: 1 / span 2; grid-row: span 2; }
+        .foto-card:nth-child(10n+6) { grid-column: 3 / span 2; }
+        .foto-card-imagem { aspect-ratio: auto; height: 100%; border-radius: 0; box-shadow: none; transition: none; }
+        .foto-card:hover { transform: translateY(-3px); box-shadow: var(--sombra-alta); }
+        .foto-card:hover .foto-card-imagem { transform: none; box-shadow: none; }
+        .foto-card:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+        .foto-card:focus-visible .foto-card-imagem { box-shadow: none; }
+        .foto-card-legenda {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 40px 16px 13px;
+            pointer-events: none;
+            font-family: var(--display);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            color: var(--white);
+            text-shadow: 0 1px 10px rgba(0, 0, 0, .35);
+            background: linear-gradient(180deg, rgba(10, 10, 12, 0) 0%, rgba(10, 10, 12, .74) 100%);
+        }
+        .foto-card:nth-child(5n+1) .foto-card-legenda { font-size: 19px; padding: 56px 20px 18px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .vitrine-foto img { animation: none; }
+            .foto-card, .foto-card:hover { transform: none; }
+        }
+
+        @media (max-width: 768px) {
+            .vitrine { margin-bottom: 40px; }
+            .vitrine-palco { border-radius: 18px 18px 0 0; }
+            .vitrine-veu { display: none; }
+            .vitrine-ampliar { display: none; }   /* no celular, tocar na foto ja abre */
+            .vitrine-rodape { position: static; padding: 14px 16px 4px; }
+            .vitrine-legenda { font-size: 19px; text-shadow: none; }
+            .vitrine-seta { width: 40px; height: 40px; }
+            .miniaturas { padding: 12px 12px 14px; border-radius: 0 0 18px 18px; }
+            .miniatura { width: 86px; height: 54px; }
+            .galeria-grupo { margin-bottom: 40px; }
+            .galeria-resumo { font-size: 13px; margin-left: 0; }
+            .fotos-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 30vw; gap: 8px; }
+            .foto-card { border-radius: 12px; }
+            .foto-card:nth-child(5n+1) { grid-column: 1 / -1; grid-row: span 2; }
+            .foto-card:nth-child(10n+6) { grid-column: 1 / -1; }
+            .foto-card-legenda { font-size: 12.5px; padding: 30px 12px 10px; }
+            .foto-card:nth-child(5n+1) .foto-card-legenda { font-size: 16px; padding: 44px 14px 14px; }
+        }
+
         @media (max-width: 768px) {
             .header-tag { display: inline-flex; font-size: 10.5px; padding: 6px 10px; }
             .parcelas-cabeca { flex-direction: column; align-items: stretch; gap: 0; border-bottom: 0; margin-bottom: 14px; }
@@ -3575,19 +3726,29 @@
                          cartões iguais com a legenda escrita. Tocar na vitrine ou num
                          cartão abre em tela cheia. Tudo montado por renderizarGaleria(). -->
                     <div class="section" id="galeria">
+                        <!-- (15/10, "queria deixar mais bonito ainda") A vitrine virou um bloco
+                             escuro de cinema: a imagem grande com a legenda, o contador e as
+                             setas sobre ela (no celular, logo abaixo, na mesma faixa escura),
+                             um botão "Tela cheia" e a tira de miniaturas no pé do bloco. -->
                         <div class="vitrine" id="vitrine" hidden>
-                            <button type="button" class="vitrine-foto" id="vitrineFoto" aria-label="Abrir a imagem em tela cheia">
-                                <img id="vitrineImagem" alt="" decoding="async">
-                            </button>
-                            <div class="vitrine-rodape">
-                                <div class="vitrine-texto">
-                                    <span class="vitrine-grupo" id="vitrineGrupo"></span>
-                                    <span class="vitrine-legenda" id="vitrineLegenda"></span>
-                                </div>
-                                <div class="vitrine-controles">
-                                    <button type="button" class="vitrine-seta" id="vitrineAnterior" aria-label="Imagem anterior">&#8249;</button>
-                                    <span class="vitrine-contador" id="vitrineContador"></span>
-                                    <button type="button" class="vitrine-seta" id="vitrineProxima" aria-label="Próxima imagem">&#8250;</button>
+                            <div class="vitrine-palco">
+                                <button type="button" class="vitrine-foto" id="vitrineFoto" aria-label="Abrir a imagem em tela cheia">
+                                    <img id="vitrineImagem" alt="" decoding="async">
+                                </button>
+                                <div class="vitrine-veu" aria-hidden="true"></div>
+                                <button type="button" class="vitrine-ampliar" id="vitrineAmpliar">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Tela cheia
+                                </button>
+                                <div class="vitrine-rodape">
+                                    <div class="vitrine-texto">
+                                        <span class="vitrine-grupo" id="vitrineGrupo"></span>
+                                        <span class="vitrine-legenda" id="vitrineLegenda"></span>
+                                    </div>
+                                    <div class="vitrine-controles">
+                                        <button type="button" class="vitrine-seta" id="vitrineAnterior" aria-label="Imagem anterior">&#8249;</button>
+                                        <span class="vitrine-contador" id="vitrineContador"></span>
+                                        <button type="button" class="vitrine-seta" id="vitrineProxima" aria-label="Próxima imagem">&#8250;</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="miniaturas" id="miniaturas" role="list"></div>
@@ -4048,8 +4209,22 @@
             grupos.innerHTML = Object.keys(NOME_GRUPO).map((g) => {
                 const do_grupo = galeriaItens.map((f, i) => ({ f, i })).filter((x) => x.f.g === g);
                 if (!do_grupo.length) return '';
+                // (15/10) uma linha com os ambientes do grupo: os quatro primeiros nomes
+                // (sem o que vem depois da vírgula, sem repetir) e "e mais N ambientes"
+                const nomes = [];
+                do_grupo.forEach((x) => {
+                    const n = String(x.f.t).split(',')[0].trim();
+                    if (n && nomes.indexOf(n) < 0) nomes.push(n);
+                });
+                const primeiros = nomes.slice(0, 4).map((n) => n.charAt(0).toLowerCase() + n.slice(1));
+                const sobram = nomes.length - primeiros.length;
+                let resumo = primeiros.join(', ') + (sobram > 0 ? ' e mais ' + sobram + (sobram === 1 ? ' ambiente' : ' ambientes') : '');
+                resumo = resumo.charAt(0).toUpperCase() + resumo.slice(1) + '.';
                 return '<div class="section galeria-grupo">'
-                    + '<div class="section-title">' + escapar(NOME_GRUPO[g]) + '<span class="section-conta">' + do_grupo.length + ' imagens</span></div>'
+                    + '<div class="galeria-cabeca">'
+                    +   '<div class="section-title">' + escapar(NOME_GRUPO[g]) + '<span class="section-conta">' + do_grupo.length + ' imagens</span></div>'
+                    +   '<p class="galeria-resumo">' + escapar(resumo) + '</p>'
+                    + '</div>'
                     + '<div class="fotos-grade">'
                     + do_grupo.map((x) =>
                         '<button type="button" class="foto-card" data-i="' + x.i + '" aria-label="' + escapar(x.f.t) + ', abrir em tela cheia">'
@@ -4942,6 +5117,7 @@
             $$('vitrineAnterior').addEventListener('click', () => andarVitrine(-1));
             $$('vitrineProxima').addEventListener('click', () => andarVitrine(1));
             $$('vitrineFoto').addEventListener('click', () => abrirCaixa(vitrineAtual));
+            if ($$('vitrineAmpliar')) $$('vitrineAmpliar').addEventListener('click', () => abrirCaixa(vitrineAtual));
             $$('miniaturas').addEventListener('click', (ev) => {
                 const m = ev.target.closest('.miniatura');
                 if (m) mostrarNaVitrine(Number(m.getAttribute('data-i')));
