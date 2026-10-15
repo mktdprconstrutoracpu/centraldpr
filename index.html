@@ -2927,6 +2927,95 @@
             .obra-anel .progresso, .obra-tempo-barra i, .obra-mosaico-foto img { transition: none; }
         }
 
+        /* ===================================================================
+           (15/10) OS FILTROS DAS PARCELAS, A BUSCA E A LISTA RESUMIDA EM TODA TELA
+           Ela: "nao gostei da parte do filtro, ta infantilizado com emoticons",
+           "as parcelas ainda estao aparecendo muitas de uma vez". As pilulas
+           com bolinhas numeradas viram ABAS: texto, a contagem em cinza ao lado,
+           sublinhado vermelho na ativa. A busca sai do topo, perde a lupa em
+           emoji (agora desenhada) e fica ao lado das abas. A lista resumida
+           (no maximo 5) passa a valer tambem na tela grande. Ultimo bloco.
+           =================================================================== */
+        .header-right { margin-left: auto; }
+        .parcelas-cabeca {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .filtros { flex-wrap: nowrap; gap: 0; margin: 0 0 -1px; overflow-x: auto; scrollbar-width: none; }
+        .filtros::-webkit-scrollbar { display: none; }
+        .filtro {
+            font-family: var(--rotulo);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .01em;
+            color: var(--text-light);
+            background: none;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            padding: 10px 2px 12px;
+            margin-right: 24px;
+            gap: 6px;
+            min-height: 0;
+            white-space: nowrap;
+            transition: color .2s ease, border-color .2s ease;
+        }
+        .filtro:last-child { margin-right: 0; }
+        .filtro:hover { color: var(--primary); border-color: transparent; }
+        .filtro.ativo { background: none; color: var(--primary); border-color: var(--accent); }
+        .filtro[data-filtro="atrasada"].ativo { background: none; border-color: var(--accent); }
+        .filtro-num { font-family: var(--display); font-size: 12px; font-weight: 700; background: none; color: var(--text-light); padding: 0; min-width: 0; border-radius: 0; }
+        .filtro.ativo .filtro-num { background: none; color: var(--primary); }
+        .filtro[data-filtro="atrasada"].tem-atraso .filtro-num { background: none; color: var(--accent); }
+        .search-bar { flex: 0 0 auto; width: 270px; max-width: 270px; margin: 0 0 10px; }
+        .search-bar input { padding: 9px 14px 9px 36px; border-radius: 10px; background: var(--white); font-size: 13.5px; }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            display: flex;
+            font-size: 0;
+            line-height: 0;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+        .search-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+        .parcelas-pe { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 16px 20px; border-top: 1px solid var(--border); text-align: center; }
+        .parcelas-pe span { font-size: 12.5px; color: var(--text-light); }
+        .parcelas-ver {
+            appearance: none;
+            min-height: 42px;
+            padding: 0 22px;
+            border: 1.5px solid var(--primary);
+            border-radius: 999px;
+            background: var(--white);
+            color: var(--primary);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s ease, color .2s ease;
+        }
+        .parcelas-ver:hover { background: var(--primary); color: var(--white); }
+        .parcelas-pe[hidden] { display: none; }
+
+        @media (max-width: 768px) {
+            .header-tag { display: inline-flex; font-size: 10.5px; padding: 6px 10px; }
+            .parcelas-cabeca { flex-direction: column; align-items: stretch; gap: 0; border-bottom: 0; margin-bottom: 14px; }
+            .filtros { border-bottom: 1px solid var(--border); margin: 0; }
+            .filtro { padding: 13px 2px; margin-right: 15px; font-size: 12.5px; }   /* as 4 abas cabem num 390 */
+            .search-bar { width: 100%; max-width: none; margin: 12px 0 0; }
+            .search-bar input { min-height: 44px; font-size: 16px; }
+            .parcelas-ver { min-height: 44px; }
+        }
+
         @media (max-width: 768px) {
             .obra-painel { grid-template-columns: 1fr; gap: 24px; padding: 30px 22px 28px; margin-bottom: 36px; border-radius: 20px; justify-items: center; text-align: center; }
             .obra-anel { width: 168px; height: 168px; }
@@ -3176,14 +3265,9 @@
                      a aparecer aqui no topo. Em tela grande fica escondido. -->
                 <img class="logo-cel" src="logo-dpr-transparente.png" alt="DPR Construtora &amp; Incorporadora">
 
-                <!-- ⚠️ (27/08) A busca não buscava nada. Agora ela FILTRA as parcelas
-                     de verdade — por mês, ano, tipo ou situação. Campo que não faz nada
-                     ensina o cliente a não confiar no resto da tela. -->
-                <div class="search-bar">
-                    <div class="search-icon">🔍</div>
-                    <input type="text" id="buscaParcela" autocomplete="off"
-                           placeholder="Filtrar parcelas: 2026, ATO, em atraso...">
-                </div>
+                <!-- (15/10) A busca das parcelas saiu daqui e foi para junto dos filtros,
+                     na seção "Minhas parcelas": ela só filtra parcelas, e o topo fica
+                     só com o logo (celular) e a etiqueta da casa. -->
 
                 <!-- Os ícones de sino, engrenagem e perfil saíram: nenhum tinha função,
                      e o sino ainda mostrava uma bolinha de notificação que nunca acenderia. -->
@@ -3254,13 +3338,22 @@
                 <div class="section">
                     <div class="section-title">Minhas parcelas</div>
 
-                    <!-- Filtros rápidos. Somam com a busca do topo: dá para pedir
-                         "em atraso" e ainda digitar 2026 para ver só as daquele ano. -->
-                    <div class="filtros">
-                        <button type="button" class="filtro ativo" data-filtro="todas">Todas <span class="filtro-num" id="numTodas">0</span></button>
-                        <button type="button" class="filtro" data-filtro="atrasada">Em atraso <span class="filtro-num" id="numAtrasadas">0</span></button>
-                        <button type="button" class="filtro" data-filtro="aberta">Em aberto <span class="filtro-num" id="numAbertas">0</span></button>
-                        <button type="button" class="filtro" data-filtro="paga">Pagas <span class="filtro-num" id="numPagas">0</span></button>
+                    <!-- (15/10) Os filtros viraram abas (sublinhado vermelho na ativa, a
+                         contagem em texto discreto) e a busca veio do topo para cá, com a
+                         lupa desenhada. Os dois somam: dá para pedir "em atraso" e ainda
+                         digitar 2026 para ver só as daquele ano. -->
+                    <div class="parcelas-cabeca">
+                        <div class="filtros" role="tablist" aria-label="Situação das parcelas">
+                            <button type="button" class="filtro ativo" data-filtro="todas">Todas <span class="filtro-num" id="numTodas">0</span></button>
+                            <button type="button" class="filtro" data-filtro="atrasada">Em atraso <span class="filtro-num" id="numAtrasadas">0</span></button>
+                            <button type="button" class="filtro" data-filtro="aberta">Em aberto <span class="filtro-num" id="numAbertas">0</span></button>
+                            <button type="button" class="filtro" data-filtro="paga">Pagas <span class="filtro-num" id="numPagas">0</span></button>
+                        </div>
+                        <div class="search-bar">
+                            <div class="search-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg></div>
+                            <input type="text" id="buscaParcela" autocomplete="off" aria-label="Buscar parcelas"
+                                   placeholder="Buscar por mês, ano ou situação">
+                        </div>
                     </div>
 
                     <div class="table-card">
@@ -4222,15 +4315,17 @@
         // (14/10) 12 parcelas por página. A página atual volta a 1 quando o filtro
         // ou a busca mudam (quem muda, zera). A paginação vem DEPOIS dos filtros:
         // primeiro se decide quais linhas batem, depois qual fatia delas aparece.
-        const POR_PAGINA = 12;
+        const POR_PAGINA = 10;   // (15/10) era 12; "ainda estão aparecendo muitas de uma vez"
         let paginaParcelas = 1;
-        // (14/10, "as parcelas estão pegando muito espaço") No celular a lista começa
-        // RESUMIDA: só as em atraso e as três próximas em aberto (tudo pago: as três
-        // últimas). "Ver todas" abre a lista completa, paginada; um filtro ou uma
-        // busca já mostram tudo o que bate. Na tela grande a lista é sempre completa.
+        // (14/10, "as parcelas estão pegando muito espaço") A lista começa RESUMIDA:
+        // no máximo LIMITE_RESUMO parcelas, as em atraso primeiro (as mais antigas) e
+        // as próximas em aberto para completar (tudo pago: as três últimas). "Ver
+        // todas" abre a lista completa, paginada; um filtro ou uma busca já mostram
+        // tudo o que bate. (15/10) Vale em qualquer tela, não só no celular.
+        const LIMITE_RESUMO = 5;
         let parcelasResumidas = true;
         function podeResumirParcelas(termo) {
-            return filtroSituacao === 'todas' && !termo && window.matchMedia('(max-width: 768px)').matches;
+            return filtroSituacao === 'todas' && !termo;
         }
 
         function aplicarFiltro() {
@@ -4245,17 +4340,21 @@
             });
             const visiveis = batem.length;
             const pe = $$('parcelasPe');
-            const resumivel = podeResumirParcelas(termo) && visiveis > 4;
+            const resumivel = podeResumirParcelas(termo) && visiveis > LIMITE_RESUMO;
             if (resumivel && parcelasResumidas) {
                 const atrasadas = batem.filter((l) => situacaoDaLinha(l) === 'atrasada');
-                const abertas = batem.filter((l) => situacaoDaLinha(l) === 'aberta').slice(0, 3);
-                let poucas = atrasadas.concat(abertas);
+                const abertas = batem.filter((l) => situacaoDaLinha(l) === 'aberta');
+                let poucas = atrasadas.slice(0, LIMITE_RESUMO);
+                const vagas = LIMITE_RESUMO - poucas.length;
+                const proximas = vagas > 0 ? abertas.slice(0, vagas) : [];
+                poucas = poucas.concat(proximas);
                 if (!poucas.length) poucas = batem.slice(-3);
                 poucas.forEach((l) => { l.hidden = false; });
                 renderizarPaginacao(poucas.length, 1, 0);
                 pe.hidden = false;
                 $$('parcelasPeNota').textContent = atrasadas.length
-                    ? (atrasadas.length === 1 ? '1 em atraso' : atrasadas.length + ' em atraso') + (abertas.length ? ' e as próximas a vencer' : '')
+                    ? (atrasadas.length === 1 ? '1 em atraso' : atrasadas.length + ' em atraso')
+                        + (proximas.length ? ' e as próximas a vencer' : (atrasadas.length > LIMITE_RESUMO ? ', as ' + LIMITE_RESUMO + ' mais antigas' : ''))
                     : (abertas.length ? 'As próximas a vencer' : 'As últimas pagas');
                 $$('parcelasVer').textContent = 'Ver todas as ' + visiveis + ' parcelas';
             } else {
@@ -4795,9 +4894,7 @@
             document.querySelectorAll('.nav-item[data-pagina], .barra-item[data-pagina]').forEach((i) => {
                 i.classList.toggle('active', i.getAttribute('data-pagina') === qual);
             });
-            // A busca só faz sentido no extrato.
-            const barra = document.querySelector('.search-bar');
-            if (barra) barra.style.visibility = qual === 'extrato' ? 'visible' : 'hidden';
+            // (15/10) a busca das parcelas mora dentro da página do extrato: some com ela.
             // No celular a página escolhida está atrás do menu: ele precisa sair
             // da frente sozinho, senão a pessoa toca e parece que nada aconteceu.
             menuLateral(false);
