@@ -105,6 +105,17 @@ ficaria vazio de vez. Foi exatamente esse erro que custou caro na loja em 25/08.
 **Se a planilha encurtar** (alguém apagou linhas do fim), as parcelas que
 sobraram do fim são removidas — por último, depois de o novo já estar gravado.
 
+## Casas geridas no Financeiro não são tocadas
+
+Desde 15/10 existe o backoffice **Financeiro** (repositório `financeiro`),
+onde a equipe preenche a casa e as parcelas direto no banco. A casa salva lá
+fica marcada (`unidades.gerida_no_financeiro`) e a sincronização **pula** essa
+casa: responde ok com o aviso "gerida no Financeiro: a planilha nao altera
+mais esta casa", que aparece no relatório em AVISOS, sem contar como falha.
+Sem isso, a próxima execução da planilha desfaria o que a equipe gravou,
+inclusive os boletos anexados. As outras casas continuam vindo da planilha,
+então dá para migrar uma de cada vez.
+
 ## Casa sem comprador é recusada
 
 A Central devolve erro e a casa aparece em `falhas` no relatório.

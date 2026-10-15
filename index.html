@@ -3167,6 +3167,35 @@
             .parcelas-ver { min-height: 44px; }
         }
 
+        /* --- (15/10) o botao Boleto na parcela (anexado pelo Financeiro) --- */
+        .bt-boleto {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+            padding: 4px 10px 4px 8px;
+            border: 1.5px solid var(--primary);
+            border-radius: 999px;
+            background: var(--white);
+            color: var(--primary);
+            font-family: var(--rotulo);
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            vertical-align: middle;
+            transition: background .15s ease, color .15s ease;
+        }
+        .bt-boleto svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .bt-boleto:hover { background: var(--primary); color: var(--white); }
+        .table-row.atrasada .bt-boleto { border-color: var(--accent); color: var(--accent); }
+        .table-row.atrasada .bt-boleto:hover { background: var(--accent); color: var(--white); }
+        @media (max-width: 768px) {
+            .bt-boleto { margin-left: 8px; padding: 3px 8px 3px 6px; min-height: 24px; line-height: 1; font-size: 10px; }
+        }
+
         @media (max-width: 768px) {
             .obra-painel { grid-template-columns: 1fr; gap: 24px; padding: 30px 22px 28px; margin-bottom: 36px; border-radius: 20px; justify-items: center; text-align: center; }
             .obra-anel { width: 168px; height: 168px; }
@@ -3890,7 +3919,7 @@
                 const ids = unidades.map((u) => u.id);
                 const { data: parcelas, error: e2 } = await sb
                     .from('parcelas')
-                    .select('unidade_id, ordem, data_vencimento, tipo_parcela, parcela_corrigida, parcela_construtora, pago, saldo_devedor')
+                    .select('unidade_id, ordem, data_vencimento, tipo_parcela, parcela_corrigida, parcela_construtora, pago, saldo_devedor, boleto_caminho')
                     .in('unidade_id', ids)
                     .order('ordem');
                 if (e2) throw e2;
@@ -4025,10 +4054,16 @@
                 const busca = normalizarBusca(
                     dataBR(p.data_vencimento) + ' ' + (p.tipo_parcela || '') + ' ' + situacao
                 );
+                // (15/10) o boleto do mês, anexado pelo Financeiro: um botão que abre um link
+                // assinado (o bucket é privado; o banco só assina para a casa do cliente)
+                const boleto = p.boleto_caminho
+                    ? ' <button type="button" class="bt-boleto" data-boleto="' + escapar(p.boleto_caminho) + '" aria-label="Abrir o boleto da parcela de ' + dataBR(p.data_vencimento) + '">'
+                      + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6"/></svg>Boleto</button>'
+                    : '';
                 return '<div class="table-row ' + classe + '" data-busca="' + escapar(busca) + '">'
                     + '<div class="table-cell"><strong>' + dataBR(p.data_vencimento) + '</strong></div>'
                     + '<div class="table-cell">' + escapar(p.tipo_parcela || '—') + '</div>'
-                    + '<div class="table-cell">' + dinheiro(valorDaParcela(p)) + '</div>'
+                    + '<div class="table-cell">' + dinheiro(valorDaParcela(p)) + boleto + '</div>'
                     + '<div class="table-cell">' + selo + '</div>'
                     + '</div>';
             }).join('') || '<div class="sem-resultado">Nenhuma parcela cadastrada.</div>';
@@ -5175,6 +5210,25 @@
                 parcelasResumidas = !parcelasResumidas;
                 paginaParcelas = 1;
                 aplicarFiltro();
+            });
+        }
+
+        // (15/10) "Boleto": pede ao Storage um link assinado (10 minutos) e abre numa aba.
+        // A aba é aberta ANTES de pedir o link, senão o navegador bloqueia como pop-up.
+        if ($$('listaParcelas')) {
+            $$('listaParcelas').addEventListener('click', (ev) => {
+                const bt = ev.target.closest('.bt-boleto');
+                if (!bt) return;
+                const caminho = bt.getAttribute('data-boleto');
+                const janela = window.open('', '_blank');
+                sb.storage.from('boletos').createSignedUrl(caminho, 600).then((r) => {
+                    if (r.error || !r.data || !r.data.signedUrl) throw (r.error || new Error('sem link'));
+                    if (janela) janela.location.href = r.data.signedUrl; else window.location.href = r.data.signedUrl;
+                }).catch((e) => {
+                    if (janela) janela.close();
+                    console.error('[boleto]', e);
+                    window.alert('Não consegui abrir o boleto agora. Tente de novo em instantes.');
+                });
             });
         }
 

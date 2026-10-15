@@ -160,6 +160,32 @@ export default async function handler(req, res) {
 
   try {
     // ------------------------------------------------------------------
+    // 0. (15/10) CASA GERIDA NO FINANCEIRO: a planilha não mexe mais nela.
+    //    Quem salva uma casa no backoffice Financeiro marca
+    //    unidades.gerida_no_financeiro; a partir daí a sincronização pula
+    //    essa casa, senão a próxima execução da planilha desfaria o que a
+    //    equipe gravou (inclusive os boletos). Volta ok com aviso, para a
+    //    planilha listar no relatório sem contar como falha.
+    //    O valor vai entre aspas no filtro: nome com parêntese ou vírgula
+    //    ("CASA 72(Permutante)") confunde o PostgREST sem elas.
+    // ------------------------------------------------------------------
+    const entreAspas = (v) => encodeURIComponent('"' + String(v).replace(/"/g, '\\"') + '"');
+    const existentes = await supabase(
+      `/unidades?select=id,gerida_no_financeiro&empreendimento=eq.${entreAspas(empreendimento)}&unidade=eq.${entreAspas(unidade)}`
+    );
+    if (Array.isArray(existentes) && existentes[0] && existentes[0].gerida_no_financeiro) {
+      return res.status(200).json({
+        ok: true,
+        pulada: true,
+        unidade_id: existentes[0].id,
+        unidade,
+        parcelas: 0,
+        removidas: 0,
+        avisos: ['gerida no Financeiro: a planilha nao altera mais esta casa']
+      });
+    }
+
+    // ------------------------------------------------------------------
     // 1. A CASA. Upsert por (empreendimento, unidade): rodar de novo
     //    atualiza, não duplica.
     // ------------------------------------------------------------------
