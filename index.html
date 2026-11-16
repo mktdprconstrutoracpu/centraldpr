@@ -3212,6 +3212,66 @@
             .obra-etapa { grid-template-columns: 1fr; }
             .obra-etapa .obra-texto { padding: 20px 20px 22px; }
         }
+
+        /* ===================================================================
+           (16/11) O MENU LATERAL: "esse menu da central esta muito feio".
+           Logo menor, cartao do cliente compacto (nome em letras normais, no
+           maximo 2 linhas, "Casa 06 · Villagio Caucaia II"), itens sem caixinha
+           cinza no icone, pagina atual com fundo vermelho claro, resumo num
+           cartao so e Sair discreto no pe. Prefixo .sidebar para vencer as
+           passadas anteriores sem !important.
+           =================================================================== */
+        .sidebar { padding: 26px 18px 18px; gap: 0; }
+        .sidebar .logo-container { padding: 0 10px; margin: 0 0 26px; background: transparent; }
+        .sidebar .logo-img { width: 112px; max-width: 112px; }
+
+        .sidebar .user-card { gap: 12px; padding: 12px; margin: 0 0 22px; background: var(--lighter); border: 1px solid var(--border); border-radius: 14px; }
+        .sidebar .user-avatar { width: 38px; height: 38px; flex: 0 0 38px; font-size: 15px; font-weight: 700; background: var(--accent); color: #fff; box-shadow: none; }
+        .sidebar .user-name {
+            font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.32; letter-spacing: 0; color: var(--primary);
+            margin: 0 0 3px; overflow-wrap: normal;
+            display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+        }
+        .sidebar .user-role { font-size: 11.5px; line-height: 1.3; letter-spacing: 0; text-transform: none; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .sidebar .nav-section { margin-bottom: 0; }
+        .sidebar .nav-item { gap: 12px; padding: 10px 12px; margin-bottom: 2px; min-height: 42px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #4b4f56; background: transparent; }
+        .sidebar .nav-item:hover { background: var(--lighter); color: var(--primary); }
+        .sidebar .nav-item.active { background: rgba(225, 6, 0, .07); color: var(--accent); font-weight: 600; }
+        .sidebar .nav-item.active::before { display: none; }
+        .sidebar .nav-icon { width: 20px; height: 20px; border-radius: 0; background: transparent; color: #8a8e95; }
+        .sidebar .nav-item:hover .nav-icon { color: var(--primary); }
+        .sidebar .nav-item.active .nav-icon { background: transparent; color: var(--accent); }
+        .sidebar .nav-icon svg { width: 18px; height: 18px; stroke-width: 1.6; }
+
+        /* resumo e Sair descem para o pe da lateral */
+        .sidebar #resumoLateral { margin-top: auto; padding-top: 22px; }
+        .sidebar .lateral-caixa { display: block; padding: 16px; background: #fff; border: 1px solid var(--border); border-radius: 14px; }
+        .sidebar .lateral-rotulo { display: block; font-size: 11.5px; color: var(--text-light); }
+        .sidebar .lateral-saldo { display: block; margin: 2px 0 12px; font-family: var(--display); font-size: 19px; font-weight: 700; letter-spacing: -.01em; color: var(--primary); font-variant-numeric: tabular-nums; }
+        .sidebar .lateral-barra { height: 4px; margin: 0; border-radius: 4px; background: var(--lighter); overflow: hidden; }
+        .sidebar .lateral-barra span { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
+        .sidebar .lateral-pagas { display: block; margin-top: 8px; font-size: 12px; color: var(--text-light); }
+        .sidebar .lateral-pagas strong { font-weight: 600; color: var(--primary); font-variant-numeric: tabular-nums; }
+
+        .sidebar .logout-btn {
+            display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%;
+            margin-top: 10px; padding: 10px 12px; min-height: 40px; border: 0; border-radius: 10px; background: transparent;
+            font-size: 13.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-light); cursor: pointer;
+        }
+        .sidebar #resumoLateral[hidden] + .logout-btn { margin-top: auto; }
+        .sidebar .logout-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+        .sidebar .logout-btn:hover { background: var(--lighter); color: var(--accent); border-color: transparent; }
+        .sidebar .nav-item:focus-visible, .sidebar .logout-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        @media (max-width: 768px) {
+            .sidebar { padding: 20px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+            .sidebar .logo-container { margin-bottom: 18px; }
+            .sidebar .user-card { margin-bottom: 16px; }
+            .sidebar .nav-item { min-height: 44px; padding: 10px 12px; }
+            .sidebar #resumoLateral { padding-top: 16px; }
+            .sidebar .logout-btn { min-height: 44px; margin-top: 6px; }
+        }
     </style>
 </head>
 <body>
@@ -3379,22 +3439,17 @@
                 </div>
             </nav>
 
+            <!-- (16/11) o resumo virou um cartao so: saldo em destaque, barra e "N de M parcelas pagas" -->
             <div class="nav-section" id="resumoLateral" hidden>
-                <div class="nav-label">Resumo</div>
                 <div class="lateral-caixa">
-                    <div class="lateral-linha">
-                        <span>Saldo devedor</span>
-                        <strong id="lateralSaldo">—</strong>
-                    </div>
-                    <div class="lateral-linha">
-                        <span>Pagas</span>
-                        <strong id="lateralPagas">—</strong>
-                        <div class="lateral-barra"><span id="lateralBarra" style="width:0%"></span></div>
-                    </div>
+                    <span class="lateral-rotulo">Saldo devedor</span>
+                    <strong class="lateral-saldo" id="lateralSaldo">—</strong>
+                    <div class="lateral-barra"><span id="lateralBarra" style="width:0%"></span></div>
+                    <span class="lateral-pagas"><strong id="lateralPagas">—</strong> parcelas pagas</span>
                 </div>
             </div>
 
-            <button class="logout-btn" id="btSair">Sair</button>
+            <button class="logout-btn" id="btSair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5H6.5v15H14"/><path d="M10.5 12h9M16.5 8.5 20 12l-3.5 3.5"/></svg><span>Sair</span></button>
         </aside>
 
         <!-- Fundo escurecido atrás da lateral aberta no celular. Serve para duas
@@ -4072,11 +4127,14 @@
             const rotulo = unidades.length > 1
                 ? unidades.length + ' imóveis'
                 : casa.unidade;
-            $$('userUnidade').textContent = rotulo;
+            // (16/11) na lateral: "Casa 06 · Villagio Caucaia II" em letras normais (a planilha vem em maiusculas)
+            $$('userUnidade').textContent = unidades.length > 1
+                ? rotulo
+                : nomeBonito(casa.unidade) + (casa.empreendimento ? ' · ' + nomeBonito(casa.empreendimento) : '');
             $$('headerUnidade').textContent = rotulo + ' · ' + casa.empreendimento;
             $$('headerUnidade').hidden = false;
             $$('lateralSaldo').textContent = saldo > 0 ? dinheiro(saldo) : '—';
-            $$('lateralPagas').textContent = pagas + '/' + parcelas.length;
+            $$('lateralPagas').textContent = pagas + ' de ' + parcelas.length;
             $$('lateralBarra').style.width = parcelas.length
                 ? Math.round((pagas / parcelas.length) * 100) + '%'
                 : '0%';
@@ -4663,12 +4721,25 @@
         }
 
 
+        // (16/11) "DIENE KELLY PEREIRA DA SILVA E HERBERT" -> "Diene Kelly Pereira da Silva e Herbert";
+        // "CASA 06" -> "Casa 06"; numeral romano fica em maiusculas ("Villagio Caucaia II")
+        function nomeBonito(texto) {
+            const MINUSCULAS = ['e', 'da', 'de', 'do', 'das', 'dos', 'di', 'du'];
+            return String(texto || '').trim().toLowerCase().split(/\s+/).map(function (p, i) {
+                if (/^(i|ii|iii|iv|v|vi|vii|viii|ix|x)$/.test(p)) return p.toUpperCase();
+                if (i > 0 && MINUSCULAS.indexOf(p) >= 0) return p;
+                return p.charAt(0).toUpperCase() + p.slice(1);
+            }).join(' ');
+        }
+
         // Load data
 
         // Preenche o cabeçalho e dispara a carga do extrato.
         async function loadDashboardData() {
             const userName = localStorage.getItem('userName') || 'Usuário';
-            document.getElementById('userName').textContent = userName;
+            // (16/11) so a exibicao da lateral muda; a busca da casa continua com o nome do cadastro como veio
+            document.getElementById('userName').textContent = nomeBonito(userName);
+            document.getElementById('userName').title = nomeBonito(userName);
             document.getElementById('firstName').textContent = userName.split(' ')[0];
             document.getElementById('userInitial').textContent = userName.charAt(0).toUpperCase();
             // ⚠️ O nome usado para achar a casa é o do CADASTRO, não o do e-mail.
