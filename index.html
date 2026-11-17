@@ -3391,7 +3391,10 @@
             .fotos-faixa .foto-card, .fotos-faixa .foto-card:nth-child(5n+1), .fotos-faixa .foto-card:nth-child(10n+6) { flex-basis: calc((100% - 32px) / 3); }
         }
         @media (max-width: 768px) {
-            .faixa-setas { display: none; }
+            /* (17/11) "coloque seta pra passar o slide em mobile" */
+            .faixa-setas { gap: 6px; }
+            .faixa-seta { width: 36px; height: 36px; }
+            .faixa-seta svg { width: 16px; height: 16px; }
             .fotos-faixa { gap: 10px; margin: 0 -24px; padding: 4px 24px 8px; scroll-padding-left: 24px; }
             .fotos-faixa .foto-card, .fotos-faixa .foto-card:nth-child(5n+1), .fotos-faixa .foto-card:nth-child(10n+6) { flex-basis: 70%; gap: 8px; }
             .fotos-faixa .foto-card-imagem { border-radius: 12px; }
@@ -4447,7 +4450,8 @@
                 vitrine.hidden = true; grupos.innerHTML = ''; vazio.hidden = false;
                 return;
             }
-            vazio.hidden = true; vitrine.hidden = false;
+            // (17/11) "nao precisa do primeiro slide": a vitrine grande sai; as faixas dos grupos bastam
+            vazio.hidden = true; vitrine.hidden = true;
             $$('miniaturas').innerHTML = galeriaItens.map((f, i) =>
                 '<button type="button" class="miniatura" data-i="' + i + '" role="listitem" aria-label="' + escapar(f.t) + '">'
                 + '<img loading="lazy" decoding="async" alt="" src="' + PASTA_VC2 + f.a + '-mini.webp" width="480" height="270">'
@@ -4503,13 +4507,14 @@
                 else window.addEventListener('resize', atualiza);
                 requestAnimationFrame(atualiza);
             });
-            mostrarNaVitrine(0);
-            ligarVitrine();
+            // sem vitrine, sem a troca automatica a cada 7 s
+            if (vitrineRelogio) { window.clearInterval(vitrineRelogio); vitrineRelogio = null; }
         }
         function mostrarNaVitrine(i) {
             const f = galeriaItens[i];
             if (!f) return;
             vitrineAtual = i;
+            if ($$('vitrine').hidden) return;   // (17/11) vitrine fora: nao carrega a imagem grande a toa
             const img = $$('vitrineImagem');
             img.src = PASTA_VC2 + f.a + '.webp';
             img.alt = f.t;
