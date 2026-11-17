@@ -3324,6 +3324,24 @@
             body.logado .obra-painel { grid-template-columns: 1fr; padding: 24px 20px; gap: 18px; }
             body.logado .obra-anel { width: 128px; height: 128px; }
             body.logado .obra-anel-texto strong { font-size: 30px; }
+
+            /* (17/11) celular menos poluido: sem a etiqueta repetida no topo, uma linha so abaixo
+               do Bem-vindo, os dois cartoes menores lado a lado e sem tracinho, fundo liso */
+            body.logado .header-tag { display: none; }
+            body.logado .welcome-subtitle { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+            body.logado { background-image: none; }
+            body.logado .stats-grid { grid-template-columns: 1fr 1fr; grid-template-rows: none; gap: 10px; }
+            body.logado .stats-grid .stat-card:first-child { grid-column: 1 / -1; grid-row: auto; }
+            body.logado .stats-grid .stat-card:nth-child(2),
+            body.logado .stats-grid .stat-card:nth-child(3) { padding: 14px 14px 15px; border-radius: 14px; box-shadow: 0 1px 2px rgba(18, 19, 22, .06); }
+            body.logado .stats-grid .stat-card:nth-child(2)::after,
+            body.logado .stats-grid .stat-card:nth-child(3)::after { display: none; }
+            body.logado .stats-grid .stat-card:nth-child(2) .stat-label,
+            body.logado .stats-grid .stat-card:nth-child(3) .stat-label { font-size: 9px; letter-spacing: .12em; }
+            body.logado .stats-grid .stat-card:nth-child(2) .stat-value,
+            body.logado .stats-grid .stat-card:nth-child(3) .stat-value { font-size: clamp(16px, 5vw, 21px); white-space: nowrap; margin: 6px 0 2px; }
+            body.logado .stats-grid .stat-card:nth-child(2) .stat-change,
+            body.logado .stats-grid .stat-card:nth-child(3) .stat-change { font-size: 11.5px; }
         }
 
         @media (max-width: 768px) {
