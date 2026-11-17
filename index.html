@@ -3344,6 +3344,63 @@
             body.logado .stats-grid .stat-card:nth-child(3) .stat-change { font-size: 11.5px; }
         }
 
+        /* ===================================================================
+           (17/11) PROJETO 3D: cada grupo vira uma FAIXA de cartoes que corre
+           para o lado, com a legenda embaixo da foto (a vitrine do topo
+           continua sendo a unica foto grande da pagina)
+           =================================================================== */
+        .galeria-cabeca { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+        .galeria-cabeca-texto { min-width: 0; }
+        .faixa-setas { display: flex; gap: 8px; flex: 0 0 auto; padding-bottom: 2px; }
+        .faixa-seta {
+            width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--white);
+            color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: background .2s ease, color .2s ease, border-color .2s ease, opacity .2s ease;
+        }
+        .faixa-seta svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .faixa-seta:hover:not(:disabled) { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .faixa-seta:disabled { opacity: .35; cursor: default; }
+        .faixa-seta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .galeria-grupo.sem-setas .faixa-setas { display: none; }
+
+        .fotos-faixa {
+            display: flex; gap: 16px; overflow-x: auto; overscroll-behavior-x: contain;
+            scroll-snap-type: x mandatory; scroll-padding-left: 2px; padding: 4px 2px 8px;
+            scrollbar-width: none;
+        }
+        .fotos-faixa::-webkit-scrollbar { display: none; }
+        .fotos-faixa:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 14px; }
+        .fotos-faixa .foto-card,
+        .fotos-faixa .foto-card:nth-child(5n+1),
+        .fotos-faixa .foto-card:nth-child(10n+6) {
+            flex: 0 0 calc((100% - 48px) / 4); grid-column: auto; grid-row: auto;
+            display: flex; flex-direction: column; gap: 10px; padding: 0; text-align: left;
+            background: none; box-shadow: none; border-radius: 0; overflow: visible; scroll-snap-align: start;
+        }
+        .fotos-faixa .foto-card:hover { transform: none; box-shadow: none; }
+        .fotos-faixa .foto-card-imagem { aspect-ratio: 4 / 3; height: auto; border-radius: 14px; overflow: hidden; box-shadow: var(--sombra); background: var(--gray-50); }
+        .fotos-faixa .foto-card:hover .foto-card-imagem img { transform: scale(1.04); }
+        .fotos-faixa .foto-card:focus-visible { box-shadow: none; }
+        .fotos-faixa .foto-card:focus-visible .foto-card-imagem { box-shadow: 0 0 0 3px var(--accent); }
+        .fotos-faixa .foto-card-legenda,
+        .fotos-faixa .foto-card:nth-child(5n+1) .foto-card-legenda {
+            position: static; padding: 0 2px; background: none; text-shadow: none; color: var(--primary);
+            font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.3;
+        }
+        @media (max-width: 1100px) {
+            .fotos-faixa .foto-card, .fotos-faixa .foto-card:nth-child(5n+1), .fotos-faixa .foto-card:nth-child(10n+6) { flex-basis: calc((100% - 32px) / 3); }
+        }
+        @media (max-width: 768px) {
+            .faixa-setas { display: none; }
+            .fotos-faixa { gap: 10px; margin: 0 -24px; padding: 4px 24px 8px; scroll-padding-left: 24px; }
+            .fotos-faixa .foto-card, .fotos-faixa .foto-card:nth-child(5n+1), .fotos-faixa .foto-card:nth-child(10n+6) { flex-basis: 70%; gap: 8px; }
+            .fotos-faixa .foto-card-imagem { border-radius: 12px; }
+            .fotos-faixa .foto-card-legenda, .fotos-faixa .foto-card:nth-child(5n+1) .foto-card-legenda { font-size: 12.5px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fotos-faixa .foto-card:hover .foto-card-imagem img { transform: none; }
+        }
+
         @media (max-width: 768px) {
             .sidebar { padding: 20px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
             .sidebar .logo-container { margin-bottom: 18px; }
@@ -4409,12 +4466,20 @@
                 const sobram = nomes.length - primeiros.length;
                 let resumo = primeiros.join(', ') + (sobram > 0 ? ' e mais ' + sobram + (sobram === 1 ? ' ambiente' : ' ambientes') : '');
                 resumo = resumo.charAt(0).toUpperCase() + resumo.slice(1) + '.';
+                // (17/11) "tem muita foto, precisa ser juntas tipo um slide, mas nao como o de cima":
+                // cada grupo vira uma FAIXA de cartoes que corre para o lado (setas no computador, dedo no celular)
                 return '<div class="section galeria-grupo">'
                     + '<div class="galeria-cabeca">'
-                    +   '<div class="section-title">' + escapar(NOME_GRUPO[g]) + '<span class="section-conta">' + do_grupo.length + ' imagens</span></div>'
-                    +   '<p class="galeria-resumo">' + escapar(resumo) + '</p>'
+                    +   '<div class="galeria-cabeca-texto">'
+                    +     '<div class="section-title">' + escapar(NOME_GRUPO[g]) + '<span class="section-conta">' + do_grupo.length + ' imagens</span></div>'
+                    +     '<p class="galeria-resumo">' + escapar(resumo) + '</p>'
+                    +   '</div>'
+                    +   '<div class="faixa-setas">'
+                    +     '<button type="button" class="faixa-seta" data-dir="-1" aria-label="Fotos anteriores de ' + escapar(NOME_GRUPO[g]) + '" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>'
+                    +     '<button type="button" class="faixa-seta" data-dir="1" aria-label="Próximas fotos de ' + escapar(NOME_GRUPO[g]) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>'
+                    +   '</div>'
                     + '</div>'
-                    + '<div class="fotos-grade">'
+                    + '<div class="fotos-faixa" role="region" aria-label="' + escapar(NOME_GRUPO[g]) + '" tabindex="0">'
                     + do_grupo.map((x) =>
                         '<button type="button" class="foto-card" data-i="' + x.i + '" aria-label="' + escapar(x.f.t) + ', abrir em tela cheia">'
                         + '<span class="foto-card-imagem"><img loading="lazy" decoding="async" alt="" src="' + PASTA_VC2 + x.f.a + '-mini.webp" width="480" height="270"></span>'
@@ -4422,6 +4487,22 @@
                         + '</button>').join('')
                     + '</div></div>';
             }).join('');
+            // as setas de cada faixa acendem e apagam conforme ha fotos antes ou depois
+            grupos.querySelectorAll('.galeria-grupo').forEach((gr) => {
+                const faixa = gr.querySelector('.fotos-faixa');
+                const setas = gr.querySelectorAll('.faixa-seta');
+                const atualiza = () => {
+                    const fim = faixa.scrollWidth - faixa.clientWidth - 2;
+                    setas[0].disabled = faixa.scrollLeft <= 2;
+                    setas[1].disabled = faixa.scrollLeft >= fim;
+                    gr.classList.toggle('sem-setas', fim <= 0);
+                };
+                faixa.addEventListener('scroll', atualiza, { passive: true });
+                // a pagina do Projeto 3D nasce escondida (largura 0): a conta refaz quando a faixa ganha tamanho
+                if (window.ResizeObserver) new ResizeObserver(atualiza).observe(faixa);
+                else window.addEventListener('resize', atualiza);
+                requestAnimationFrame(atualiza);
+            });
             mostrarNaVitrine(0);
             ligarVitrine();
         }
@@ -5325,6 +5406,12 @@
                 if (m) mostrarNaVitrine(Number(m.getAttribute('data-i')));
             });
             $$('galeriaGrupos').addEventListener('click', (ev) => {
+                const seta = ev.target.closest('.faixa-seta');
+                if (seta) {
+                    const faixa = seta.closest('.galeria-grupo').querySelector('.fotos-faixa');
+                    faixa.scrollBy({ left: Number(seta.getAttribute('data-dir')) * faixa.clientWidth * 0.9, behavior: 'smooth' });
+                    return;
+                }
                 const it = ev.target.closest('.foto-card');
                 if (it) abrirCaixa(Number(it.getAttribute('data-i')));
             });
