@@ -3264,6 +3264,68 @@
         .sidebar .logout-btn:hover { background: var(--lighter); color: var(--accent); border-color: transparent; }
         .sidebar .nav-item:focus-visible, .sidebar .logout-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+        /* ===================================================================
+           (17/11) CENTRAL COMPACTA: "ta tudo muito grande". So tamanhos e
+           espacos: topo com cerca de metade da altura, "Bem-vindo" e numeros
+           menores, cartoes mais baixos, secoes mais juntas. Prefixo body.logado
+           para vencer as passadas anteriores sem !important.
+           =================================================================== */
+        body.logado .welcome-banner.hero { min-height: 230px; padding: 30px 44px 28px; margin: -40px -40px 32px; }
+        body.logado .welcome-content::before { font-size: 10px; margin-bottom: 8px; }
+        body.logado .welcome-title { font-size: clamp(28px, 2.6vw, 36px); line-height: 1.05; letter-spacing: -.025em; margin-bottom: 6px; }
+        body.logado .welcome-subtitle { font-size: 10.5px; }
+        body.logado .header-tag { font-size: 11px; padding: 6px 12px; }
+
+        body.logado .stats-grid { gap: 14px; margin-bottom: 34px; }
+        body.logado .stat-card { padding: 18px 22px 20px; border-radius: 16px; }
+        body.logado .stat-card::after { left: 22px; }
+        body.logado .stat-label { font-size: 10px; }
+        body.logado .stat-value { font-size: 26px; margin: 6px 0 4px; }
+        body.logado .stat-change { font-size: 12.5px; }
+        body.logado .stats-grid .stat-card:first-child { padding: 22px 26px 24px; }
+        body.logado .stats-grid .stat-card:first-child .stat-value { font-size: clamp(28px, 2.6vw, 36px); margin: 8px 0 6px; }
+        body.logado .stats-grid .stat-card:first-child .stat-change { font-size: 13px; }
+        body.logado .stats-grid .stat-card:nth-child(2),
+        body.logado .stats-grid .stat-card:nth-child(3) { padding: 18px 22px 20px; }
+        body.logado .stats-grid .stat-card:nth-child(2) .stat-value,
+        body.logado .stats-grid .stat-card:nth-child(3) .stat-value { font-size: 26px; }
+
+        body.logado .section { margin-bottom: 38px; }
+        body.logado .section-title { font-size: 20px; margin-bottom: 16px; gap: 10px; }
+        body.logado .section-title::before { height: 20px; }
+        body.logado .table-row { padding-top: 12px; padding-bottom: 12px; }
+        body.logado .imovel { padding: 20px 22px 18px; }
+        body.logado .imovel-nome { font-size: 22px; margin-bottom: 8px; }
+        body.logado .imovel-anel { width: 80px; height: 80px; }
+
+        body.logado .obra-painel { grid-template-columns: 150px 1fr; gap: 28px; padding: 26px 30px; }
+        body.logado .obra-anel { width: 150px; height: 150px; }
+        body.logado .obra-anel-texto strong { font-size: 32px; }
+        body.logado .obra-painel-titulo { font-size: clamp(20px, 1.8vw, 26px); }
+        body.logado .obra-painel-nota { margin: 6px 0 16px; font-size: 13px; }
+        body.logado .obra-fatos dd { font-size: 17px; }
+        body.logado .projeto-numeral { font-size: 48px; }
+
+        @media (max-width: 768px) {
+            body.logado .welcome-banner.hero { margin: -24px -24px 22px; padding: 22px 20px 20px; min-height: 0; }
+            body.logado .welcome-banner.hero.com-foto { padding: 0 24px 18px; }   /* 24: a foto usa calc(100% + 48px) e margem -24 */
+            body.logado .welcome-title { font-size: 26px; }
+            body.logado .stats-grid { gap: 10px; margin-bottom: 26px; }
+            body.logado .stat-card { padding: 16px 18px 18px; }
+            body.logado .stats-grid .stat-card:first-child { padding: 18px 20px 20px; }
+            body.logado .stats-grid .stat-card:first-child .stat-value { font-size: clamp(24px, 7.4vw, 30px); }
+            body.logado .stats-grid .stat-card:nth-child(2),
+            body.logado .stats-grid .stat-card:nth-child(3) { padding: 16px 18px 18px; }
+            body.logado .stats-grid .stat-card:nth-child(2) .stat-value,
+            body.logado .stats-grid .stat-card:nth-child(3) .stat-value { font-size: 22px; }
+            body.logado .stat-value { font-size: 22px; }
+            body.logado .section-title { font-size: 19px; margin-bottom: 14px; }
+            body.logado .section { margin-bottom: 30px; }
+            body.logado .obra-painel { grid-template-columns: 1fr; padding: 24px 20px; gap: 18px; }
+            body.logado .obra-anel { width: 128px; height: 128px; }
+            body.logado .obra-anel-texto strong { font-size: 30px; }
+        }
+
         @media (max-width: 768px) {
             .sidebar { padding: 20px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
             .sidebar .logo-container { margin-bottom: 18px; }
@@ -4740,7 +4802,7 @@
             // (16/11) so a exibicao da lateral muda; a busca da casa continua com o nome do cadastro como veio
             document.getElementById('userName').textContent = nomeBonito(userName);
             document.getElementById('userName').title = nomeBonito(userName);
-            document.getElementById('firstName').textContent = userName.split(' ')[0];
+            document.getElementById('firstName').textContent = nomeBonito(userName.split(' ')[0]);
             document.getElementById('userInitial').textContent = userName.charAt(0).toUpperCase();
             // ⚠️ O nome usado para achar a casa é o do CADASTRO, não o do e-mail.
             // É ele que o banco compara com o comprador da planilha.
