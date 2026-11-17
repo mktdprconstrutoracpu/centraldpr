@@ -4016,12 +4016,28 @@
                 //    sistema depois de a pessoa já ter se cadastrado.
                 await sb.rpc('solicitar_acesso', { p_nome: nome });
 
-                // 2. Lê as casas. O RLS devolve só as de vínculo APROVADO.
-                const { data: unidades, error: e1 } = await sb
-                    .from('unidades')
-                    .select('id, empreendimento, unidade, comprador, status_contrato, valor_venda, saldo_devedor_atual, data_assinatura')
-                    .order('unidade');
-                if (e1) throw e1;
+                // 2. Lê as casas DOS VÍNCULOS APROVADOS DA PRÓPRIA PESSOA.
+                //    (17/11) Antes confiava só no RLS. Mas quem também é da equipe
+                //    (Financeiro, gestor do painel de obras) tem regra no banco que lê
+                //    TODAS as casas, e a Central mostrava as 74 como se fossem dela.
+                //    Agora a lista sai do vínculo; o RLS continua valendo por baixo.
+                const { data: sessao } = await sb.auth.getSession();
+                const uid = sessao && sessao.session && sessao.session.user ? sessao.session.user.id : null;
+                const { data: meus, error: e0 } = uid
+                    ? await sb.from('vinculos').select('unidade_id').eq('user_id', uid).eq('situacao', 'aprovado')
+                    : { data: [], error: null };
+                if (e0) throw e0;
+                const idsMeus = Array.from(new Set((meus || []).map((v) => v.unidade_id).filter((x) => x != null)));
+                let unidades = [];
+                if (idsMeus.length) {
+                    const { data, error: e1 } = await sb
+                        .from('unidades')
+                        .select('id, empreendimento, unidade, comprador, status_contrato, valor_venda, saldo_devedor_atual, data_assinatura')
+                        .in('id', idsMeus)
+                        .order('unidade');
+                    if (e1) throw e1;
+                    unidades = data || [];
+                }
 
                 if (!unidades || !unidades.length) {
                     // Vazio tem DOIS motivos, e a pessoa precisa saber qual: se é para
