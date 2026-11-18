@@ -3412,6 +3412,20 @@
             .sidebar #resumoLateral { padding-top: 16px; }
             .sidebar .logout-btn { min-height: 44px; margin-top: 6px; }
         }
+
+        /* (18/11/2026) FAIXA DA EQUIPE: a Central aberta pelo backoffice de clientes */
+        .faixa-equipe { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 8px 16px; background: #15161a; color: #fff; font-size: 13.5px; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); border-bottom: 3px solid #e10600; }
+        .faixa-equipe b { font-weight: 700; }
+        .faixa-equipe button { appearance: none; border: 1.5px solid #fff; background: transparent; color: #fff; border-radius: 999px; min-height: 32px; padding: 0 14px; font: inherit; font-weight: 700; cursor: pointer; }
+        .faixa-equipe button:hover { background: #fff; color: #15161a; }
+        .faixa-equipe button:focus-visible { outline: 2px solid #e10600; outline-offset: 2px; }
+        body.visao-equipe { padding-top: 47px; }
+        body.visao-equipe .sidebar { top: 47px; height: calc(100vh - 47px); }
+        @media (max-width: 768px) {
+            .faixa-equipe { font-size: 12.5px; gap: 8px; padding: 6px 12px; text-align: center; }
+            body.visao-equipe { padding-top: 76px; }
+            body.visao-equipe .sidebar { top: 0; height: 100dvh; }
+        }
     </style>
 </head>
 <body>
@@ -3544,6 +3558,12 @@
         </div><!-- /auth-corpo -->
       </div>
       </div><!-- /auth-palco -->
+    </div>
+
+    <!-- (18/11/2026) aberta pelo backoffice de clientes: a equipe vê que está na conta de alguém -->
+    <div class="faixa-equipe" id="faixaEquipe" role="status" hidden>
+        <span><b>Equipe DPR:</b> você está vendo a Central como <b id="faixaEquipeQuem"></b></span>
+        <button type="button" id="btSairEquipe">Sair desta conta</button>
     </div>
 
     <div class="container">
@@ -5152,7 +5172,21 @@
             overlay.hidden = true;
             // (14/10) liga a barra de baixo do celular; a tela de entrada não tem menu
             document.body.classList.add('logado');
+            mostrarFaixaEquipe(user);
             loadDashboardData();
+        }
+
+        // (18/11/2026) Faixa "você está vendo como o cliente": só na aba aberta pelo backoffice
+        function mostrarFaixaEquipe(user) {
+            let marcada = false;
+            try { marcada = sessionStorage.getItem('dprVisaoEquipe') === '1'; } catch (e) { marcada = false; }
+            const faixa = $$('faixaEquipe');
+            if (!faixa) return;
+            faixa.hidden = !marcada;
+            document.body.classList.toggle('visao-equipe', marcada);
+            if (!marcada) return;
+            const nome = (user.user_metadata && user.user_metadata.nome) || '';
+            $$('faixaEquipeQuem').textContent = nome ? nomeBonito(nome) + ' (' + user.email + ')' : user.email;
         }
 
         $$('formEntrar').addEventListener('submit', async (ev) => {
@@ -5272,6 +5306,7 @@
         async function handleLogout() {
             try { await sb.auth.signOut(); } catch (e) { /* sai mesmo se a rede falhar */ }
             localStorage.clear();
+            try { sessionStorage.removeItem('dprVisaoEquipe'); } catch (e) { /* nada a limpar */ }
             window.location.reload();
         }
 
@@ -5334,9 +5369,20 @@
 
         window.addEventListener('load', async () => {
             const retorno = lerRetornoDoLink();
+            // (18/11/2026) aberta pelo backoffice de clientes ("Entrar como este cliente"):
+            // a marca vale para esta aba (sessionStorage) e acende a faixa da equipe
+            const daEquipe = new URLSearchParams(window.location.search || '').get('visao') === 'equipe';
+            if (daEquipe) { try { sessionStorage.setItem('dprVisaoEquipe', '1'); } catch (e) { /* sem storage, sem faixa */ } }
 
             // 3. Link expirado ou já usado — avisa e oferece pedir outro.
             if (retorno.erro) {
+                if (daEquipe) {
+                    overlay.hidden = false;
+                    mostrarTela('entrar');
+                    mostrarRecado('Este link de entrada venceu ou já foi usado. Gere outro no backoffice de clientes.', 'erro');
+                    limparEndereco();
+                    return;
+                }
                 falharRecuperacao(traduzirErroDoLink(retorno.erro));
                 return;
             }
@@ -5366,6 +5412,8 @@
             try {
                 const { data } = await sb.auth.getSession();
                 if (data.session && !emRecuperacao) abrirCentral(data.session.user);
+                // o link de entrada deixa o token na barra de endereço: sai depois que a sessão abriu
+                if (retorno.tipo === 'magiclink' || daEquipe) limparEndereco();
             } catch (e) {
                 mostrarRecado('Não foi possível verificar sua sessão. Entre novamente.', 'erro');
             }
@@ -5404,6 +5452,7 @@
         }
         // O botão Sair usava onclick no atributo — trocado pelo mesmo padrão do
         // resto da página.
+        if ($$('btSairEquipe')) $$('btSairEquipe').addEventListener('click', handleLogout);
         if ($$('btSair')) {
             $$('btSair').addEventListener('click', handleLogout);
         }
