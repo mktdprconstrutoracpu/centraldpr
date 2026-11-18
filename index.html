@@ -3528,6 +3528,18 @@
           <button class="auth-enviar" type="submit" id="btCadastrar">Criar conta</button>
         </form>
 
+        <!-- (18/11/2026) CODIGO DO E-MAIL: o cadastro manda um codigo; o acesso so abre com ele -->
+        <form id="formCodigo" hidden autocomplete="off" novalidate>
+          <p class="auth-explica">Enviamos um código para <b id="codigoEmail"></b>. Digite abaixo para confirmar seu e-mail e liberar o seu acesso. Se não chegar, olhe também o spam.</p>
+          <div class="auth-campo">
+            <label for="codigo">Código</label>
+            <input type="text" id="codigo" name="one-time-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" required>
+          </div>
+          <button class="auth-enviar" type="submit" id="btCodigo">Confirmar código</button>
+          <button class="auth-link" type="button" id="linkReenviar">Reenviar código</button>
+          <button class="auth-link" type="button" id="linkCodigoVoltar">Voltar para o login</button>
+        </form>
+
         <div class="auth-recado" id="authRecado" role="status" aria-live="polite"></div>
         </div><!-- /auth-corpo -->
       </div>
@@ -4070,11 +4082,13 @@
         async function carregarExtrato(nome) {
             $$('welcomeSub').textContent = 'Carregando seu extrato...';
             try {
-                // 1. Pede o vínculo. A função procura a casa PELO NOME por dentro do
-                //    banco e cria o pedido como pendente. Chamada SEMPRE: é idempotente
-                //    (não cria pedido repetido) e cobre o caso de a casa ter entrado no
-                //    sistema depois de a pessoa já ter se cadastrado.
-                await sb.rpc('solicitar_acesso', { p_nome: nome });
+                // 1. (18/11/2026) Liga a pessoa às casas PELO E-MAIL da conta, já confirmado
+                //    pelo código: a função (sql/005) acha toda casa com esse e-mail na
+                //    ficha (comprador ou cônjuge) e cria o vínculo já APROVADO. Chamada
+                //    SEMPRE (idempotente): cobre a casa que entra depois do cadastro.
+                //    Enquanto o 005 não roda no banco, cai no pedido antigo pelo nome.
+                const porEmail = await sb.rpc('liberar_por_email');
+                if (porEmail.error) await sb.rpc('solicitar_acesso', { p_nome: nome });
 
                 // 2. Lê as casas DOS VÍNCULOS APROVADOS DA PRÓPRIA PESSOA.
                 //    (17/11) Antes confiava só no RLS. Mas quem também é da equipe
@@ -4118,9 +4132,9 @@
                         // ⚠️ NÃO dizemos se existe imóvel com nome parecido. Confirmar
                         // isso deixaria descobrir compradores por tentativa e erro.
                         mostrarAviso(
-                            'Não encontramos um imóvel no seu nome',
-                            'Confira se o nome do seu cadastro está igual ao do contrato. '
-                            + 'Se estiver certo, fale com a DPR para liberarem seu acesso.'
+                            'Não encontramos um imóvel com o seu e-mail',
+                            'O acesso é liberado pelo e-mail cadastrado no seu contrato. '
+                            + 'Fale com a DPR para conferir o e-mail que está na sua ficha.'
                         );
                     }
                     return;
@@ -4964,6 +4978,8 @@
             if (m.includes('password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.';
             if (m.includes('unable to validate email') || m.includes('invalid email')) return 'E-mail inválido.';
             if (m.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar. Verifique a caixa de entrada e o spam.';
+            if (m.includes('token has expired') || m.includes('otp') || m.includes('invalid token') || m.includes('token is invalid')) return 'Código errado ou vencido. Confira os números ou peça um novo.';
+            if (m.includes('for security purposes') || m.includes('seconds')) return 'Aguarde um minuto antes de pedir outro código.';
             if (m.includes('rate limit') || m.includes('too many')) return 'Muitas tentativas. Aguarde alguns minutos.';
             if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Sem conexão com o servidor. Tente novamente.';
             return 'Não foi possível concluir. Tente novamente.';
@@ -4994,7 +5010,8 @@
                 entrar:    $$('formEntrar'),
                 cadastro:  $$('formCadastro'),
                 esqueci:   $$('formEsqueci'),
-                novaSenha: $$('formNovaSenha')
+                novaSenha: $$('formNovaSenha'),
+                codigo:    $$('formCodigo')
             };
             Object.keys(telas).forEach((k) => { telas[k].hidden = (k !== qual); });
 
@@ -5151,11 +5168,67 @@
                 if (error) throw error;
                 abrirCentral(data.user);
             } catch (e) {
-                mostrarRecado(traduzirErro(e.message), 'erro');
+                // (18/11) conta criada mas sem o código digitado: manda um código novo e abre a tela dele
+                if (/email not confirmed/i.test(String(e && e.message))) {
+                    const email = $$('entrarEmail').value.trim().toLowerCase();
+                    try { await sb.auth.resend({ type: 'signup', email }); } catch (e2) { /* a tela do código tem o "Reenviar" */ }
+                    abrirCodigo(email, 'Seu e-mail ainda não foi confirmado. Enviamos um código novo.');
+                } else {
+                    mostrarRecado(traduzirErro(e.message), 'erro');
+                }
             } finally {
                 bt.disabled = false; bt.textContent = 'Entrar';
             }
         });
+
+        // (18/11/2026) A TELA DO CÓDIGO. O cadastro manda um código para o e-mail (modelo
+        // "Confirm signup" do Supabase com {{ .Token }}); só com ele a conta é confirmada,
+        // a sessão abre e a Central liga as casas daquele e-mail.
+        let emailDoCodigo = '';
+        let reenvioLivreEm = 0;
+        function abrirCodigo(email, recado) {
+            emailDoCodigo = email;
+            $$('codigoEmail').textContent = email;
+            $$('codigo').value = '';
+            overlay.hidden = false;
+            mostrarTela('codigo');
+            if (recado) mostrarRecado(recado, 'certo');
+            reenvioLivreEm = Date.now() + 60000;
+            $$('codigo').focus();
+        }
+        $$('codigo').addEventListener('input', () => { $$('codigo').value = $$('codigo').value.replace(/\D/g, '').slice(0, 10); });
+        $$('formCodigo').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            limparRecado();
+            const token = $$('codigo').value.trim();
+            if (!/^\d{6,10}$/.test(token)) { mostrarRecado('Digite os números do código que chegou no e-mail.', 'erro'); return; }
+            const bt = $$('btCodigo');
+            bt.disabled = true; bt.textContent = 'Confirmando...';
+            try {
+                const { data, error } = await sb.auth.verifyOtp({ email: emailDoCodigo, token, type: 'signup' });
+                if (error) throw error;
+                if (!data || !data.user) throw new Error('otp');
+                abrirCentral(data.user);
+            } catch (e) {
+                mostrarRecado(traduzirErro(e.message), 'erro');
+            } finally {
+                bt.disabled = false; bt.textContent = 'Confirmar código';
+            }
+        });
+        $$('linkReenviar').addEventListener('click', async () => {
+            limparRecado();
+            const falta = Math.ceil((reenvioLivreEm - Date.now()) / 1000);
+            if (falta > 0) { mostrarRecado('Aguarde ' + falta + ' s para pedir outro código.', 'erro'); return; }
+            try {
+                const { error } = await sb.auth.resend({ type: 'signup', email: emailDoCodigo });
+                if (error) throw error;
+                reenvioLivreEm = Date.now() + 60000;
+                mostrarRecado('Código novo enviado para ' + emailDoCodigo + '.', 'certo');
+            } catch (e) {
+                mostrarRecado(traduzirErro(e.message), 'erro');
+            }
+        });
+        $$('linkCodigoVoltar').addEventListener('click', () => mostrarTela('entrar'));
 
         $$('formCadastro').addEventListener('submit', async (ev) => {
             ev.preventDefault();
@@ -5183,8 +5256,8 @@
                 if (data.session) {
                     abrirCentral(data.user);
                 } else {
-                    mostrarRecado('Conta criada. Confirme o e-mail que enviamos para poder entrar.', 'certo');
-                    trocarAba('entrar');
+                    // (18/11) a confirmação está ligada: o e-mail leva um código, e a tela dele abre aqui
+                    abrirCodigo($$('cadEmail').value.trim().toLowerCase(), 'Conta criada. Enviamos um código para o seu e-mail.');
                 }
             } catch (e) {
                 mostrarRecado(traduzirErro(e.message), 'erro');
