@@ -354,6 +354,8 @@
         }
         .auth-link:hover { color: var(--primary); }
 
+        /* (18/11/2026, tarde) a ajuda embaixo do botao de entrar */
+        .auth-explica.auth-ajuda { margin: 16px 0 0; font-size: 12.5px; text-align: center; }
         .auth-explica {
             font-size: 13px;
             line-height: 1.5;
@@ -3463,39 +3465,24 @@
              conta e quem esta chegando. Cada botao abre a tela certa; "Voltar"
              traz a escolha de volta. Quem chega pelo link de senha pula a escolha
              (mostrarTela abre o corpo sozinho). -->
-        <div class="auth-escolha" id="authEscolha">
-          <button type="button" class="auth-opcao" id="opcaoEntrar">
-            <span class="auth-opcao-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20.5v-9l8-6 8 6v9"/><path d="M9.5 20.5v-6h5v6"/></svg></span>
-            <span class="auth-opcao-texto"><strong>Já sou cliente</strong><span>Entrar com e-mail e senha</span></span>
-            <span class="auth-opcao-seta" aria-hidden="true">&#8250;</span>
-          </button>
-          <button type="button" class="auth-opcao" id="opcaoCadastro">
-            <span class="auth-opcao-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5v15M4.5 12h15"/></svg></span>
-            <span class="auth-opcao-texto"><strong>Primeiro acesso</strong><span>Criar a minha conta</span></span>
-            <span class="auth-opcao-seta" aria-hidden="true">&#8250;</span>
-          </button>
-        </div>
-
-        <div class="auth-corpo" id="authCorpo" hidden>
-        <button type="button" class="auth-voltar" id="authVoltar">&#8249; Voltar</button>
-
-        <div class="auth-abas" role="tablist">
-          <button class="auth-aba" id="abaEntrar"   role="tab" aria-selected="true"  type="button">Entrar</button>
-          <button class="auth-aba" id="abaCadastro" role="tab" aria-selected="false" type="button">Criar conta</button>
-        </div>
+        <!-- (18/11/2026, tarde) LOGIN POR E-MAIL + CPF: o CPF e a senha. Nao ha mais cadastro nem codigo:
+             a conta nasce no primeiro login, se o e-mail e o CPF baterem com uma casa do Financeiro
+             (api/entrar-cpf.js). A escolha "Ja sou cliente / Primeiro acesso" e as abas sairam. -->
+        <div class="auth-corpo" id="authCorpo">
 
         <!-- ENTRAR -->
-        <form id="formEntrar" autocomplete="on">
+        <form id="formEntrar" autocomplete="on" novalidate>
+          <p class="auth-explica">Entre com o e-mail e o CPF cadastrados na DPR.</p>
           <div class="auth-campo">
             <label for="entrarEmail">E-mail</label>
             <input type="email" id="entrarEmail" name="email" autocomplete="email" required>
           </div>
           <div class="auth-campo">
-            <label for="entrarSenha">Senha</label>
-            <input type="password" id="entrarSenha" name="password" autocomplete="current-password" required>
+            <label for="entrarCpf">CPF</label>
+            <input type="password" id="entrarCpf" name="password" autocomplete="current-password" inputmode="numeric" placeholder="Só os números" maxlength="14" required>
           </div>
           <button class="auth-enviar" type="submit" id="btEntrar">Entrar</button>
-          <button class="auth-link" type="button" id="linkEsqueci">Esqueci minha senha</button>
+          <p class="auth-explica auth-ajuda">E-mail ou CPF não conferem? Fale com a DPR para conferir o seu cadastro.</p>
         </form>
 
         <!-- PEDIR O LINK DE REDEFINICAO -->
@@ -3521,37 +3508,6 @@
             <input type="password" id="novaSenha2" name="new-password" autocomplete="new-password" minlength="6" required>
           </div>
           <button class="auth-enviar" type="submit" id="btNovaSenha">Salvar senha</button>
-        </form>
-
-        <!-- CRIAR CONTA -->
-        <form id="formCadastro" hidden autocomplete="on">
-          <div class="auth-campo">
-            <label for="cadNome">Nome completo</label>
-            <input type="text" id="cadNome" name="name" autocomplete="name" required>
-          </div>
-          <div class="auth-campo">
-            <label for="cadEmail">E-mail</label>
-            <input type="email" id="cadEmail" name="email" autocomplete="email" required>
-          </div>
-          <div class="auth-campo">
-            <label for="cadSenha">Senha</label>
-            <!-- minlength 6 e o minimo que o Supabase aceita; avisar aqui evita
-                 a pessoa descobrir pelo erro em ingles que vem do servidor. -->
-            <input type="password" id="cadSenha" name="new-password" autocomplete="new-password" minlength="6" required>
-          </div>
-          <button class="auth-enviar" type="submit" id="btCadastrar">Criar conta</button>
-        </form>
-
-        <!-- (18/11/2026) CODIGO DO E-MAIL: o cadastro manda um codigo; o acesso so abre com ele -->
-        <form id="formCodigo" hidden autocomplete="off" novalidate>
-          <p class="auth-explica">Enviamos um código para <b id="codigoEmail"></b>. Digite abaixo para confirmar seu e-mail e liberar o seu acesso. Se não chegar, olhe também o spam.</p>
-          <div class="auth-campo">
-            <label for="codigo">Código</label>
-            <input type="text" id="codigo" name="one-time-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" required>
-          </div>
-          <button class="auth-enviar" type="submit" id="btCodigo">Confirmar código</button>
-          <button class="auth-link" type="button" id="linkReenviar">Reenviar código</button>
-          <button class="auth-link" type="button" id="linkCodigoVoltar">Voltar para o login</button>
         </form>
 
         <div class="auth-recado" id="authRecado" role="status" aria-live="polite"></div>
@@ -4993,7 +4949,7 @@
         // credentials"). Traduzidas para o que a pessoa precisa fazer.
         function traduzirErro(msg) {
             const m = String(msg || '').toLowerCase();
-            if (m.includes('invalid login credentials')) return 'E-mail ou senha incorretos.';
+            if (m.includes('invalid login credentials')) return 'E-mail ou CPF não conferem com nenhum cadastro da DPR.';
             if (m.includes('already registered') || m.includes('already been registered')) return 'Este e-mail já tem cadastro. Use a aba "Entrar".';
             if (m.includes('password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.';
             if (m.includes('unable to validate email') || m.includes('invalid email')) return 'E-mail inválido.';
@@ -5016,39 +4972,19 @@
             const cartao = document.querySelector('.auth-card');
             if (cartao) { cartao.classList.add('aberto'); cartao.scrollTop = 0; }
         }
-        function voltarEscolhaAuth() {
-            limparRecado();
-            if ($$('authCorpo')) $$('authCorpo').hidden = true;
-            if ($$('authEscolha')) $$('authEscolha').hidden = false;
-            const cartao = document.querySelector('.auth-card');
-            if (cartao) cartao.classList.remove('aberto');
-        }
+        // (18/11/2026, tarde) sobraram tres telas: entrar (e-mail + CPF) e as duas dos links antigos de
+        // senha que ainda podem estar na caixa de alguem (pedir link de novo / senha nova).
         function mostrarTela(qual) {
             limparRecado();
             abrirCorpoAuth();
             const telas = {
                 entrar:    $$('formEntrar'),
-                cadastro:  $$('formCadastro'),
                 esqueci:   $$('formEsqueci'),
-                novaSenha: $$('formNovaSenha'),
-                codigo:    $$('formCodigo')
+                novaSenha: $$('formNovaSenha')
             };
             Object.keys(telas).forEach((k) => { telas[k].hidden = (k !== qual); });
-
-            const ehAba = (qual === 'entrar' || qual === 'cadastro');
-            document.querySelector('.auth-abas').hidden = !ehAba;
-            $$('abaEntrar').setAttribute('aria-selected', String(qual === 'entrar'));
-            $$('abaCadastro').setAttribute('aria-selected', String(qual === 'cadastro'));
         }
-        $$('abaEntrar').addEventListener('click', () => mostrarTela('entrar'));
-        $$('abaCadastro').addEventListener('click', () => mostrarTela('cadastro'));
-        $$('linkEsqueci').addEventListener('click', () => mostrarTela('esqueci'));
         $$('linkVoltar').addEventListener('click', () => mostrarTela('entrar'));
-        if ($$('opcaoEntrar')) {
-            $$('opcaoEntrar').addEventListener('click', () => { mostrarTela('entrar'); $$('entrarEmail').focus(); });
-            $$('opcaoCadastro').addEventListener('click', () => { mostrarTela('cadastro'); $$('cadNome').focus(); });
-            $$('authVoltar').addEventListener('click', voltarEscolhaAuth);
-        }
 
         // (14/10) A CENA da entrada: seis imagens do projeto, uma por vez, 6,5 s cada,
         // com o nome do ambiente e os pontos. Para com a aba escondida ou com o
@@ -5194,111 +5130,36 @@
             limparRecado();
             const bt = $$('btEntrar');
             bt.disabled = true; bt.textContent = 'Entrando...';
+            // (18/11/2026, tarde) e-mail + CPF. Tenta entrar direto; se a conta ainda nao existe (ou tinha
+            // outra senha), pede ao servidor para preparar o acesso, que so acontece se o e-mail e o CPF
+            // baterem com uma casa do Financeiro, e entra de novo.
+            const email = $$('entrarEmail').value.trim().toLowerCase();
+            const cpf = $$('entrarCpf').value.replace(/\D/g, '');
             try {
-                const { data, error } = await sb.auth.signInWithPassword({
-                    email: $$('entrarEmail').value.trim().toLowerCase(),
-                    password: $$('entrarSenha').value
-                });
-                if (error) throw error;
-                abrirCentral(data.user);
-            } catch (e) {
-                // (18/11) conta criada mas sem o código digitado: manda um código novo e abre a tela dele
-                if (/email not confirmed/i.test(String(e && e.message))) {
-                    const email = $$('entrarEmail').value.trim().toLowerCase();
-                    try { await sb.auth.resend({ type: 'signup', email }); } catch (e2) { /* a tela do código tem o "Reenviar" */ }
-                    abrirCodigo(email, 'Seu e-mail ainda não foi confirmado. Enviamos um código novo.');
-                } else {
-                    mostrarRecado(traduzirErro(e.message), 'erro');
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $$('entrarEmail').focus(); throw new Error('Confira o e-mail.'); }
+                if (!cpfValido(cpf)) { $$('entrarCpf').focus(); throw new Error('Confira o CPF: digite os 11 números.'); }
+                let r = await sb.auth.signInWithPassword({ email, password: cpf });
+                if (r.error) {
+                    if (/rate limit|too many|failed to fetch|networkerror/i.test(r.error.message || '')) throw new Error(traduzirErro(r.error.message));
+                    const resp = await fetch('/api/entrar-cpf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, cpf }) });
+                    let corpo = {}; try { corpo = await resp.json(); } catch (e2) { corpo = {}; }
+                    if (!resp.ok) throw new Error(corpo.erro || 'Não foi possível entrar agora. Tente de novo em instantes.');
+                    r = await sb.auth.signInWithPassword({ email, password: cpf });
+                    if (r.error) throw new Error(traduzirErro(r.error.message));
                 }
+                abrirCentral(r.data.user);
+            } catch (e) {
+                mostrarRecado(e.message, 'erro');
             } finally {
                 bt.disabled = false; bt.textContent = 'Entrar';
             }
         });
-
-        // (18/11/2026) A TELA DO CÓDIGO. O cadastro manda um código para o e-mail (modelo
-        // "Confirm signup" do Supabase com {{ .Token }}); só com ele a conta é confirmada,
-        // a sessão abre e a Central liga as casas daquele e-mail.
-        let emailDoCodigo = '';
-        let reenvioLivreEm = 0;
-        function abrirCodigo(email, recado) {
-            emailDoCodigo = email;
-            $$('codigoEmail').textContent = email;
-            $$('codigo').value = '';
-            overlay.hidden = false;
-            mostrarTela('codigo');
-            if (recado) mostrarRecado(recado, 'certo');
-            reenvioLivreEm = Date.now() + 60000;
-            $$('codigo').focus();
+        // CPF: digitos verificadores (o mesmo calculo do Financeiro e do api/entrar-cpf.js)
+        function cpfValido(s) {
+            if (!/^\d{11}$/.test(s) || /^(\d)\1{10}$/.test(s)) return false;
+            const dv = (n) => { let t = 0; for (let i = 0; i < n; i++) t += Number(s[i]) * (n + 1 - i); const r = (t * 10) % 11; return r === 10 ? 0 : r; };
+            return dv(9) === Number(s[9]) && dv(10) === Number(s[10]);
         }
-        $$('codigo').addEventListener('input', () => { $$('codigo').value = $$('codigo').value.replace(/\D/g, '').slice(0, 10); });
-        $$('formCodigo').addEventListener('submit', async (ev) => {
-            ev.preventDefault();
-            limparRecado();
-            const token = $$('codigo').value.trim();
-            if (!/^\d{6,10}$/.test(token)) { mostrarRecado('Digite os números do código que chegou no e-mail.', 'erro'); return; }
-            const bt = $$('btCodigo');
-            bt.disabled = true; bt.textContent = 'Confirmando...';
-            try {
-                const { data, error } = await sb.auth.verifyOtp({ email: emailDoCodigo, token, type: 'signup' });
-                if (error) throw error;
-                if (!data || !data.user) throw new Error('otp');
-                abrirCentral(data.user);
-            } catch (e) {
-                mostrarRecado(traduzirErro(e.message), 'erro');
-            } finally {
-                bt.disabled = false; bt.textContent = 'Confirmar código';
-            }
-        });
-        $$('linkReenviar').addEventListener('click', async () => {
-            limparRecado();
-            const falta = Math.ceil((reenvioLivreEm - Date.now()) / 1000);
-            if (falta > 0) { mostrarRecado('Aguarde ' + falta + ' s para pedir outro código.', 'erro'); return; }
-            try {
-                const { error } = await sb.auth.resend({ type: 'signup', email: emailDoCodigo });
-                if (error) throw error;
-                reenvioLivreEm = Date.now() + 60000;
-                mostrarRecado('Código novo enviado para ' + emailDoCodigo + '.', 'certo');
-            } catch (e) {
-                mostrarRecado(traduzirErro(e.message), 'erro');
-            }
-        });
-        $$('linkCodigoVoltar').addEventListener('click', () => mostrarTela('entrar'));
-
-        $$('formCadastro').addEventListener('submit', async (ev) => {
-            ev.preventDefault();
-            limparRecado();
-            const bt = $$('btCadastrar');
-            bt.disabled = true; bt.textContent = 'Criando...';
-            try {
-                const nome = $$('cadNome').value.trim();
-                // ⚠️ O nome vai em user_metadata, NÃO numa tabela. Por enquanto ele
-                // só preenche a saudação do painel, e assim não há tabela nem RLS
-                // para configurar errado no primeiro dia. Quando entrar dado real do
-                // cliente (unidade, contrato), aí sim precisa de tabela própria com
-                // RLS — user_metadata é editável pelo próprio usuário e não serve
-                // para nada que precise ser confiável.
-                const { data, error } = await sb.auth.signUp({
-                    email: $$('cadEmail').value.trim().toLowerCase(),
-                    password: $$('cadSenha').value,
-                    options: { data: { nome } }
-                });
-                if (error) throw error;
-
-                // Sem confirmação de e-mail, o Supabase já devolve sessão e a pessoa
-                // entra direto. Se a confirmação for ligada no painel, `session` vem
-                // nula — e aí o certo é avisar, não deixar a tela parada.
-                if (data.session) {
-                    abrirCentral(data.user);
-                } else {
-                    // (18/11) a confirmação está ligada: o e-mail leva um código, e a tela dele abre aqui
-                    abrirCodigo($$('cadEmail').value.trim().toLowerCase(), 'Conta criada. Enviamos um código para o seu e-mail.');
-                }
-            } catch (e) {
-                mostrarRecado(traduzirErro(e.message), 'erro');
-            } finally {
-                bt.disabled = false; bt.textContent = 'Criar conta';
-            }
-        });
 
         // ⚠️ Agora encerra a sessão NO SUPABASE também. Antes só limpava o
         // localStorage — com o SDK, a sessão sobrevive ao reload e a pessoa
