@@ -3417,6 +3417,7 @@
 
         /* (18/11/2026) FAIXA DA EQUIPE: a Central aberta pelo backoffice de clientes */
         .faixa-equipe { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 8px 16px; background: #15161a; color: #fff; font-size: 13.5px; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); border-bottom: 3px solid #e10600; }
+        .faixa-equipe[hidden] { display: none; }   /* (20/11/2026) o display: flex acima anulava o hidden: todo cliente via a faixa */
         .faixa-equipe b { font-weight: 700; }
         .faixa-equipe button { appearance: none; border: 1.5px solid #fff; background: transparent; color: #fff; border-radius: 999px; min-height: 32px; padding: 0 14px; font: inherit; font-weight: 700; cursor: pointer; }
         .faixa-equipe button:hover { background: #fff; color: #15161a; }
