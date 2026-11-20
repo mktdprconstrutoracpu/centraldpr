@@ -3467,7 +3467,13 @@
         .ana-painel .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .ana-botao { position: fixed; right: 24px; bottom: 24px; z-index: 1500; align-items: center; gap: 10px; min-height: 52px; padding: 0 20px 0 16px; border: 0; border-radius: 999px; background: #15161a; color: #fff; font: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; box-shadow: 0 12px 30px rgba(15, 16, 19, .28); transition: transform .2s, background .2s; }
         .ana-botao svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-        .ana-botao::before { content: ''; position: absolute; top: 9px; left: 32px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent, #e10600); border: 2px solid #15161a; }
+        /* (20/11) a bolinha vermelha so aparece quando a equipe respondeu e o chat esta fechado */
+        .ana-botao::before { content: ''; display: none; position: absolute; top: 9px; left: 32px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent, #e10600); border: 2px solid #15161a; }
+        .ana-botao.novidade::before { display: block; }
+        .ana-msg.equipe { align-self: flex-start; background: #fff; color: #17181b; border-bottom-left-radius: 6px; box-shadow: inset 3px 0 0 var(--accent, #e10600), 0 1px 2px rgba(15, 16, 19, .06); }
+        .ana-msg .ana-autor { display: block; margin-bottom: 3px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent, #e10600); }
+        .ana-msg.aviso { align-self: center; max-width: 92%; padding: 6px 12px; background: rgba(23, 24, 27, .06); color: #55575e; font-size: 12.5px; text-align: center; }
+        .ana-sugestao.equipe { border-color: var(--accent, #e10600); color: var(--accent, #e10600); }
         .ana-botao:hover { transform: translateY(-2px); background: #22242a; }
         .ana-botao:focus-visible, .ana-fechar:focus-visible, .ana-enviar:focus-visible, .ana-sugestao:focus-visible { outline: 2px solid var(--accent, #e10600); outline-offset: 3px; }
         .ana-painel { position: fixed; right: 24px; bottom: 24px; z-index: 1600; width: min(400px, calc(100vw - 32px)); height: min(640px, calc(100vh - 48px)); flex-direction: column; background: #f7f5f1; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(15, 16, 19, .3); }
@@ -3679,8 +3685,9 @@
              esse menu, esses ícones"): recibo, prédios, estrela e três traços.
              Os mesmos desenhos estão na lateral, para a casa ser uma só. -->
         <!-- (20/11/2026) A "ANA, DA DPR": assistente de duvidas, so para quem esta logado.
-             Conversa pela funcao api/assistente.js (roteiro em api/_ana.js); historico e
-             duvidas encaminhadas nas tabelas do sql/006_assistente.sql. -->
+             Sem IA paga: responde pelo roteiro em codigo (api/_roteiro.js) pela funcao
+             api/assistente.js; a equipe acompanha, pausa e responde no backoffice de clientes
+             (aba Conversas). Tabelas: sql/006_assistente.sql e sql/007_chat_roteiro.sql. -->
         <button type="button" class="ana-botao" id="anaBotao" aria-label="Abrir a conversa com a Ana, assistente da DPR" aria-expanded="false" aria-controls="anaPainel">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10H9.5L5.5 19v-3.5H4z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>
             <span>Dúvidas? Fale com a Ana</span>
@@ -3698,7 +3705,7 @@
                 <textarea id="anaTexto" rows="1" maxlength="1000" placeholder="Escreva sua dúvida"></textarea>
                 <button type="submit" class="ana-enviar" id="anaEnviar" aria-label="Enviar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
             </form>
-            <p class="ana-aviso">A Ana responde com base nos dados da sua casa. O que ela não souber, encaminha para a equipe da DPR.</p>
+            <p class="ana-aviso">A Ana responde com base nos dados da sua casa. A equipe da DPR acompanha as conversas e responde por aqui.</p>
         </section>
 
         <nav class="barra-cel" id="barraCel" aria-label="Menu principal">
@@ -5558,43 +5565,88 @@
             await carregarTrocaEmail();
         });
 
-        // --- (20/11/2026) A ANA, DA DPR: a conversa com a assistente ---
-        // O historico vem direto da tabela (cada um le so o seu, pela RLS do sql/006); a resposta
-        // vem da funcao api/assistente.js, que confere o login e le os dados da casa no servidor.
-        const ANA_SUGESTOES = ['Quando vence minha parcela?', 'Onde pego o boleto?', 'Como está a obra?', 'Quanto falta pagar?', 'Tem INCC?'];
-        let anaCarregou = false, anaEsperando = false;
+        // --- (20/11/2026) A ANA, DA DPR: o chat da Central, sem IA paga ---
+        // A resposta vem da funcao api/assistente.js, que responde pelo roteiro em codigo (api/_roteiro.js)
+        // com os dados da casa, ou so registra quando a equipe pausou o robo. O historico vem direto da
+        // tabela (cada um le so o seu, pela RLS); a cada 15 s com o chat aberto (60 s fechado) a pagina
+        // procura mensagens novas, para a resposta da equipe aparecer sem recarregar.
+        // Os botoes tem que bater com os assuntos do roteiro (api/_roteiro.js, campo "botao").
+        const ANA_ASSUNTOS = ['Próxima parcela', 'Boleto', 'Saldo devedor', 'Obra', 'Entrega', 'Financiamento', 'INCC', 'Documentos', 'Escritura', 'Endereço', 'Projeto', 'Meu acesso'];
+        const ANA_PAUSADO = 'A equipe da DPR está acompanhando sua conversa e vai responder por aqui.';
+        let anaCarregou = false, anaEsperando = false, anaUltimoId = 0, anaAvisouPausa = false, anaRelogio = null;
+        const anaVistoChave = () => 'anaVisto:' + ((window.__anaUser && window.__anaUser.id) || '');
+        function anaLerVisto() { try { return Number(localStorage.getItem(anaVistoChave()) || 0); } catch (e) { return 0; } }
+        function anaGravarVisto(id) { try { if (id > anaLerVisto()) localStorage.setItem(anaVistoChave(), String(id)); } catch (e) { /* sem armazenamento: so perde a bolinha */ } }
         function anaTextoHtml(t) {
             return escTroca(t).replace(/(https:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, '<br>');
         }
         function anaBalao(papel, texto, extra) {
             const d = document.createElement('div');
             d.className = 'ana-msg ' + papel;
-            d.innerHTML = anaTextoHtml(texto) + (extra ? '<span class="ana-selo">' + escTroca(extra) + '</span>' : '');
+            d.innerHTML = (papel === 'equipe' ? '<span class="ana-autor">Equipe DPR</span>' : '') + anaTextoHtml(texto) + (extra ? '<span class="ana-selo">' + escTroca(extra) + '</span>' : '');
             $$('anaLista').appendChild(d);
             $$('anaLista').scrollTop = $$('anaLista').scrollHeight;
             return d;
         }
-        function anaSugestoes(mostrar) {
-            $$('anaSugestoes').innerHTML = mostrar ? ANA_SUGESTOES.map((s) => '<button type="button" class="ana-sugestao">' + escTroca(s) + '</button>').join('') : '';
+        function anaMostrarMensagem(m) {
+            if (m.id) anaUltimoId = Math.max(anaUltimoId, m.id);
+            anaBalao(m.papel === 'cliente' ? 'cliente' : m.papel === 'equipe' ? 'equipe' : 'ana', m.texto);
+        }
+        function anaDesenharAssuntos() {
+            $$('anaSugestoes').innerHTML = '<button type="button" class="ana-sugestao equipe" data-equipe>Falar com a equipe</button>'
+                + ANA_ASSUNTOS.map((s) => '<button type="button" class="ana-sugestao">' + escTroca(s) + '</button>').join('');
         }
         function anaBoasVindas() {
             const nome = String(localStorage.getItem('userName') || '').trim().split(/\s+/)[0] || '';
             const primeiro = nome && !/@/.test(nome) ? nomeBonito(nome) : '';
-            anaBalao('ana', (primeiro ? 'Olá, ' + primeiro + '! ' : 'Olá! ') + 'Eu sou a Ana, assistente da DPR. Posso ajudar com suas parcelas, o boleto, o financiamento e a obra. O que você quer saber?');
+            anaBalao('ana', (primeiro ? 'Olá, ' + primeiro + '! ' : 'Olá! ') + 'Eu sou a Ana, assistente da DPR. Escolha um assunto abaixo ou escreva sua dúvida.');
+        }
+        async function anaToken() {
+            const { data } = await sb.auth.getSession();
+            window.__anaUser = data && data.session ? data.session.user : null;
+            return data && data.session ? data.session.access_token : '';
+        }
+        // mensagens novas desde a ultima mostrada (resposta da equipe, ou de outro aparelho)
+        async function anaBuscarNovas() {
+            if (anaEsperando || !anaCarregou) return;
+            const { data, error } = await sb.from('assistente_mensagens').select('id, papel, texto, criado_em').gt('id', anaUltimoId).order('id', { ascending: true }).limit(50);
+            if (error || !data || !data.length || anaEsperando) return;
+            data.forEach(anaMostrarMensagem);
+            if (!$$('anaPainel').hidden) anaGravarVisto(anaUltimoId);
+        }
+        // com o chat fechado: a equipe respondeu algo que a pessoa ainda nao viu? acende a bolinha
+        async function anaVerNovidade() {
+            if (!document.body.classList.contains('logado') || !$$('anaPainel').hidden) return;
+            await anaToken();
+            if (!window.__anaUser) return;
+            const { data, error } = await sb.from('assistente_mensagens').select('id').eq('papel', 'equipe').gt('id', anaLerVisto()).order('id', { ascending: false }).limit(1);
+            const tem = !error && data && data.length > 0;
+            $$('anaBotao').classList.toggle('novidade', tem);
+            $$('anaBotao').setAttribute('aria-label', tem ? 'Abrir a conversa: a equipe da DPR respondeu' : 'Abrir a conversa com a Ana, assistente da DPR');
+        }
+        function anaRitmo() {
+            clearInterval(anaRelogio);
+            anaRelogio = setInterval(() => { if ($$('anaPainel').hidden) anaVerNovidade(); else anaBuscarNovas(); }, $$('anaPainel').hidden ? 60000 : 15000);
         }
         async function anaAbrir() {
             $$('anaPainel').hidden = false;
             document.body.classList.add('ana-aberta');
             $$('anaBotao').setAttribute('aria-expanded', 'true');
+            $$('anaBotao').classList.remove('novidade');
+            anaDesenharAssuntos();
             if (!anaCarregou) {
-                anaCarregou = true;
+                await anaToken();
                 $$('anaLista').innerHTML = '';
-                const { data, error } = await sb.from('assistente_mensagens').select('papel, texto, criado_em').order('criado_em', { ascending: false }).limit(30);
+                const { data, error } = await sb.from('assistente_mensagens').select('id, papel, texto, criado_em').order('id', { ascending: false }).limit(40);
                 const hist = !error && data ? data.slice().reverse() : [];
-                if (hist.length) hist.forEach((m) => anaBalao(m.papel === 'cliente' ? 'cliente' : 'ana', m.texto));
+                if (hist.length) hist.forEach(anaMostrarMensagem);
                 else anaBoasVindas();
-                anaSugestoes(hist.length === 0);
+                anaCarregou = true;
+            } else {
+                await anaBuscarNovas();
             }
+            anaGravarVisto(anaUltimoId);
+            anaRitmo();
             setTimeout(() => $$('anaTexto').focus(), 50);
         }
         function anaFechar() {
@@ -5602,32 +5654,37 @@
             document.body.classList.remove('ana-aberta');
             $$('anaBotao').setAttribute('aria-expanded', 'false');
             $$('anaBotao').focus();
+            anaRitmo();
         }
-        async function anaEnviar(texto) {
-            texto = String(texto || '').trim();
+        // texto = o que o cliente escreveu; equipe = true quando tocou em "Falar com a equipe"
+        async function anaEnviar(texto, equipe) {
+            texto = equipe ? 'Quero falar com a equipe da DPR.' : String(texto || '').trim();
             if (!texto || anaEsperando) return;
             anaEsperando = true; $$('anaEnviar').disabled = true;
-            anaSugestoes(false);
             anaBalao('cliente', texto);
-            $$('anaTexto').value = ''; $$('anaTexto').style.height = '';
+            if (!equipe) { $$('anaTexto').value = ''; $$('anaTexto').style.height = ''; }
             const digitando = document.createElement('div');
             digitando.className = 'ana-digitando'; digitando.setAttribute('aria-label', 'A Ana está escrevendo');
             digitando.innerHTML = '<i></i><i></i><i></i>';
             $$('anaLista').appendChild(digitando); $$('anaLista').scrollTop = $$('anaLista').scrollHeight;
             try {
-                const { data } = await sb.auth.getSession();
-                const token = data && data.session ? data.session.access_token : '';
-                const r = await fetch('/api/assistente', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ mensagem: texto }) });
+                const token = await anaToken();
+                const r = await fetch('/api/assistente', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(equipe ? { acao: 'equipe' } : { mensagem: texto }) });
                 let corpo = {}; try { corpo = await r.json(); } catch (e) { corpo = {}; }
                 digitando.remove();
                 if (!r.ok) anaBalao('erro', corpo.erro || 'Não consegui responder agora. Tente de novo em instantes.');
-                else anaBalao('ana', corpo.resposta || '', corpo.encaminhada ? 'Dúvida encaminhada à equipe da DPR' : '');
+                else {
+                    (corpo.ids || []).forEach((id) => { anaUltimoId = Math.max(anaUltimoId, id); });
+                    anaGravarVisto(anaUltimoId);
+                    if (corpo.resposta) { anaBalao('ana', corpo.resposta, corpo.encaminhada ? 'Dúvida encaminhada à equipe da DPR' : ''); anaAvisouPausa = false; }
+                    else if (corpo.pausado && !anaAvisouPausa) { anaBalao('aviso', ANA_PAUSADO); anaAvisouPausa = true; }
+                }
             } catch (e) {
                 digitando.remove();
                 anaBalao('erro', 'Sem conexão. Confira a internet e tente de novo.');
             }
             anaEsperando = false; $$('anaEnviar').disabled = false;
-            $$('anaTexto').focus();
+            if (!equipe) $$('anaTexto').focus();
         }
         $$('anaBotao').addEventListener('click', anaAbrir);
         $$('anaFechar').addEventListener('click', anaFechar);
@@ -5635,7 +5692,11 @@
         $$('anaForm').addEventListener('submit', (ev) => { ev.preventDefault(); anaEnviar($$('anaTexto').value); });
         $$('anaTexto').addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); anaEnviar($$('anaTexto').value); } });
         $$('anaTexto').addEventListener('input', () => { const t = $$('anaTexto'); t.style.height = ''; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; });
-        $$('anaSugestoes').addEventListener('click', (ev) => { const b = ev.target.closest('.ana-sugestao'); if (b) anaEnviar(b.textContent); });
+        $$('anaSugestoes').addEventListener('click', (ev) => { const b = ev.target.closest('.ana-sugestao'); if (b) anaEnviar(b.textContent, b.hasAttribute('data-equipe')); });
+        // no computador, a rodinha do mouse anda a fileira de assuntos para o lado
+        $$('anaSugestoes').addEventListener('wheel', (ev) => { const s = $$('anaSugestoes'); if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX) && s.scrollWidth > s.clientWidth) { s.scrollLeft += ev.deltaY; ev.preventDefault(); } }, { passive: false });
+        anaRitmo();
+        setTimeout(anaVerNovidade, 2500);
 
         // --- menu lateral no celular ---
         // Declarada como `function` (e não const) de propósito: assim ela sobe

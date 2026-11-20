@@ -1,30 +1,32 @@
 // ============================================================================
-// POST /api/assistente  { mensagem }   Authorization: Bearer <token do login da Central>
+// POST /api/assistente   Authorization: Bearer <token do login da Central>
+//   { mensagem }          o cliente escreveu (ou tocou num botao de assunto)
+//   { acao: 'equipe' }    o cliente tocou em "Falar com a equipe"
 //
-// A "Ana, da DPR" (20/11/2026): assistente de duvidas dentro da Central do
-// Cliente, so para quem esta logado (os compradores). Esta funcao:
-//   1. confere o login (o token da sessao) e o limite de mensagens da pessoa;
-//   2. le, com a chave de servico, SO os dados das casas liberadas para ela
-//      (vinculos aprovados): saldo, parcelas, boleto, e a obra publicada;
-//   3. chama o Claude com o roteiro aprovado (api/_ana.js) e o historico recente;
-//   4. grava a pergunta e a resposta em assistente_mensagens e, quando a Ana
-//      encaminha, a duvida em assistente_duvidas (backoffice de clientes).
-// Tabelas: sql/006_assistente.sql.
+// O chat da "Ana, da DPR" (20/11/2026), SEM IA paga: responde pelo roteiro em
+// codigo (api/_roteiro.js) com os dados da casa da pessoa, e a equipe acompanha
+// tudo no backoffice de clientes (aba Conversas), onde pode pausar o robo e
+// responder a mao. Esta funcao:
+//   1. confere o login e o limite de mensagens da pessoa;
+//   2. le se o robo esta ligado (geral) e se a conversa dela esta pausada;
+//   3. le, com a chave de servico, SO os dados das casas liberadas para ela;
+//   4. robo pausado: so grava a mensagem e marca a conversa como aguardando a equipe;
+//      robo ativo: responde pelo roteiro e, quando o assunto e da equipe, marca aguardando;
+//   5. grava as mensagens e atualiza a conversa (assistente_conversas).
+// Tabelas: sql/006_assistente.sql e sql/007_chat_roteiro.sql.
+// Responde { resposta, encaminhada, opcoes, pausado, ids }.
 //
 // Variaveis de ambiente (Vercel, NUNCA no codigo):
-//   ANTHROPIC_API_KEY      a chave da Anthropic (console.anthropic.com)
 //   SUPABASE_URL           https://roashkfdjgsweuftqhyx.supabase.co
 //   SUPABASE_SERVICE_KEY   a chave de servico (a mesma do api/entrar-cpf.js);
 //                          SUPABASE_SERVICE_ROLE_KEY tambem vale
 // ============================================================================
-const Anthropic = require('@anthropic-ai/sdk').default;
-const { ROTEIRO, dadosDoCliente, FORMATO } = require('./_ana');
+const { responderRoteiro, ENCAMINHAR, JA_ENCAMINHADA } = require('./_roteiro');
 
 const URL_SB = (process.env.SUPABASE_URL || 'https://roashkfdjgsweuftqhyx.supabase.co').replace(/\/$/, '');
 const CHAVE = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const MODELO = 'claude-opus-5-5';
-const LIMITE_HORA = 30, LIMITE_DIA = 120, HISTORICO = 12, TAMANHO_MAX = 1000;
-const ENCAMINHAR_TEXTO = 'Vou encaminhar sua dúvida à equipe da DPR, que entrará em contato com você.';
+const LIMITE_HORA = 30, LIMITE_DIA = 120, TAMANHO_MAX = 1000;
+const PEDIDO_EQUIPE = 'Quero falar com a equipe da DPR.';
 
 function responder(res, status, corpo) {
   res.statusCode = status;
@@ -53,6 +55,7 @@ async function lerCorpo(req) {
 }
 const lista = (r) => (r.ok && Array.isArray(r.dados) ? r.dados : []);
 const desde = (ms) => encodeURIComponent(new Date(Date.now() - ms).toISOString());
+const semTabela = (r) => /assistente_|relation|schema cache|column/i.test(JSON.stringify((r && r.dados) || ''));
 // "hoje" no fuso de Sao Paulo, AAAA-MM-DD
 function hojeSP() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 
@@ -89,92 +92,70 @@ async function lerDados(user) {
 
 module.exports = async function (req, res) {
   if (req.method !== 'POST') return responder(res, 405, { erro: 'Use POST.' });
-  if (!CHAVE || !process.env.ANTHROPIC_API_KEY) return responder(res, 500, { erro: 'A assistente ainda não está configurada (faltam chaves na Vercel).' });
+  if (!CHAVE) return responder(res, 500, { erro: 'O chat ainda não está configurado (falta a chave do Supabase na Vercel).' });
 
   // 1. quem e
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!token) return responder(res, 401, { erro: 'Entre na Central para conversar com a Ana.' });
+  if (!token) return responder(res, 401, { erro: 'Entre na Central para usar o chat.' });
   const ru = await fetch(URL_SB + '/auth/v1/user', { headers: { apikey: CHAVE, Authorization: 'Bearer ' + token } });
   if (!ru.ok) return responder(res, 401, { erro: 'Sua sessão terminou. Entre de novo na Central.' });
   const user = await ru.json();
   if (!user || !user.id) return responder(res, 401, { erro: 'Sua sessão terminou. Entre de novo na Central.' });
 
   const corpo = await lerCorpo(req);
-  const mensagem = String(corpo.mensagem || '').replace(/\s+/g, ' ').trim();
+  const pediuEquipe = corpo.acao === 'equipe';
+  const mensagem = pediuEquipe ? PEDIDO_EQUIPE : String(corpo.mensagem || '').replace(/[ \t]+/g, ' ').trim();
   if (!mensagem) return responder(res, 400, { erro: 'Escreva sua dúvida.' });
   if (mensagem.length > TAMANHO_MAX) return responder(res, 400, { erro: 'A mensagem está muito longa. Resuma em até ' + TAMANHO_MAX + ' caracteres.' });
 
-  // 2. limite: freia abuso e custo
+  // 2. limite (freia abuso), o interruptor geral e a conversa da pessoa
   const uid = encodeURIComponent(user.id);
-  const [h1, h24] = await Promise.all([
+  const [h1, h24, cfg, cv] = await Promise.all([
     sb('/rest/v1/assistente_mensagens?select=id&papel=eq.cliente&user_id=eq.' + uid + '&criado_em=gte.' + desde(3600e3) + '&limit=' + (LIMITE_HORA + 1)),
-    sb('/rest/v1/assistente_mensagens?select=id&papel=eq.cliente&user_id=eq.' + uid + '&criado_em=gte.' + desde(86400e3) + '&limit=' + (LIMITE_DIA + 1))
+    sb('/rest/v1/assistente_mensagens?select=id&papel=eq.cliente&user_id=eq.' + uid + '&criado_em=gte.' + desde(86400e3) + '&limit=' + (LIMITE_DIA + 1)),
+    sb('/rest/v1/assistente_config?select=valor&chave=eq.robo_ligado'),
+    sb('/rest/v1/assistente_conversas?select=robo_pausado,aguardando_equipe&user_id=eq.' + uid)
   ]);
-  if (!h1.ok) {
-    if (/assistente_mensagens|relation|schema cache/i.test(JSON.stringify(h1.dados || ''))) return responder(res, 500, { erro: 'A assistente ainda não foi ligada no banco (sql/006_assistente.sql).' });
+  if (!h1.ok || !cfg.ok || !cv.ok) {
+    if (semTabela(h1) || semTabela(cfg) || semTabela(cv)) return responder(res, 500, { erro: 'O chat ainda não foi ligado no banco (sql/006 e sql/007).' });
     return responder(res, 502, { erro: 'Não consegui responder agora. Tente de novo em instantes.' });
   }
   if (lista(h1).length >= LIMITE_HORA || lista(h24).length >= LIMITE_DIA) return responder(res, 429, { erro: 'Você enviou muitas mensagens em pouco tempo. Tente de novo mais tarde.' });
+  const roboLigado = !lista(cfg)[0] || lista(cfg)[0].valor !== 'nao';
+  const conversa = lista(cv)[0] || { robo_pausado: false, aguardando_equipe: false };
+  const pausado = !roboLigado || conversa.robo_pausado === true;
 
-  // 3. os dados da pessoa e o historico recente
+  // 3. os dados da pessoa (as respostas e o cabecalho da conversa no backoffice)
   const dados = await lerDados(user);
-  const hist = lista(await sb('/rest/v1/assistente_mensagens?select=papel,texto&user_id=eq.' + uid + '&order=criado_em.desc&limit=' + HISTORICO)).reverse();
-  while (hist.length && hist[0].papel !== 'cliente') hist.shift();   // a conversa tem que comecar pelo cliente
-  const messages = hist.map((m) => ({ role: m.papel === 'cliente' ? 'user' : 'assistant', content: m.texto }));
-  messages.push({ role: 'user', content: mensagem });
 
-  // 4. a Ana responde
-  let resposta, encaminhar = false, resumo = '';
-  try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const r = await client.beta.messages.create({
-      model: MODELO,
-      max_tokens: 16000,
-      // se o modelo principal recusar, a propria API refaz no modelo de reserva
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      // conversa simples: esforco baixo (mais rapido e mais barato); a resposta sai no formato do roteiro
-      output_config: { effort: 'low', format: FORMATO },
-      // o roteiro e fixo e fica em cache; os dados da pessoa vem depois, a cada mensagem
-      system: [
-        { type: 'text', text: ROTEIRO, cache_control: { type: 'ephemeral' } },
-        { type: 'text', text: dadosDoCliente(dados) }
-      ],
-      messages
-    });
-    if (r.stop_reason === 'refusal') {
-      resposta = 'Não consigo ajudar com isso por aqui. Se for uma dúvida sobre a sua compra ou a obra, me conte de outro jeito que eu tento de novo.';
-    } else {
-      const bloco = (r.content || []).find((b) => b.type === 'text');
-      const texto = bloco ? bloco.text : '';
-      try {
-        const j = JSON.parse(texto);
-        resposta = String(j.resposta || '').trim();
-        encaminhar = j.encaminhar === true;
-        resumo = String(j.resumo || '').trim();
-      } catch (e) {
-        resposta = texto.trim();
-      }
-      if (!resposta) resposta = encaminhar ? ENCAMINHAR_TEXTO : 'Não consegui responder agora. Pode reformular a sua dúvida?';
-    }
-  } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) return responder(res, 500, { erro: 'A assistente está com a chave da Anthropic errada na Vercel.' });
-    if (e instanceof Anthropic.RateLimitError) return responder(res, 503, { erro: 'Muitas pessoas estão usando a assistente agora. Tente de novo em instantes.' });
-    if (e instanceof Anthropic.APIError) return responder(res, 502, { erro: 'Não consegui responder agora. Tente de novo em instantes.' });
-    return responder(res, 500, { erro: 'Falha inesperada na assistente.' });
+  // 4. a resposta
+  let resposta = null, encaminhar = false, opcoes = false;
+  if (pausado) {
+    encaminhar = true;   // a equipe esta com a conversa: a mensagem fica aguardando a resposta dela
+  } else if (pediuEquipe) {
+    resposta = conversa.aguardando_equipe ? JA_ENCAMINHADA : ENCAMINHAR;
+    encaminhar = true;
+  } else {
+    const r = responderRoteiro(mensagem, dados, conversa.aguardando_equipe === true);
+    resposta = r.texto; encaminhar = r.encaminhar; opcoes = r.opcoes;
   }
 
-  // 5. grava a conversa e, se for o caso, a duvida para a equipe
-  await sb('/rest/v1/assistente_mensagens', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: [
-    { user_id: user.id, papel: 'cliente', texto: mensagem },
-    { user_id: user.id, papel: 'ana', texto: resposta.slice(0, 4000) }
-  ] });
-  if (encaminhar) {
-    await sb('/rest/v1/assistente_duvidas', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: {
-      user_id: user.id, email: dados.email, nome: dados.nome || null,
-      casas: dados.casas.map((c) => (c.unidade || '') + ' · ' + (c.empreendimento || '')).join('; ') || null,
-      pergunta: mensagem, resumo: (resumo || mensagem).slice(0, 1000)
-    } });
-  }
-  return responder(res, 200, { resposta, encaminhada: encaminhar });
+  // 5. grava as mensagens e a conversa
+  const linhas = [{ user_id: user.id, papel: 'cliente', texto: mensagem }];
+  if (resposta) linhas.push({ user_id: user.id, papel: 'ana', texto: resposta.slice(0, 4000) });
+  const g = await sb('/rest/v1/assistente_mensagens?select=id', { method: 'POST', headers: { Prefer: 'return=representation' }, body: linhas });
+  if (!g.ok) return responder(res, 502, { erro: 'Não consegui registrar sua mensagem. Tente de novo em instantes.' });
+  const agora = new Date().toISOString();
+  const dadosConversa = {
+    user_id: user.id, email: dados.email, nome: dados.nome || null,
+    casas: dados.casas.map((c) => (c.unidade || '') + ' · ' + (c.empreendimento || '')).join('; ') || null,
+    ultima_em: agora, ultima_texto: mensagem.slice(0, 300), ultima_papel: 'cliente'
+  };
+  if (encaminhar && !conversa.aguardando_equipe) Object.assign(dadosConversa, { aguardando_equipe: true, aguardando_desde: agora });
+  await sb('/rest/v1/assistente_conversas?on_conflict=user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: dadosConversa });
+
+  return responder(res, 200, {
+    resposta, encaminhada: encaminhar && !!resposta && resposta.indexOf(ENCAMINHAR) >= 0, opcoes, pausado,
+    ids: lista(g).map((x) => x.id)
+  });
 };
