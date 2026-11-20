@@ -1,0 +1,8 @@
+{
+  "name": "centraldpr",
+  "private": true,
+  "description": "Central do Cliente DPR. A pagina e um index.html sem build; este arquivo so lista a dependencia das funcoes em api/ (a assistente Ana usa o SDK oficial da Anthropic).",
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.12.0"
+  }
+}
