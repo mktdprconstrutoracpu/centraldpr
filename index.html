@@ -3428,6 +3428,34 @@
             body.visao-equipe { padding-top: 76px; }
             body.visao-equipe .sidebar { top: 0; height: 100dvh; }
         }
+
+        /* (20/11/2026) MEU E-MAIL: o e-mail de acesso, o pedido em andamento e o formulario de troca */
+        .conta-pedido[hidden], .conta-form[hidden] { display: none; }   /* o display: grid abaixo anularia o hidden */
+        .conta-card { max-width: 640px; display: grid; gap: 22px; padding: clamp(20px, 3vw, 30px); background: #fff; border: 1px solid rgba(23, 24, 27, .08); border-radius: 18px; box-shadow: var(--sombra); }
+        .conta-atual { display: grid; gap: 4px; padding-bottom: 20px; border-bottom: 1px solid rgba(23, 24, 27, .08); }
+        .conta-rotulo { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b6d74; }
+        .conta-atual strong { font-family: var(--display, inherit); font-size: clamp(18px, 2.4vw, 22px); word-break: break-all; color: #17181b; }
+        .conta-dica { font-size: 13.5px; color: #6b6d74; }
+        .conta-pedido { display: grid; gap: 6px; padding: 16px 18px; border-radius: 14px; border-left: 4px solid #b85c00; background: #fdf3e6; font-size: 14.5px; color: #17181b; }
+        .conta-pedido b { font-size: 15px; }
+        .conta-pedido strong { word-break: break-all; }
+        .conta-pedido[data-situacao="aprovada"] { border-left-color: #2e7d32; background: #e9f4ea; }
+        .conta-pedido[data-situacao="recusada"] { border-left-color: #8a8c93; background: #f1f1f3; }
+        .conta-cancelar { justify-self: start; margin-top: 6px; appearance: none; border: 1.5px solid rgba(23, 24, 27, .2); background: #fff; border-radius: 999px; min-height: 40px; padding: 0 16px; font: inherit; font-weight: 600; cursor: pointer; }
+        .conta-cancelar:hover { border-color: #17181b; }
+        .conta-form { display: grid; gap: 14px; }
+        .conta-titulo { font-family: var(--display, inherit); font-size: 18px; margin: 0; }
+        .conta-texto { margin: -6px 0 4px; font-size: 14px; line-height: 1.5; color: #55575e; }
+        .conta-campo { display: grid; gap: 6px; font-size: 13.5px; font-weight: 600; color: #3a3c42; }
+        .conta-campo input { width: 100%; min-height: 48px; padding: 10px 14px; border: 1.5px solid rgba(23, 24, 27, .14); border-radius: 12px; font: inherit; font-size: 16px; font-weight: 400; color: #17181b; background: #fff; }
+        .conta-campo input:focus { outline: none; border-color: var(--accent, #e10600); box-shadow: 0 0 0 4px rgba(225, 6, 0, .1); }
+        .conta-erro { margin: 0; min-height: 1.2em; font-size: 13.5px; font-weight: 600; color: var(--accent, #e10600); }
+        .conta-erro:empty { display: none; }
+        .conta-botao { justify-self: start; appearance: none; border: 0; border-radius: 12px; min-height: 48px; padding: 0 26px; background: var(--accent, #e10600); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+        .conta-botao:hover { filter: brightness(.94); }
+        .conta-botao:disabled { opacity: .6; cursor: default; }
+        .conta-botao:focus-visible, .conta-cancelar:focus-visible { outline: 2px solid #17181b; outline-offset: 2px; }
+        @media (max-width: 768px) { .conta-botao { width: 100%; justify-self: stretch; } }
     </style>
 </head>
 <body>
@@ -3564,6 +3592,11 @@
                 <div class="nav-item" data-pagina="projetos">
                     <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.2 5.8 5.8 2.2-5.8 2.2L12 19.5l-2.2-5.8L4 11.5l5.8-2.2z"/></svg></div>
                     <span>Futuros projetos</span>
+                </div>
+                <!-- (20/11/2026) o cliente pede a troca do e-mail de acesso; a DPR aprova no backoffice -->
+                <div class="nav-item" data-pagina="conta">
+                    <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6.5h16v11H4z"/><path d="M4.5 7l7.5 6 7.5-6"/></svg></div>
+                    <span>Meu e-mail</span>
                 </div>
             </nav>
 
@@ -3997,6 +4030,43 @@
                                     <p>A próxima fase do Villagio Caucaia. As informações e as imagens do projeto aparecem aqui assim que forem divulgadas.</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===============================================================
+                     (20/11/2026) MEU E-MAIL: o cliente pede a troca do e-mail com que
+                     entra na Central. O pedido vai para a aba "Alteração de e-mail" do
+                     backoffice de clientes; quando a DPR aprova, o login passa a ser o
+                     e-mail novo (com o mesmo CPF) e o cadastro da casa muda junto.
+                     Tabela troca_email (sql/005_troca_email.sql).
+                     =============================================================== -->
+                <div id="paginaConta" class="pagina" hidden>
+                    <div class="welcome-banner hero" id="heroConta">
+                        <div class="hero-foto" aria-hidden="true"></div>
+                        <div class="welcome-content">
+                            <div class="welcome-title">Meu e-mail</div>
+                            <div class="welcome-subtitle">O e-mail com que você entra na Central</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="conta-card">
+                            <div class="conta-atual">
+                                <span class="conta-rotulo">E-mail de acesso</span>
+                                <strong id="contaEmailAtual">—</strong>
+                                <span class="conta-dica">Você entra com este e-mail e o seu CPF.</span>
+                            </div>
+                            <div class="conta-pedido" id="contaPedido" hidden></div>
+                            <form id="formTrocaEmail" class="conta-form" novalidate>
+                                <h3 class="conta-titulo">Trocar o e-mail</h3>
+                                <p class="conta-texto">A equipe da DPR confere o pedido e aprova. Depois disso você passa a entrar com o e-mail novo e o mesmo CPF, e o cadastro da sua casa é atualizado junto.</p>
+                                <label class="conta-campo"><span>E-mail atual</span><input type="email" id="trocaAtual" autocomplete="email" required></label>
+                                <label class="conta-campo"><span>Novo e-mail</span><input type="email" id="trocaNovo" autocomplete="off" required></label>
+                                <label class="conta-campo"><span>Repita o novo e-mail</span><input type="email" id="trocaRepete" autocomplete="off" required></label>
+                                <p class="conta-erro" id="trocaErro" role="alert"></p>
+                                <button type="submit" class="conta-botao" id="btTrocaEmail">Pedir a troca</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -5345,7 +5415,73 @@
             // da frente sozinho, senão a pessoa toca e parece que nada aconteceu.
             menuLateral(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (qual === 'conta') carregarTrocaEmail();
         }
+
+        // --- (20/11/2026) MEU E-MAIL: pedido de troca do e-mail de acesso ---
+        // O cliente so cria e le os proprios pedidos (RLS no sql/005); quem aprova e o
+        // backoffice de clientes, que troca o login e o e-mail das casas no Financeiro.
+        const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        function dataCurtaTroca(iso) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+        function escTroca(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+        async function emailDoLogin() {
+            const { data } = await sb.auth.getSession();
+            return data && data.session && data.session.user ? { id: data.session.user.id, email: String(data.session.user.email || '').toLowerCase() } : null;
+        }
+        async function carregarTrocaEmail() {
+            const eu = await emailDoLogin();
+            if (!eu) return;
+            $$('contaEmailAtual').textContent = eu.email;
+            $$('trocaErro').textContent = '';
+            const caixa = $$('contaPedido'), form = $$('formTrocaEmail');
+            const { data, error } = await sb.from('troca_email').select('id, email_atual, email_novo, situacao, motivo, criado_em, decidido_em')
+                .order('criado_em', { ascending: false }).limit(1);
+            const p = !error && data && data[0];
+            caixa.hidden = true; form.hidden = false;
+            if (!p || p.situacao === 'cancelada') return;
+            caixa.hidden = false;
+            caixa.setAttribute('data-situacao', p.situacao);
+            if (p.situacao === 'pendente') {
+                form.hidden = true;
+                caixa.innerHTML = '<b>Pedido em análise</b><span>Trocar para <strong>' + escTroca(p.email_novo) + '</strong>, pedido em ' + dataCurtaTroca(p.criado_em) + '. Até a DPR aprovar, continue entrando com o e-mail atual.</span>'
+                    + '<button type="button" class="conta-cancelar" id="btCancelarTroca">Cancelar pedido</button>';
+            } else if (p.situacao === 'aprovada') {
+                caixa.innerHTML = '<b>Troca aprovada em ' + dataCurtaTroca(p.decidido_em) + '</b><span>Agora você entra com <strong>' + escTroca(p.email_novo) + '</strong> e o seu CPF.</span>';
+            } else if (p.situacao === 'recusada') {
+                caixa.innerHTML = '<b>Pedido recusado em ' + dataCurtaTroca(p.decidido_em) + '</b><span>' + (p.motivo ? 'Motivo: ' + escTroca(p.motivo) + '. ' : '') + 'Se precisar, faça um novo pedido abaixo.</span>';
+            }
+        }
+        $$('formTrocaEmail').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const erro = $$('trocaErro'); erro.textContent = '';
+            const eu = await emailDoLogin();
+            if (!eu) { erro.textContent = 'Sua sessão terminou. Entre de novo.'; return; }
+            const atual = $$('trocaAtual').value.trim().toLowerCase();
+            const novo = $$('trocaNovo').value.trim().toLowerCase();
+            const repete = $$('trocaRepete').value.trim().toLowerCase();
+            if (atual !== eu.email) { erro.textContent = 'O e-mail atual não confere com o e-mail com que você entrou.'; $$('trocaAtual').focus(); return; }
+            if (!EMAIL_OK.test(novo) || novo.length > 200) { erro.textContent = 'Confira o novo e-mail.'; $$('trocaNovo').focus(); return; }
+            if (novo === atual) { erro.textContent = 'O novo e-mail é igual ao atual.'; $$('trocaNovo').focus(); return; }
+            if (repete !== novo) { erro.textContent = 'Os dois campos do novo e-mail não estão iguais.'; $$('trocaRepete').focus(); return; }
+            const bt = $$('btTrocaEmail'); bt.disabled = true; bt.textContent = 'Enviando...';
+            const { error } = await sb.from('troca_email').insert({ user_id: eu.id, email_atual: atual, email_novo: novo });
+            bt.disabled = false; bt.textContent = 'Pedir a troca';
+            if (error) {
+                erro.textContent = /troca_email_um_pendente|duplicate/i.test(error.message || '') ? 'Você já tem um pedido em análise.'
+                    : /relation|does not exist|schema cache/i.test(error.message || '') ? 'A troca de e-mail ainda não está disponível. Fale com a DPR.'
+                    : 'Não foi possível enviar o pedido agora. Tente de novo em instantes.';
+                return;
+            }
+            $$('trocaAtual').value = ''; $$('trocaNovo').value = ''; $$('trocaRepete').value = '';
+            await carregarTrocaEmail();
+        });
+        $$('contaPedido').addEventListener('click', async (ev) => {
+            if (!ev.target.closest('#btCancelarTroca')) return;
+            if (!window.confirm('Cancelar o pedido de troca de e-mail?')) return;
+            const { error } = await sb.rpc('cancelar_troca_email');
+            if (error) { $$('trocaErro').textContent = 'Não foi possível cancelar agora. Tente de novo em instantes.'; return; }
+            await carregarTrocaEmail();
+        });
 
         // --- menu lateral no celular ---
         // Declarada como `function` (e não const) de propósito: assim ela sobe
