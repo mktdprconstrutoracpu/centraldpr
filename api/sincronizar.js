@@ -118,6 +118,23 @@ function texto(valor) {
   return s || null;
 }
 
+// (23/11/2026) A SITUAÇÃO SAI DO NOME DA ABA, DECIDIDA AQUI, NO SERVIDOR.
+// O script da planilha já calcula a situação, mas com a regra antiga (só "Distrato" e
+// "Distrato realizado"), e a dona não quer mexer na planilha. Como a planilha manda o
+// nome da aba (aba_origem), a regra nova vale aqui para qualquer versão do script.
+// Para os nomes que a regra antiga já entendia, o resultado é o MESMO de antes; muda só
+// o que ela errava: "Permuta"/"Permutante" (era ativo) e "Distrato Formalizado" (era
+// em andamento). Sem nome de aba, vale a situação que a planilha mandou, como antes.
+function situacaoPelaAba(nomeAba) {
+  const t = String(nomeAba || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+  if (!t.trim()) return null;
+  if (t.indexOf('PERMUT') >= 0) return 'permuta';
+  if (t.indexOf('DISTRATO') >= 0 && (t.indexOf('REALIZADO') >= 0 || t.indexOf('FORMALIZADO') >= 0)) return 'distrato_realizado';
+  if (t.indexOf('DISTRATO') >= 0) return 'distrato_aguardando';
+  if (t.indexOf('AGUARDANDO ASSINATURA') >= 0) return 'aguardando_assinatura';
+  return 'ativo';
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, erro: 'metodo_nao_permitido' });
@@ -157,7 +174,7 @@ export default async function handler(req, res) {
   }
 
   const statusRecebido = texto(corpo.status_contrato) || 'ativo';
-  const status = STATUS_VALIDOS.has(statusRecebido) ? statusRecebido : 'ativo';
+  const status = situacaoPelaAba(corpo.aba_origem) || (STATUS_VALIDOS.has(statusRecebido) ? statusRecebido : 'ativo');
 
   try {
     // ------------------------------------------------------------------
