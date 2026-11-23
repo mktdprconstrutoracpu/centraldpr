@@ -269,7 +269,7 @@ export default async function handler(req, res) {
       igpm_valor: numero(p.igpm_valor),
       parcela_corrigida: numero(p.parcela_corrigida),
       amortizacao: numero(p.amortizacao),
-      pago: /pago/i.test(String(p.status_texto || '')),
+      pago: /pago|\bpaga\b/i.test(String(p.status_texto || '')),
       status_texto: texto(p.status_texto),
       saldo_devedor: numero(p.saldo_devedor),
       atualizado_em: new Date().toISOString()
