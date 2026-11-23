@@ -224,9 +224,15 @@ function depoisDoRotulo(texto) {
 // O status do contrato está no NOME DA ABA: "CASA 05 (Distrato)".
 // ⚠️ "realizado" é testado ANTES de "distrato" sozinho — senão
 // "Distrato realizado" cairia no genérico e perderia a informação.
+// (23/11/2026) a planilha passou a usar outros nomes: "Distrato Solicitado", "Distrato -
+// Aguardando...", "Distrato Judicial Solicitado", "Avaliando Distrato" (em andamento),
+// "Distrato Formalizado", "Distrato Unilateral Realizado" (realizado) e "Permuta" /
+// "Permutante" (casa dada em permuta: nao e venda e nao conta como contrato ativo).
+// Qualquer outra anotacao (Inadimplente, Aditivo, Renegociacao, Notificada) continua ativo.
 function statusDaAba(nome) {
   var t = norm(nome);
-  if (t.indexOf('DISTRATO REALIZADO') >= 0) return 'distrato_realizado';
+  if (t.indexOf('PERMUT') >= 0) return 'permuta';
+  if (t.indexOf('DISTRATO') >= 0 && (t.indexOf('REALIZADO') >= 0 || t.indexOf('FORMALIZADO') >= 0)) return 'distrato_realizado';
   if (t.indexOf('DISTRATO') >= 0) return 'distrato_aguardando';
   if (t.indexOf('AGUARDANDO ASSINATURA') >= 0) return 'aguardando_assinatura';
   return 'ativo';

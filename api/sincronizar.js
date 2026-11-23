@@ -31,7 +31,8 @@ const STATUS_VALIDOS = new Set([
   'ativo',
   'aguardando_assinatura',
   'distrato_aguardando',
-  'distrato_realizado'
+  'distrato_realizado',
+  'permuta'   // (23/11/2026) financeiro/sql/005_permuta.sql
 ]);
 
 // Comparação de senha em tempo constante. Um `===` vaza, pelo TEMPO de resposta,
